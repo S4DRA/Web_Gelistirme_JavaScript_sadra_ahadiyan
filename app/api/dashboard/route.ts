@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+type TransactionTotals = {
+  totalIncome: number;
+  totalExpenses: number;
+};
+
+type TransactionSummary = {
+  type: "income" | "expense";
+  amount: { toString(): string };
+};
+
 export async function GET() {
   try {
     const transactions = await prisma.transaction.findMany({
@@ -10,8 +20,8 @@ export async function GET() {
       },
     });
 
-    const totals = transactions.reduce(
-      (result, transaction) => {
+    const totals = transactions.reduce<TransactionTotals>(
+      (result: TransactionTotals, transaction: TransactionSummary) => {
         const amount = Number(transaction.amount.toString());
 
         if (transaction.type === "income") {

@@ -7,6 +7,17 @@ type PredictionResult = {
   daysUntilNegative: number | null;
 };
 
+type TransactionTotals = {
+  totalIncome: number;
+  totalExpenses: number;
+};
+
+type TransactionForPrediction = {
+  type: "income" | "expense";
+  amount: { toString(): string };
+  date: Date;
+};
+
 export async function predictFutureCashFlow(): Promise<PredictionResult> {
   const user = await getDemoUser();
 
@@ -28,8 +39,8 @@ export async function predictFutureCashFlow(): Promise<PredictionResult> {
     };
   }
 
-  const totals = transactions.reduce(
-    (result, transaction) => {
+  const totals = transactions.reduce<TransactionTotals>(
+    (result: TransactionTotals, transaction: TransactionForPrediction) => {
       const amount = Number(transaction.amount.toString());
 
       if (transaction.type === "income") {

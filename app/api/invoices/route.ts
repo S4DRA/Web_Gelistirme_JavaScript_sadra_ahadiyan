@@ -1,7 +1,7 @@
 import { InvoiceStatus } from "@prisma/client";
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 import { getDemoUser } from "@/lib/demo-user";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 function formatInvoice(invoice: {
   id: string;
@@ -23,6 +23,9 @@ function formatInvoice(invoice: {
 
 export async function GET() {
   try {
+    await connection();
+
+    const prisma = getPrisma();
     const user = await getDemoUser();
 
     const invoices = await prisma.invoice.findMany({
@@ -43,6 +46,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const prisma = getPrisma();
     const body = await request.json();
     const { clientName, amount, dueDate, status } = body;
 

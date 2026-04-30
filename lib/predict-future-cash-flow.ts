@@ -1,5 +1,5 @@
 import { getDemoUser } from "@/lib/demo-user";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 type PredictionResult = {
   futureBalance: number;
@@ -19,6 +19,7 @@ type TransactionForPrediction = {
 };
 
 export async function predictFutureCashFlow(): Promise<PredictionResult> {
+  const prisma = getPrisma();
   const user = await getDemoUser();
 
   const transactions = await prisma.transaction.findMany({

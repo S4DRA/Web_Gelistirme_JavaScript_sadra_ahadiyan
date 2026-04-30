@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 import { TransactionType } from "@prisma/client";
 import { getDemoUser } from "@/lib/demo-user";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 function formatTransaction(transaction: {
   id: string;
@@ -23,6 +23,9 @@ function formatTransaction(transaction: {
 
 export async function GET() {
   try {
+    await connection();
+
+    const prisma = getPrisma();
     const user = await getDemoUser();
 
     const transactions = await prisma.transaction.findMany({
@@ -43,6 +46,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const prisma = getPrisma();
     const body = await request.json();
     const { type, amount, category, date } = body;
 

@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { connection, NextResponse } from "next/server";
+import { getPrisma } from "@/lib/prisma";
 
 type TransactionTotals = {
   totalIncome: number;
@@ -13,6 +13,9 @@ type TransactionSummary = {
 
 export async function GET() {
   try {
+    await connection();
+
+    const prisma = getPrisma();
     const transactions = await prisma.transaction.findMany({
       select: {
         type: true,

@@ -1,7 +1,7 @@
 import { InvoiceStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getDemoUser } from "@/lib/demo-user";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 type RouteContext = {
   params: Promise<{
@@ -29,6 +29,7 @@ function formatInvoice(invoice: {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+    const prisma = getPrisma();
     const { id } = await context.params;
     const body = await request.json();
     const { status } = body;

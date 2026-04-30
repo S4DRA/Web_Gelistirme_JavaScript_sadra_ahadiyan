@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 export async function DELETE() {
   try {
+    const prisma = getPrisma();
     await prisma.transaction.deleteMany();
     await prisma.invoice.deleteMany();
 

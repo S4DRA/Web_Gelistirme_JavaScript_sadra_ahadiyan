@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 import { predictFutureCashFlow } from "@/lib/predict-future-cash-flow";
 
 export async function GET() {
   try {
+    await connection();
+
     const prediction = await predictFutureCashFlow();
 
     return NextResponse.json(prediction);

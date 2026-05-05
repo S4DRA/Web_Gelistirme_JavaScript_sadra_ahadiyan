@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const navItems = [
@@ -67,6 +68,7 @@ export function Navbar() {
             href="/dashboard"
             className="app-sidebar-brand text-lg font-semibold tracking-tight text-slate-900"
           >
+            <Image src="/img/1.svg" alt="" width={32} height={32} className="brand-mark" />
             Dampener
           </Link>
 
@@ -95,6 +97,7 @@ export function Navbar() {
               href={email ? "/dashboard" : "/"}
               className="app-brand text-lg font-semibold tracking-tight text-slate-900"
             >
+              <Image src="/img/1.svg" alt="" width={32} height={32} className="brand-mark" />
               Dampener
             </Link>
             {email ? (

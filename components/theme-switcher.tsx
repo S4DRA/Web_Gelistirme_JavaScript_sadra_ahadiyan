@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 type ThemeName = "default" | "boys" | "men" | "girls" | "women";
 type ThemeMode = "light" | "dark";
 
-const themes: { value: ThemeName; label: string; hint: string }[] = [
-  { value: "default", label: "Default", hint: "The original Dampener theme" },
-  { value: "boys", label: "Turbo", hint: "Exciting style for boys" },
-  { value: "men", label: "Executive", hint: "Formal style for men" },
-  { value: "girls", label: "Spark", hint: "Exciting style for girls" },
-  { value: "women", label: "Elegance", hint: "Formal style for women" },
+const themes: { value: ThemeName; label: string }[] = [
+  { value: "default", label: "Default" },
+  { value: "boys", label: "Turbo" },
+  { value: "men", label: "Executive" },
+  { value: "girls", label: "Spark" },
+  { value: "women", label: "Elegance" },
 ];
 
 function applyTheme(theme: ThemeName, mode: ThemeMode) {
@@ -22,24 +22,33 @@ export function ThemeSwitcher() {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeName>("default");
   const [mode, setMode] = useState<ThemeMode>("light");
+  const [loadedPreferences, setLoadedPreferences] = useState(false);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("dampener-theme") as ThemeName | null;
     const savedMode = window.localStorage.getItem("dampener-mode") as ThemeMode | null;
 
-    requestAnimationFrame(() => {
+    const frame = requestAnimationFrame(() => {
       setTheme(savedTheme ?? "default");
       setMode(savedMode ?? "light");
+      setLoadedPreferences(true);
     });
+
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
+    if (!loadedPreferences) {
+      return;
+    }
+
     applyTheme(theme, mode);
-  }, [theme, mode]);
+  }, [loadedPreferences, theme, mode]);
 
   function handleThemeChange(value: ThemeName) {
     setTheme(value);
     setOpen(false);
+    applyTheme(value, mode);
     window.localStorage.setItem("dampener-theme", value);
   }
 
@@ -47,6 +56,7 @@ export function ThemeSwitcher() {
     const nextMode = mode === "dark" ? "light" : "dark";
 
     setMode(nextMode);
+    applyTheme(theme, nextMode);
     window.localStorage.setItem("dampener-mode", nextMode);
   }
 
@@ -60,7 +70,6 @@ export function ThemeSwitcher() {
         className="theme-menu-button flex h-9 min-w-48 items-center justify-between gap-3 rounded-full px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
         aria-expanded={open}
         aria-haspopup="menu"
-        title={currentTheme.hint}
       >
         <span>Selected theme: {currentTheme.label}</span>
         <span
@@ -82,16 +91,12 @@ export function ThemeSwitcher() {
               type="button"
               role="menuitemradio"
               aria-checked={theme === item.value}
-              title={item.hint}
               onClick={() => handleThemeChange(item.value)}
               className="group rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
             >
               <span className="flex items-center justify-between gap-3">
                 {item.label}
                 {theme === item.value ? <span aria-hidden="true">On</span> : null}
-              </span>
-              <span className="mt-1 block text-xs text-slate-500 opacity-0 transition group-hover:opacity-100">
-                {item.hint}
               </span>
             </button>
           ))}

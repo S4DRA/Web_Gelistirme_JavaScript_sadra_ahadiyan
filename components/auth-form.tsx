@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 type AuthFormProps = {
@@ -78,6 +79,15 @@ export function AuthForm({ mode }: AuthFormProps) {
             Sign in to manage transactions, invoices, forecasts, and resets from your
             own account.
           </p>
+          <div className="brand-lockup-card hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:block">
+            <Image
+              src="/img/2.jpg"
+              alt="Dampener"
+              width={2048}
+              height={2048}
+              className="h-44 w-full object-contain"
+            />
+          </div>
         </div>
 
         <form

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
@@ -57,6 +58,15 @@ export function OnboardingForm() {
     <main className="flex flex-1 bg-slate-50 px-6 py-12">
       <section className="mx-auto grid w-full max-w-6xl gap-8 md:grid-cols-[1fr_460px] md:items-center">
         <div className="space-y-5">
+          <div className="brand-emblem-card hidden h-28 w-28 items-center justify-center rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex">
+            <Image
+              src="/img/1.png"
+              alt="Dampener"
+              width={2000}
+              height={2000}
+              className="h-full w-full object-contain"
+            />
+          </div>
           <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
             Quick setup
           </span>

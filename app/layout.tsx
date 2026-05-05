@@ -18,6 +18,17 @@ export const metadata: Metadata = {
   description: "Track cash flow, invoices, and financial health.",
 };
 
+const themeInitScript = `
+(() => {
+  try {
+    const theme = localStorage.getItem("dampener-theme") || "default";
+    const mode = localStorage.getItem("dampener-mode") || "light";
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.mode = mode;
+  } catch {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,6 +41,9 @@ export default function RootLayout({
       data-mode="light"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full bg-slate-50 text-slate-900">
         <div className="flex min-h-screen flex-col">
           <Navbar />

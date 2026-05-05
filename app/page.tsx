@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -29,8 +30,8 @@ export default function Home() {
 
   return (
     <main className="flex flex-1 bg-slate-50">
-      <div className="mx-auto flex w-full max-w-6xl flex-col justify-center gap-8 px-6 py-20">
-        <div className="max-w-2xl space-y-4">
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-6 py-20 md:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="max-w-2xl space-y-6">
           <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
             Cash flow made clearer
           </span>
@@ -41,21 +42,32 @@ export default function Home() {
             Track income, monitor invoices, and get a simple picture of what your cash
             position looks like next.
           </p>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/signup"
+              className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+            >
+              Create account
+            </Link>
+            <Link
+              href="/login"
+              className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
+            >
+              Log in
+            </Link>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/signup"
-            className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-          >
-            Create account
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
-          >
-            Log in
-          </Link>
+        <div className="brand-visual-panel hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
+          <Image
+            src="/img/3.jpg"
+            alt="Dampener cash flow intelligence platform"
+            width={2560}
+            height={2560}
+            priority
+            className="h-full w-full object-contain"
+          />
         </div>
       </div>
     </main>

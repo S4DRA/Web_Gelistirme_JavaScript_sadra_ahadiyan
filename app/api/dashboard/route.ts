@@ -1,6 +1,6 @@
 import { connection, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
 type TransactionTotals = {
   totalIncome: number;
@@ -17,14 +17,14 @@ export async function GET(request: Request) {
     await connection();
 
     const prisma = getPrisma();
-    const user = await getCurrentUser(request);
+    const context = await getActiveWorkspaceForRequest(request);
 
-    if (!user) {
+    if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
     const transactions = await prisma.transaction.findMany({
-      where: { userId: user.id },
+      where: { workspaceId: context.workspace.id },
       select: {
         type: true,
         amount: true,
@@ -54,7 +54,9 @@ export async function GET(request: Request) {
     return NextResponse.json({
       totalIncome: totals.totalIncome,
       totalExpenses: totals.totalExpenses,
-      netBalance: totals.totalIncome - totals.totalExpenses,
+      netBalance:
+        context.workspace.startingBalance + totals.totalIncome - totals.totalExpenses,
+      workspace: context.workspace,
     });
   } catch (error) {
     console.error("Failed to load dashboard data:", error);

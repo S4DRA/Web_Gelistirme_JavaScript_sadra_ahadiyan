@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
 const supportedCurrencies = new Set(["USD", "EUR", "GBP", "TRY"]);
 
@@ -41,10 +42,25 @@ export async function POST(request: Request) {
     }
 
     const prisma = getPrisma();
-    const [preference, folder] = await prisma.$transaction([
+    const context = await getActiveWorkspaceForRequest(request);
+
+    if (!context) {
+      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
+
+    const [workspace, preference, folder] = await prisma.$transaction([
+      prisma.workspace.update({
+        where: { id: context.workspace.id },
+        data: {
+          currency,
+          startingBalance,
+          monthlyFixedExpenses,
+        },
+      }),
       prisma.userPreference.upsert({
         where: { userId: user.id },
         update: {
+          activeWorkspaceId: context.workspace.id,
           currency,
           startingBalance,
           monthlyFixedExpenses,
@@ -52,6 +68,7 @@ export async function POST(request: Request) {
         },
         create: {
           userId: user.id,
+          activeWorkspaceId: context.workspace.id,
           currency,
           startingBalance,
           monthlyFixedExpenses,
@@ -62,6 +79,7 @@ export async function POST(request: Request) {
         ? prisma.financialTrackingFolder.create({
             data: {
               userId: user.id,
+              workspaceId: context.workspace.id,
               name: folderName,
             },
           })
@@ -76,6 +94,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       preference: {
         id: preference.id,
+        workspaceId: workspace.id,
         currency: preference.currency,
         startingBalance: Number(preference.startingBalance.toString()),
         monthlyFixedExpenses: Number(preference.monthlyFixedExpenses.toString()),

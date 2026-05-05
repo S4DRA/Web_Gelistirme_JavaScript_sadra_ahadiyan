@@ -1,18 +1,18 @@
 import { connection, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 import { predictFutureCashFlow } from "@/lib/predict-future-cash-flow";
 
 export async function GET(request: Request) {
   try {
     await connection();
 
-    const user = await getCurrentUser(request);
+    const context = await getActiveWorkspaceForRequest(request);
 
-    if (!user) {
+    if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
-    const prediction = await predictFutureCashFlow(user.id);
+    const prediction = await predictFutureCashFlow(context.workspace.id);
 
     return NextResponse.json(prediction);
   } catch (error) {

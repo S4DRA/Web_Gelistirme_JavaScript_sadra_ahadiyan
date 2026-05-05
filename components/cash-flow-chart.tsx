@@ -118,7 +118,7 @@ export function CashFlowChart({ transactions }: CashFlowChartProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="cash-flow-card rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="mb-6">
         <h2 className="text-lg font-medium text-slate-900">Cash flow</h2>
         <p className="mt-1 text-sm text-slate-500">
@@ -126,7 +126,7 @@ export function CashFlowChart({ transactions }: CashFlowChartProps) {
         </p>
       </div>
 
-      <div className="h-72">
+      <div className="cash-flow-canvas h-72">
         <Line data={data} options={options} />
       </div>
     </div>

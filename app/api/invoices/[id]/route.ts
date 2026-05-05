@@ -1,7 +1,7 @@
 import { InvoiceStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
 type RouteContext = {
   params: Promise<{
@@ -12,17 +12,21 @@ type RouteContext = {
 function formatInvoice(invoice: {
   id: string;
   userId: string;
+  workspaceId: string | null;
   clientName: string;
   amount: { toString(): string };
   dueDate: Date;
+  reminderDate: Date | null;
   status: string;
 }) {
   return {
     id: invoice.id,
     userId: invoice.userId,
+    workspaceId: invoice.workspaceId,
     clientName: invoice.clientName,
     amount: Number(invoice.amount.toString()),
     dueDate: invoice.dueDate.toISOString(),
+    reminderDate: invoice.reminderDate?.toISOString() ?? null,
     status: invoice.status,
   };
 }
@@ -31,18 +35,20 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     const prisma = getPrisma();
     const { id } = await context.params;
-    const user = await getCurrentUser(request);
+    const contextData = await getActiveWorkspaceForRequest(request);
 
-    if (!user) {
+    if (!contextData) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
     const body = await request.json();
     const { status } = body;
 
-    if (status !== InvoiceStatus.paid && status !== InvoiceStatus.unpaid) {
+    const allowedStatuses = Object.values(InvoiceStatus);
+
+    if (!allowedStatuses.includes(status)) {
       return NextResponse.json(
-        { error: "Status must be 'paid' or 'unpaid'." },
+        { error: "Status is not valid." },
         { status: 400 },
       );
     }
@@ -50,7 +56,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const existingInvoice = await prisma.invoice.findFirst({
       where: {
         id,
-        userId: user.id,
+        workspaceId: contextData.workspace.id,
       },
     });
 

@@ -1,22 +1,26 @@
 import { InvoiceStatus } from "@prisma/client";
 import { connection, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
 function formatInvoice(invoice: {
   id: string;
   userId: string;
+  workspaceId: string | null;
   clientName: string;
   amount: { toString(): string };
   dueDate: Date;
+  reminderDate: Date | null;
   status: string;
 }) {
   return {
     id: invoice.id,
     userId: invoice.userId,
+    workspaceId: invoice.workspaceId,
     clientName: invoice.clientName,
     amount: Number(invoice.amount.toString()),
     dueDate: invoice.dueDate.toISOString(),
+    reminderDate: invoice.reminderDate?.toISOString() ?? null,
     status: invoice.status,
   };
 }
@@ -26,14 +30,14 @@ export async function GET(request: Request) {
     await connection();
 
     const prisma = getPrisma();
-    const user = await getCurrentUser(request);
+    const context = await getActiveWorkspaceForRequest(request);
 
-    if (!user) {
+    if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
     const invoices = await prisma.invoice.findMany({
-      where: { userId: user.id },
+      where: { workspaceId: context.workspace.id },
       orderBy: { dueDate: "asc" },
     });
 
@@ -51,14 +55,14 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const prisma = getPrisma();
-    const user = await getCurrentUser(request);
+    const context = await getActiveWorkspaceForRequest(request);
 
-    if (!user) {
+    if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
     const body = await request.json();
-    const { clientName, amount, dueDate, status } = body;
+    const { clientName, amount, dueDate, reminderDate, status } = body;
 
     if (typeof clientName !== "string" || clientName.trim().length === 0) {
       return NextResponse.json(
@@ -85,19 +89,32 @@ export async function POST(request: Request) {
       );
     }
 
-    if (status !== InvoiceStatus.paid && status !== InvoiceStatus.unpaid) {
+    const allowedStatuses = Object.values(InvoiceStatus);
+
+    if (!allowedStatuses.includes(status)) {
       return NextResponse.json(
-        { error: "Status must be 'paid' or 'unpaid'." },
+        { error: "Status is not valid." },
+        { status: 400 },
+      );
+    }
+
+    const parsedReminderDate = reminderDate ? new Date(reminderDate) : null;
+
+    if (parsedReminderDate && Number.isNaN(parsedReminderDate.getTime())) {
+      return NextResponse.json(
+        { error: "Reminder date must be a valid date." },
         { status: 400 },
       );
     }
 
     const invoice = await prisma.invoice.create({
       data: {
-        userId: user.id,
+        userId: context.user.id,
+        workspaceId: context.workspace.id,
         clientName: clientName.trim(),
         amount: parsedAmount,
         dueDate: parsedDueDate,
+        reminderDate: parsedReminderDate,
         status,
       },
     });

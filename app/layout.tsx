@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { Navbar } from "@/components/navbar";
 import "./globals.css";
 
@@ -39,12 +40,16 @@ export default function RootLayout({
       lang="en"
       data-theme="default"
       data-mode="light"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
+      <head />
       <body className="min-h-full bg-slate-50 text-slate-900">
+        <Script
+          id="dampener-theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
         <div className="flex min-h-screen flex-col">
           <Navbar />
           {children}

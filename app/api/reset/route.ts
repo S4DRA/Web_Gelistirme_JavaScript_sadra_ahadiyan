@@ -1,18 +1,24 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
 export async function DELETE(request: Request) {
   try {
     const prisma = getPrisma();
-    const user = await getCurrentUser(request);
+    const context = await getActiveWorkspaceForRequest(request);
 
-    if (!user) {
+    if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
-    await prisma.transaction.deleteMany({ where: { userId: user.id } });
-    await prisma.invoice.deleteMany({ where: { userId: user.id } });
+    await prisma.$transaction([
+      prisma.transaction.deleteMany({ where: { workspaceId: context.workspace.id } }),
+      prisma.invoice.deleteMany({ where: { workspaceId: context.workspace.id } }),
+      prisma.recurringTransaction.deleteMany({
+        where: { workspaceId: context.workspace.id },
+      }),
+      prisma.categoryBudget.deleteMany({ where: { workspaceId: context.workspace.id } }),
+    ]);
 
     return NextResponse.json({ message: "Data reset successful" });
   } catch (error) {

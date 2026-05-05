@@ -8,13 +8,16 @@ type Invoice = {
   clientName: string;
   amount: number;
   dueDate: string;
-  status: "paid" | "unpaid";
+  reminderDate: string | null;
+  status: "draft" | "sent" | "paid" | "unpaid" | "overdue" | "cancelled";
 };
 
 const initialForm = {
   clientName: "",
   amount: "",
   dueDate: "",
+  reminderDate: "",
+  status: "unpaid",
 };
 
 export default function InvoicesPage() {
@@ -69,7 +72,8 @@ export default function InvoicesPage() {
           clientName: form.clientName,
           amount: Number(form.amount),
           dueDate: form.dueDate,
-          status: "unpaid",
+          reminderDate: form.reminderDate || null,
+          status: form.status,
         }),
       });
 
@@ -154,6 +158,18 @@ export default function InvoicesPage() {
       return "Paid";
     }
 
+    if (invoice.status === "draft") {
+      return "Draft";
+    }
+
+    if (invoice.status === "sent") {
+      return "Sent";
+    }
+
+    if (invoice.status === "cancelled") {
+      return "Cancelled";
+    }
+
     const dueDate = new Date(invoice.dueDate);
     const today = new Date();
 
@@ -167,7 +183,7 @@ export default function InvoicesPage() {
     return "Unpaid";
   }
 
-  function getStatusClasses(status: "Paid" | "Unpaid" | "Late") {
+  function getStatusClasses(status: string) {
     if (status === "Paid") {
       return "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200";
     }
@@ -236,6 +252,35 @@ export default function InvoicesPage() {
             />
           </label>
 
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Reminder date
+            <input
+              type="date"
+              value={form.reminderDate}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, reminderDate: event.target.value }))
+              }
+              className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Status
+            <select
+              value={form.status}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, status: event.target.value }))
+              }
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+            >
+              <option value="draft">Draft</option>
+              <option value="sent">Sent</option>
+              <option value="unpaid">Unpaid</option>
+              <option value="paid">Paid</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </label>
+
           <div className="md:col-span-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-h-6 text-sm text-rose-600">{error}</div>
             <button
@@ -275,6 +320,9 @@ export default function InvoicesPage() {
                     Due Date
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Reminder
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Status
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -298,6 +346,9 @@ export default function InvoicesPage() {
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-700">
                         {formatDate(invoice.dueDate)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-700">
+                        {invoice.reminderDate ? formatDate(invoice.reminderDate) : "None"}
                       </td>
                       <td className="px-6 py-4 text-sm">
                         <span

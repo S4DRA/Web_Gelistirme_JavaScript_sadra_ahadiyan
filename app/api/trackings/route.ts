@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
 function formatFolder(folder: { id: string; name: string; createdAt: Date }) {
   return {
@@ -12,15 +12,15 @@ function formatFolder(folder: { id: string; name: string; createdAt: Date }) {
 
 export async function GET(request: Request) {
   try {
-    const user = await getCurrentUser(request);
+    const context = await getActiveWorkspaceForRequest(request);
 
-    if (!user) {
+    if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
     const prisma = getPrisma();
     const folders = await prisma.financialTrackingFolder.findMany({
-      where: { userId: user.id },
+      where: { workspaceId: context.workspace.id },
       orderBy: { createdAt: "desc" },
     });
 
@@ -37,9 +37,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const user = await getCurrentUser(request);
+    const context = await getActiveWorkspaceForRequest(request);
 
-    if (!user) {
+    if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
@@ -52,7 +52,8 @@ export async function POST(request: Request) {
     const prisma = getPrisma();
     const folder = await prisma.financialTrackingFolder.create({
       data: {
-        userId: user.id,
+        userId: context.user.id,
+        workspaceId: context.workspace.id,
         name: name.trim(),
       },
     });

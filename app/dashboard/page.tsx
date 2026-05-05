@@ -12,6 +12,9 @@ type DashboardData = {
 
 type PredictionData = {
   futureBalance: number;
+  sevenDayBalance: number;
+  ninetyDayBalance: number;
+  dailyNetCashFlow: number;
   risk: boolean;
   daysUntilNegative: number | null;
 };
@@ -42,6 +45,9 @@ export default function DashboardPage() {
   });
   const [prediction, setPrediction] = useState<PredictionData>({
     futureBalance: 0,
+    sevenDayBalance: 0,
+    ninetyDayBalance: 0,
+    dailyNetCashFlow: 0,
     risk: false,
     daysUntilNegative: null,
   });
@@ -272,6 +278,26 @@ export default function DashboardPage() {
                 ? `\u26A0\uFE0F You may run out of money in ${prediction.daysUntilNegative ?? 0} days`
                 : "\u2705 Your cash flow is stable"}
           </p>
+          <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
+            <div className="rounded-xl bg-white/60 p-3">
+              <p className="text-slate-500">7 days</p>
+              <p className="mt-1 font-semibold text-slate-900">
+                {loading ? "..." : formatCurrency(prediction.sevenDayBalance)}
+              </p>
+            </div>
+            <div className="rounded-xl bg-white/60 p-3">
+              <p className="text-slate-500">30 days</p>
+              <p className="mt-1 font-semibold text-slate-900">
+                {loading ? "..." : formatCurrency(prediction.futureBalance)}
+              </p>
+            </div>
+            <div className="rounded-xl bg-white/60 p-3">
+              <p className="text-slate-500">90 days</p>
+              <p className="mt-1 font-semibold text-slate-900">
+                {loading ? "..." : formatCurrency(prediction.ninetyDayBalance)}
+              </p>
+            </div>
+          </div>
         </article>
       </section>
 

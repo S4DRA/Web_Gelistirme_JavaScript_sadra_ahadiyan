@@ -2,18 +2,33 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/workspaces", label: "Workspaces" },
+  { href: "/insights", label: "Insights" },
   { href: "/transactions", label: "Transactions" },
+  { href: "/recurring", label: "Recurring" },
+  { href: "/budgets", label: "Budgets" },
   { href: "/trackings", label: "Trackings" },
   { href: "/invoices", label: "Invoices" },
+  { href: "/reports", label: "Reports" },
+  { href: "/team", label: "Team" },
   { href: "/onboarding", label: "Setup" },
   { href: "/settings", label: "Settings" },
 ];
 
+const mobileQuickItems = [
+  { href: "/dashboard", label: "Home" },
+  { href: "/insights", label: "Insights" },
+  { href: "/transactions", label: "Add" },
+  { href: "/invoices", label: "Bills" },
+];
+
 export function Navbar() {
+  const pathname = usePathname();
   const [email, setEmail] = useState<string | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -234,6 +249,25 @@ export function Navbar() {
           </nav>
         </div>
       </header>
+
+      {email ? (
+        <nav aria-label="Mobile quick navigation" className="mobile-bottom-nav">
+          {mobileQuickItems.map((item) => {
+            const active = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`mobile-bottom-link ${active ? "is-active" : ""}`}
+              >
+                <span aria-hidden="true" className="mobile-bottom-dot" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      ) : null}
     </>
   );
 }

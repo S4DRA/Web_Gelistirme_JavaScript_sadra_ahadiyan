@@ -1,7 +1,7 @@
 import { connection, NextResponse } from "next/server";
 import { TransactionType } from "@prisma/client";
-import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
 function formatTransaction(transaction: {
   id: string;
@@ -10,6 +10,7 @@ function formatTransaction(transaction: {
   category: string;
   date: Date;
   userId: string;
+  workspaceId: string | null;
 }) {
   return {
     id: transaction.id,
@@ -18,6 +19,7 @@ function formatTransaction(transaction: {
     amount: Number(transaction.amount.toString()),
     category: transaction.category,
     date: transaction.date.toISOString(),
+    workspaceId: transaction.workspaceId,
   };
 }
 
@@ -26,14 +28,14 @@ export async function GET(request: Request) {
     await connection();
 
     const prisma = getPrisma();
-    const user = await getCurrentUser(request);
+    const context = await getActiveWorkspaceForRequest(request);
 
-    if (!user) {
+    if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
     const transactions = await prisma.transaction.findMany({
-      where: { userId: user.id },
+      where: { workspaceId: context.workspace.id },
       orderBy: { date: "desc" },
     });
 
@@ -51,9 +53,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const prisma = getPrisma();
-    const user = await getCurrentUser(request);
+    const context = await getActiveWorkspaceForRequest(request);
 
-    if (!user) {
+    if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
@@ -94,7 +96,8 @@ export async function POST(request: Request) {
 
     const transaction = await prisma.transaction.create({
       data: {
-        userId: user.id,
+        userId: context.user.id,
+        workspaceId: context.workspace.id,
         type,
         amount: parsedAmount,
         category: category.trim(),

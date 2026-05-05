@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-theme="men"
+      data-theme="default"
       data-mode="light"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >

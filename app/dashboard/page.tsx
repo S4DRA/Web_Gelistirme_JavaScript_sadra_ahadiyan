@@ -200,7 +200,7 @@ export default function DashboardPage() {
       title="Dashboard"
       description="See a quick snapshot of your income, expenses, and recent cash flow."
     >
-      <section className="flex justify-end">
+      <section className="dashboard-actions flex justify-end">
         <button
           type="button"
           disabled={resetting}
@@ -230,11 +230,11 @@ export default function DashboardPage() {
         </section>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="metric-grid grid gap-4 md:grid-cols-3">
         {cards.map((card) => (
           <article
             key={card.label}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            className="metric-card rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
           >
             <p className="text-sm text-slate-500">{card.label}</p>
             <p className={`mt-3 text-3xl font-semibold tracking-tight ${card.tone}`}>

@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-type ThemeName = "boys" | "men" | "girls" | "women";
+type ThemeName = "default" | "boys" | "men" | "girls" | "women";
 type ThemeMode = "light" | "dark";
 
-const themes: { value: ThemeName; label: string }[] = [
-  { value: "boys", label: "Boys" },
-  { value: "men", label: "Men" },
-  { value: "girls", label: "Girls" },
-  { value: "women", label: "Women" },
+const themes: { value: ThemeName; label: string; hint: string }[] = [
+  { value: "default", label: "Default", hint: "The original Dampener theme" },
+  { value: "boys", label: "Turbo", hint: "Exciting style for boys" },
+  { value: "men", label: "Executive", hint: "Formal style for men" },
+  { value: "girls", label: "Spark", hint: "Exciting style for girls" },
+  { value: "women", label: "Elegance", hint: "Formal style for women" },
 ];
 
 function applyTheme(theme: ThemeName, mode: ThemeMode) {
@@ -18,20 +19,19 @@ function applyTheme(theme: ThemeName, mode: ThemeMode) {
 }
 
 export function ThemeSwitcher() {
-  const [theme, setTheme] = useState<ThemeName>(() => {
-    if (typeof window === "undefined") {
-      return "men";
-    }
+  const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState<ThemeName>("default");
+  const [mode, setMode] = useState<ThemeMode>("light");
 
-    return (window.localStorage.getItem("dampener-theme") as ThemeName | null) ?? "men";
-  });
-  const [mode, setMode] = useState<ThemeMode>(() => {
-    if (typeof window === "undefined") {
-      return "light";
-    }
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem("dampener-theme") as ThemeName | null;
+    const savedMode = window.localStorage.getItem("dampener-mode") as ThemeMode | null;
 
-    return (window.localStorage.getItem("dampener-mode") as ThemeMode | null) ?? "light";
-  });
+    requestAnimationFrame(() => {
+      setTheme(savedTheme ?? "default");
+      setMode(savedMode ?? "light");
+    });
+  }, []);
 
   useEffect(() => {
     applyTheme(theme, mode);
@@ -39,6 +39,7 @@ export function ThemeSwitcher() {
 
   function handleThemeChange(value: ThemeName) {
     setTheme(value);
+    setOpen(false);
     window.localStorage.setItem("dampener-theme", value);
   }
 
@@ -49,28 +50,58 @@ export function ThemeSwitcher() {
     window.localStorage.setItem("dampener-mode", nextMode);
   }
 
+  const currentTheme = themes.find((item) => item.value === theme) ?? themes[0];
+
   return (
-    <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
-      <label className="sr-only" htmlFor="theme-select">
-        Theme
-      </label>
-      <select
-        id="theme-select"
-        value={theme}
-        onChange={(event) => handleThemeChange(event.target.value as ThemeName)}
-        className="h-9 rounded-full border-0 bg-transparent px-3 text-sm font-medium text-slate-700 outline-none"
+    <div className="theme-switcher relative flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className="theme-menu-button flex h-9 min-w-48 items-center justify-between gap-3 rounded-full px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        title={currentTheme.hint}
       >
-        {themes.map((item) => (
-          <option key={item.value} value={item.value}>
-            {item.label}
-          </option>
-        ))}
-      </select>
+        <span>Selected theme: {currentTheme.label}</span>
+        <span
+          aria-hidden="true"
+          className={`h-2 w-2 border-b border-r border-current transition-transform ${
+            open ? "-rotate-135" : "rotate-45"
+          }`}
+        />
+      </button>
+
+      {open ? (
+        <div
+          role="menu"
+          className="theme-menu absolute left-0 top-[calc(100%+0.5rem)] z-20 grid w-56 gap-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"
+        >
+          {themes.map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              role="menuitemradio"
+              aria-checked={theme === item.value}
+              title={item.hint}
+              onClick={() => handleThemeChange(item.value)}
+              className="group rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+            >
+              <span className="flex items-center justify-between gap-3">
+                {item.label}
+                {theme === item.value ? <span aria-hidden="true">On</span> : null}
+              </span>
+              <span className="mt-1 block text-xs text-slate-500 opacity-0 transition group-hover:opacity-100">
+                {item.hint}
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <button
         type="button"
         onClick={handleModeChange}
-        className="h-9 rounded-full bg-slate-900 px-3 text-sm font-medium text-white transition hover:bg-slate-700"
+        className="theme-mode-button h-9 rounded-full bg-slate-900 px-3 text-sm font-medium text-white transition hover:bg-slate-700"
         aria-pressed={mode === "dark"}
       >
         {mode === "dark" ? "Light" : "Dark"}

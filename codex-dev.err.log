@@ -18,3 +18,228 @@ Failed to sign up: SyntaxError: Expected property name or '}' in JSON at positio
    9 |
   10 |     if (typeof email !== "string") {
   11 |       return NextResponse.json(
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}
+Failed to log in: Error [DriverAdapterError]: (EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15
+    at ignore-listed frames {
+  clientVersion: '7.8.0',
+  [cause]: {
+    originalCode: 'XX000',
+    originalMessage: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    kind: 'postgres',
+    code: 'XX000',
+    severity: 'FATAL',
+    message: '(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15',
+    detail: undefined,
+    column: undefined,
+    hint: undefined
+  }
+}

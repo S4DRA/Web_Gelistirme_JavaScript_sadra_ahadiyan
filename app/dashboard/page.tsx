@@ -223,6 +223,7 @@ export default function DashboardPage() {
     <PageShell
       title="Dashboard"
       description="See a quick snapshot of your income, expenses, and recent cash flow."
+      unifiedSurface
       actions={
         <button
           type="button"

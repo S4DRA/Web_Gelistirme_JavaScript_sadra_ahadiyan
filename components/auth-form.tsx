@@ -56,7 +56,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         throw new Error(data.error || "Authentication failed.");
       }
 
-      window.location.assign(mode === "signup" ? "/choose-theme" : "/dashboard");
+      window.location.assign(mode === "signup" ? "/onboarding" : "/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed.");
     } finally {

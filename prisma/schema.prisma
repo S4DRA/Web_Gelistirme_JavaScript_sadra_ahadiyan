@@ -17,11 +17,36 @@ enum InvoiceStatus {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  password     String
-  transactions Transaction[]
-  invoices     Invoice[]
+  id              String                    @id @default(cuid())
+  email           String                    @unique
+  password        String
+  transactions    Transaction[]
+  invoices        Invoice[]
+  preference      UserPreference?
+  trackingFolders FinancialTrackingFolder[]
+}
+
+model UserPreference {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  currency             String   @default("USD")
+  startingBalance      Decimal  @default(0) @db.Decimal(12, 2)
+  monthlyFixedExpenses Decimal  @default(0) @db.Decimal(12, 2)
+  onboardingComplete   Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model FinancialTrackingFolder {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
 }
 
 model Transaction {

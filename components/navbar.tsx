@@ -2,17 +2,22 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/transactions", label: "Transactions" },
+  { href: "/trackings", label: "Trackings" },
   { href: "/invoices", label: "Invoices" },
+  { href: "/onboarding", label: "Setup" },
+  { href: "/settings", label: "Settings" },
 ];
 
 export function Navbar() {
   const [email, setEmail] = useState<string | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     async function loadUser() {
@@ -43,64 +48,189 @@ export function Navbar() {
   }
 
   return (
-    <header className="app-header border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="app-header-inner mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <Link
-          href="/"
-          className="app-brand text-lg font-semibold tracking-tight text-slate-900"
+    <>
+      {email ? (
+        <aside
+          className={`app-sidebar border-r border-slate-200 bg-white/90 backdrop-blur ${
+            sidebarOpen ? "is-open" : ""
+          }`}
         >
-          Dampener
-        </Link>
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(false)}
+            className="sidebar-close rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+          >
+            Close
+          </button>
 
-        <nav
-          aria-label="Primary"
-          className="app-nav flex flex-wrap items-center gap-2"
+          <Link
+            href="/dashboard"
+            className="app-sidebar-brand text-lg font-semibold tracking-tight text-slate-900"
+          >
+            Dampener
+          </Link>
+
+          <nav aria-label="Sidebar" className="mt-8 grid gap-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="sidebar-link rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </aside>
+      ) : null}
+
+      <header className="app-header border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div
+          className={`app-header-inner mx-auto grid w-full max-w-6xl items-center gap-4 px-6 py-4 ${
+            sidebarOpen ? "is-sidebar-open" : ""
+          }`}
         >
-          {navItems.map((item) => (
+          <div className="app-brand-wrap flex items-center gap-3">
             <Link
-              key={item.href}
-              href={item.href}
-              className="app-nav-link rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+              href={email ? "/dashboard" : "/"}
+              className="app-brand text-lg font-semibold tracking-tight text-slate-900"
             >
-              {item.label}
+              Dampener
             </Link>
-          ))}
-
-          <span className="mx-1 hidden h-6 w-px bg-slate-200 sm:block" />
-
-          {email ? (
-            <>
-              <span className="account-chip max-w-48 truncate rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
-                {email}
-              </span>
+            {email ? (
               <button
                 type="button"
-                onClick={() => void handleLogout()}
-                className="logout-button rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
+                onClick={() => setSidebarOpen((current) => !current)}
+                className="sidebar-toggle-button flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+                aria-expanded={sidebarOpen}
+                aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
               >
-                Log out
+                <span
+                  aria-hidden="true"
+                  className={`h-2.5 w-2.5 border-b border-r border-current transition-transform ${
+                    sidebarOpen ? "rotate-135" : "-rotate-45"
+                  }`}
+                />
               </button>
-            </>
-          ) : loadingUser ? null : (
-            <>
-              <Link
-                href="/login"
-                className="app-nav-link rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/signup"
-                className="app-nav-link rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
-              >
-                Sign up
-              </Link>
-            </>
-          )}
+            ) : null}
+          </div>
 
-          <ThemeSwitcher />
-        </nav>
-      </div>
-    </header>
+        <nav aria-label="Primary" className="app-nav flex flex-wrap items-center gap-2">
+          {email ? (
+            <>
+              <div className="desktop-nav-links flex items-center gap-2">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="app-nav-link rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              <div
+                className={`dashboard-menu flex flex-wrap items-center gap-2 ${
+                  menuOpen ? "is-open" : ""
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setMenuOpen((current) => !current)}
+                    className="dashboard-menu-button app-nav-link flex items-center justify-center gap-3 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+                    aria-expanded={menuOpen}
+                    aria-haspopup="menu"
+                  >
+                    Menu
+                    <span
+                      aria-hidden="true"
+                      className={`h-2 w-2 border-b border-r border-current transition-transform ${
+                        menuOpen ? "-rotate-135" : "rotate-45"
+                      }`}
+                    />
+                  </button>
+
+                  <div
+                    role="menu"
+                    className="dashboard-menu-list flex flex-wrap items-center gap-2"
+                    aria-hidden={!menuOpen}
+                  >
+                    {navItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        role="menuitem"
+                        tabIndex={menuOpen ? 0 : -1}
+                        className="app-nav-link rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={`profile-menu relative ${profileOpen ? "is-open" : ""}`}>
+                  <button
+                    type="button"
+                    onClick={() => setProfileOpen((current) => !current)}
+                    className="profile-menu-button account-chip flex max-w-48 items-center justify-center gap-3 truncate rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600"
+                    aria-expanded={profileOpen}
+                    aria-haspopup="menu"
+                  >
+                    <span className="truncate">{email}</span>
+                    <span
+                      aria-hidden="true"
+                      className={`h-2 w-2 shrink-0 border-b border-r border-current transition-transform ${
+                        profileOpen ? "-rotate-135" : "rotate-45"
+                      }`}
+                    />
+                  </button>
+
+                  {profileOpen ? (
+                    <div
+                      role="menu"
+                      className="profile-menu-list absolute right-0 top-[calc(100%+0.5rem)] z-30 grid w-48 gap-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"
+                    >
+                      <Link
+                        href="/settings"
+                        role="menuitem"
+                        onClick={() => setProfileOpen(false)}
+                        className="rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+                      >
+                        Settings
+                      </Link>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => void handleLogout()}
+                        className="rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+                      >
+                        Log out
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </>
+            ) : loadingUser ? null : (
+              <>
+                <Link
+                  href="/login"
+                  className="app-nav-link rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="app-nav-link rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      </header>
+    </>
   );
 }

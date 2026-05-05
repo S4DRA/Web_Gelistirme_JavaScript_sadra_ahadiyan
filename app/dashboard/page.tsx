@@ -199,8 +199,7 @@ export default function DashboardPage() {
     <PageShell
       title="Dashboard"
       description="See a quick snapshot of your income, expenses, and recent cash flow."
-    >
-      <section className="dashboard-actions flex justify-end">
+      actions={
         <button
           type="button"
           disabled={resetting}
@@ -209,8 +208,8 @@ export default function DashboardPage() {
         >
           {resetting ? "Resetting..." : "Reset Data"}
         </button>
-      </section>
-
+      }
+    >
       {error ? (
         <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
           {error}

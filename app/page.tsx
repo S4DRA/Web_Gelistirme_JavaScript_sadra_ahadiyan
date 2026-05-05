@@ -1,6 +1,32 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    async function redirectLoggedInUser() {
+      try {
+        const response = await fetch("/api/auth/me");
+
+        if (response.ok) {
+          window.location.assign("/dashboard");
+          return;
+        }
+      } finally {
+        setCheckingSession(false);
+      }
+    }
+
+    void redirectLoggedInUser();
+  }, []);
+
+  if (checkingSession) {
+    return <main className="flex flex-1 bg-slate-50" />;
+  }
+
   return (
     <main className="flex flex-1 bg-slate-50">
       <div className="mx-auto flex w-full max-w-6xl flex-col justify-center gap-8 px-6 py-20">

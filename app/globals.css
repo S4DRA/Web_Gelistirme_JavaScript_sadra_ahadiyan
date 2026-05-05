@@ -104,6 +104,10 @@ html[data-mode="dark"] {
   --primary-hover: color-mix(in srgb, var(--accent) 82%, white);
   --primary-text: #07111f;
   --accent-soft: color-mix(in srgb, var(--accent) 20%, #111827);
+  --danger-soft: color-mix(in srgb, #e11d48 18%, #111827);
+  --danger-text: #fda4af;
+  --warning-soft: color-mix(in srgb, #f59e0b 18%, #111827);
+  --warning-text: #fcd34d;
   --shadow: 0 22px 70px rgb(0 0 0 / 0.42);
 }
 
@@ -254,6 +258,46 @@ a.bg-slate-900:hover {
 .border-amber-200,
 .ring-amber-200 {
   border-color: color-mix(in srgb, var(--warning-text) 35%, transparent) !important;
+}
+
+.alert-card,
+.prediction-card {
+  color: var(--text);
+}
+
+html[data-mode="dark"] .alert-card.bg-amber-50,
+html[data-mode="dark"] .alert-card.bg-amber-100 {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, #f59e0b 20%, var(--surface)),
+      color-mix(in srgb, var(--surface) 88%, #020617)
+    ) !important;
+  border-color: color-mix(in srgb, #f59e0b 48%, var(--border)) !important;
+  color: #fde68a !important;
+}
+
+html[data-mode="dark"] .alert-card.bg-rose-50,
+html[data-mode="dark"] .alert-card.bg-rose-100,
+html[data-mode="dark"] .prediction-card.bg-rose-50 {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, #e11d48 22%, var(--surface)),
+      color-mix(in srgb, var(--surface) 88%, #020617)
+    ) !important;
+  border-color: color-mix(in srgb, #fb7185 48%, var(--border)) !important;
+  color: #fecdd3 !important;
+}
+
+html[data-mode="dark"] .prediction-card.bg-emerald-50 {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 20%, var(--surface)),
+      color-mix(in srgb, var(--surface) 88%, #020617)
+    ) !important;
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--border)) !important;
 }
 
 input,
@@ -652,7 +696,7 @@ html[data-mode="dark"] .brand-mark {
 
 @media (max-width: 640px) {
   :root {
-    --shadow: 0 16px 38px rgb(15 23 42 / 0.1);
+    --shadow: 0 10px 26px rgb(15 23 42 / 0.08);
   }
 
   html {
@@ -703,18 +747,18 @@ html[data-mode="dark"] .brand-mark {
     grid-template-areas:
       "brand nav"
       "profile profile";
-    gap: 0.45rem !important;
-    padding: 0.6rem 0.85rem 0.7rem !important;
+    gap: 0.35rem !important;
+    padding: 0.5rem 0.75rem 0.55rem !important;
   }
 
   .app-brand {
-    font-size: 1.18rem !important;
+    font-size: 1rem !important;
     letter-spacing: 0 !important;
   }
 
   .brand-mark {
-    height: 1.6rem;
-    width: 1.6rem;
+    height: 1.35rem;
+    width: 1.35rem;
   }
 
   .brand-visual-panel {
@@ -762,11 +806,11 @@ html[data-mode="dark"] .brand-mark {
 
   .app-nav-link {
     display: flex;
-    min-height: 2.15rem;
+    min-height: 1.9rem;
     align-items: center;
-    padding: 0.5rem 0.45rem !important;
+    padding: 0.38rem 0.42rem !important;
     background: var(--surface-strong);
-    font-size: 0.8rem !important;
+    font-size: 0.74rem !important;
   }
 
   .dashboard-menu {
@@ -781,13 +825,13 @@ html[data-mode="dark"] .brand-mark {
   .dashboard-menu-button {
     width: auto;
     min-width: 4.8rem;
-    min-height: 2rem;
+    min-height: 1.85rem;
     border-radius: 999px !important;
     border: 1px solid var(--border) !important;
     background: var(--surface) !important;
     color: var(--muted-strong) !important;
-    padding-inline: 0.72rem !important;
-    box-shadow: 0 8px 20px rgb(15 23 42 / 0.08);
+    padding-inline: 0.62rem !important;
+    box-shadow: 0 6px 16px rgb(15 23 42 / 0.07);
   }
 
   .dashboard-menu-button,
@@ -810,25 +854,25 @@ html[data-mode="dark"] .brand-mark {
     position: absolute;
     left: auto;
     right: 0.85rem;
-    top: 2.75rem;
+    top: 2.25rem;
     z-index: 70;
     width: min(21rem, calc(100vw - 1.7rem)) !important;
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.35rem !important;
     border: 1px solid var(--border);
-    border-radius: 1.15rem;
+    border-radius: 0.95rem;
     background: var(--surface);
     box-shadow: var(--shadow);
-    padding: 0.45rem;
+    padding: 0.38rem;
     max-height: min(23rem, calc(100vh - 8rem));
     overflow-y: auto;
   }
 
   .dashboard-menu-list .app-nav-link {
     justify-content: center;
-    border-radius: 0.75rem !important;
-    min-height: 2.4rem;
+    border-radius: 0.65rem !important;
+    min-height: 2.1rem;
     padding-inline: 0.55rem !important;
   }
 
@@ -852,8 +896,8 @@ html[data-mode="dark"] .brand-mark {
   .profile-menu-button {
     width: 100%;
     max-width: none !important;
-    min-height: 2.1rem;
-    font-size: 0.8rem !important;
+    min-height: 1.9rem;
+    font-size: 0.74rem !important;
   }
 
   .profile-menu-list {
@@ -914,47 +958,47 @@ html[data-mode="dark"] .brand-mark {
   }
 
   .page-shell-inner {
-    gap: 0.8rem !important;
-    padding-top: 0.72rem !important;
-    padding-bottom: 5.5rem !important;
+    gap: 0.62rem !important;
+    padding-top: 0.55rem !important;
+    padding-bottom: 4.7rem !important;
   }
 
   .page-shell-heading {
     position: relative;
     overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
-    border-radius: 1.15rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+    border-radius: 0.9rem;
     background:
       linear-gradient(
         135deg,
-        color-mix(in srgb, var(--accent-soft) 70%, var(--surface)) 0%,
+        color-mix(in srgb, var(--accent-soft) 44%, var(--surface)) 0%,
         var(--surface) 58%,
         color-mix(in srgb, var(--surface-strong) 80%, var(--surface)) 100%
       );
     box-shadow: var(--shadow);
-    padding: 0.95rem !important;
+    padding: 0.72rem !important;
   }
 
   .page-shell-heading::after {
     content: "";
     position: absolute;
-    inset: auto 1.1rem 0.8rem auto;
-    width: 4rem;
-    height: 0.28rem;
+    inset: auto 0.85rem 0.6rem auto;
+    width: 2.5rem;
+    height: 0.2rem;
     border-radius: 999px;
     background: var(--accent);
     opacity: 0.85;
   }
 
   .page-shell-heading p {
-    max-width: 18rem !important;
-    font-size: 0.86rem !important;
-    line-height: 1.55 !important;
+    max-width: 17rem !important;
+    font-size: 0.76rem !important;
+    line-height: 1.45 !important;
   }
 
   h1 {
-    font-size: clamp(1.7rem, 7vw, 2.15rem) !important;
-    line-height: 1.05 !important;
+    font-size: clamp(1.35rem, 5.8vw, 1.7rem) !important;
+    line-height: 1.1 !important;
   }
 
   .page-shell-actions {
@@ -964,13 +1008,13 @@ html[data-mode="dark"] .brand-mark {
 
   .page-shell-actions button {
     width: 100%;
-    border-radius: 0.85rem !important;
-    padding-block: 0.75rem !important;
-    font-size: 0.86rem !important;
+    border-radius: 0.72rem !important;
+    padding-block: 0.58rem !important;
+    font-size: 0.76rem !important;
   }
 
   .metric-grid {
-    gap: 0.62rem !important;
+    gap: 0.48rem !important;
   }
 
   .metric-card {
@@ -983,31 +1027,67 @@ html[data-mode="dark"] .brand-mark {
         var(--surface),
         color-mix(in srgb, var(--surface-strong) 46%, var(--surface))
       ) !important;
-    padding: 0.86rem 0.95rem !important;
+    padding: 0.68rem 0.78rem !important;
   }
 
   .metric-card::before {
     content: "";
     position: absolute;
     inset: 0 auto 0 0;
-    width: 0.35rem;
+    width: 0.25rem;
     background: var(--accent);
   }
 
   .metric-card p:last-child {
-    font-size: 1.72rem !important;
+    margin-top: 0.35rem !important;
+    font-size: 1.34rem !important;
+  }
+
+  .metric-card p:first-child {
+    font-size: 0.75rem !important;
   }
 
   article,
   section.rounded-2xl,
   form.rounded-2xl {
-    border-radius: 1.05rem !important;
+    border-radius: 0.85rem !important;
   }
 
   section.rounded-2xl,
   form.rounded-2xl,
   .cash-flow-card {
-    padding: 1rem !important;
+    padding: 0.75rem !important;
+  }
+
+  .alert-card {
+    padding: 0.65rem 0.75rem !important;
+    font-size: 0.76rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .prediction-card {
+    padding: 0.8rem !important;
+  }
+
+  .prediction-card > p:nth-child(2) {
+    margin-top: 0.4rem !important;
+    font-size: 1.45rem !important;
+  }
+
+  .prediction-card > p:nth-child(3) {
+    margin-top: 0.45rem !important;
+    font-size: 0.76rem !important;
+  }
+
+  .prediction-card .mt-5 {
+    margin-top: 0.75rem !important;
+    gap: 0.45rem !important;
+  }
+
+  .prediction-card .rounded-xl {
+    border-radius: 0.65rem !important;
+    padding: 0.55rem !important;
+    font-size: 0.74rem !important;
   }
 
   .cash-flow-card {
@@ -1015,12 +1095,20 @@ html[data-mode="dark"] .brand-mark {
   }
 
   .cash-flow-card .mb-6 {
-    margin-bottom: 0.85rem !important;
+    margin-bottom: 0.62rem !important;
+  }
+
+  .cash-flow-card h2 {
+    font-size: 0.95rem !important;
+  }
+
+  .cash-flow-card p {
+    font-size: 0.74rem !important;
   }
 
   .cash-flow-canvas {
-    height: 14rem !important;
-    min-width: 32rem;
+    height: 10.5rem !important;
+    min-width: 24rem;
   }
 
   .cash-flow-card {
@@ -1031,16 +1119,16 @@ html[data-mode="dark"] .brand-mark {
     position: fixed;
     left: 0.85rem;
     right: 0.85rem;
-    bottom: 0.8rem;
+    bottom: 0.65rem;
     z-index: 60;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.25rem;
     border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-    border-radius: 1.25rem;
+    border-radius: 1rem;
     background: color-mix(in srgb, var(--surface) 92%, transparent);
-    box-shadow: 0 18px 45px rgb(15 23 42 / 0.18);
-    padding: 0.35rem;
+    box-shadow: 0 12px 32px rgb(15 23 42 / 0.16);
+    padding: 0.28rem;
     backdrop-filter: blur(16px);
   }
 
@@ -1049,18 +1137,18 @@ html[data-mode="dark"] .brand-mark {
     min-width: 0;
     justify-items: center;
     gap: 0.22rem;
-    border-radius: 0.95rem;
-    padding: 0.48rem 0.2rem;
+    border-radius: 0.78rem;
+    padding: 0.38rem 0.16rem;
     color: var(--muted);
-    font-size: 0.72rem;
+    font-size: 0.66rem;
     font-weight: 700;
     line-height: 1;
     text-decoration: none;
   }
 
   .mobile-bottom-dot {
-    width: 0.38rem;
-    height: 0.38rem;
+    width: 0.3rem;
+    height: 0.3rem;
     border-radius: 999px;
     background: currentColor;
     opacity: 0.45;

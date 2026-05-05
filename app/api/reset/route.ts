@@ -18,6 +18,23 @@ export async function DELETE(request: Request) {
         where: { workspaceId: context.workspace.id },
       }),
       prisma.categoryBudget.deleteMany({ where: { workspaceId: context.workspace.id } }),
+      prisma.financialTrackingFolder.deleteMany({
+        where: { workspaceId: context.workspace.id },
+      }),
+      prisma.workspace.update({
+        where: { id: context.workspace.id },
+        data: {
+          startingBalance: 0,
+          monthlyFixedExpenses: 0,
+        },
+      }),
+      prisma.userPreference.update({
+        where: { userId: context.user.id },
+        data: {
+          startingBalance: 0,
+          monthlyFixedExpenses: 0,
+        },
+      }),
     ]);
 
     return NextResponse.json({ message: "Data reset successful" });

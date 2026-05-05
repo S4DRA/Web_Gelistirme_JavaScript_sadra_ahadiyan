@@ -251,7 +251,7 @@ export default function DashboardPage() {
           {alerts.map((alert) => (
             <article
               key={alert.message}
-              className={`rounded-2xl border p-4 text-sm font-medium shadow-sm ${alert.classes}`}
+              className={`alert-card rounded-2xl border p-4 text-sm font-medium shadow-sm ${alert.classes}`}
             >
               {alert.message}
             </article>
@@ -275,7 +275,7 @@ export default function DashboardPage() {
 
       <section className="grid gap-4">
         <article
-          className={`rounded-2xl border p-6 shadow-sm ${
+          className={`prediction-card rounded-2xl border p-6 shadow-sm ${
             prediction.risk
               ? "border-rose-200 bg-rose-50"
               : "border-emerald-200 bg-emerald-50"

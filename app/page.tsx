@@ -13,8 +13,7 @@ export default function Home() {
         const response = await fetch("/api/auth/me");
 
         if (response.ok) {
-          const data = await response.json();
-          window.location.assign(data.user.emailVerified ? "/dashboard" : "/verify-email");
+          window.location.assign("/dashboard");
           return;
         }
       } finally {

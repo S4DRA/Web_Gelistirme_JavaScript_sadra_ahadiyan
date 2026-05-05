@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSessionCookie, verifyPassword } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
-import { createVerificationCode } from "@/lib/verification-codes";
 
 export async function POST(request: Request) {
   try {
@@ -26,34 +25,17 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!user.emailVerifiedAt) {
-      const verification = await createVerificationCode({
-        userId: user.id,
+    const response = NextResponse.json({
+      user: {
+        id: user.id,
         email: user.email,
-        purpose: "email_verification",
-      });
-
-      const response = NextResponse.json({
-        requiresEmailVerification: true,
-        email: user.email,
-        devCode: verification.devCode,
-      });
-      response.headers.append("Set-Cookie", createSessionCookie(user.id));
-
-      return response;
-    }
-
-    const verification = await createVerificationCode({
-      userId: user.id,
-      email: user.email,
-      purpose: "login",
+        username: user.username,
+        phoneNumber: user.phoneNumber,
+      },
     });
+    response.headers.append("Set-Cookie", createSessionCookie(user.id));
 
-    return NextResponse.json({
-      requiresLoginCode: true,
-      email: user.email,
-      devCode: verification.devCode,
-    });
+    return response;
   } catch (error) {
     console.error("Failed to log in:", error);
 

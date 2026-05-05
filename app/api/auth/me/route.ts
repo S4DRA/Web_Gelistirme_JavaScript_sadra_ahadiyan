@@ -9,9 +9,6 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({
-    user: {
-      ...user,
-      emailVerified: Boolean(user.emailVerifiedAt),
-    },
+    user,
   });
 }

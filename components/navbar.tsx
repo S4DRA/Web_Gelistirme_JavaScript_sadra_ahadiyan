@@ -231,20 +231,20 @@ export function Navbar() {
                 </div>
               </>
             ) : loadingUser ? null : (
-              <>
+              <div className="auth-nav-actions flex items-center gap-3">
                 <Link
                   href="/login"
-                  className="app-nav-link rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                  className="app-nav-link auth-nav-link rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/signup"
-                  className="app-nav-link rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+                  className="app-nav-link auth-nav-link auth-nav-link-primary rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
                 >
                   Sign up
                 </Link>
-              </>
+              </div>
             )}
           </nav>
         </div>

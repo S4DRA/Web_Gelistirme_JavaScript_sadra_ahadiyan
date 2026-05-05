@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { createSessionCookie, hashPassword, verifyPassword } from "@/lib/auth";
+import { createSessionCookie, hashPassword } from "@/lib/auth";
 import { validateEmailCanReceiveMail } from "@/lib/email-validation";
 import { getPrisma } from "@/lib/prisma";
-import { createVerificationCode } from "@/lib/verification-codes";
 
 export async function POST(request: Request) {
   try {
@@ -52,39 +51,10 @@ export async function POST(request: Request) {
       where: { email: normalizedEmail },
       select: {
         id: true,
-        email: true,
-        password: true,
-        emailVerifiedAt: true,
-        username: true,
-        phoneNumber: true,
       },
     });
 
     if (existingUser) {
-      if (
-        !existingUser.emailVerifiedAt &&
-        (await verifyPassword(password, existingUser.password))
-      ) {
-        const verification = await createVerificationCode({
-          userId: existingUser.id,
-          email: existingUser.email,
-          purpose: "email_verification",
-        });
-        const response = NextResponse.json({
-          user: {
-            id: existingUser.id,
-            email: existingUser.email,
-            username: existingUser.username,
-            phoneNumber: existingUser.phoneNumber,
-          },
-          requiresEmailVerification: true,
-          devCode: verification.devCode,
-        });
-        response.headers.append("Set-Cookie", createSessionCookie(existingUser.id));
-
-        return response;
-      }
-
       return NextResponse.json(
         { error: "An account with this email already exists." },
         { status: 409 },
@@ -118,17 +88,9 @@ export async function POST(request: Request) {
       },
     });
 
-    const verification = await createVerificationCode({
-      userId: user.id,
-      email: user.email,
-      purpose: "email_verification",
-    });
-
     const response = NextResponse.json(
       {
         user,
-        requiresEmailVerification: true,
-        devCode: verification.devCode,
       },
       { status: 201 },
     );

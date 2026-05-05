@@ -14,6 +14,9 @@ type SessionPayload = {
 export type AuthUser = {
   id: string;
   email: string;
+  username: string | null;
+  phoneNumber: string | null;
+  emailVerifiedAt: Date | null;
 };
 
 function getSessionSecret() {
@@ -131,7 +134,13 @@ export async function getCurrentUser(request: Request): Promise<AuthUser | null>
     const prisma = getPrisma();
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { id: true, email: true },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        phoneNumber: true,
+        emailVerifiedAt: true,
+      },
     });
 
     return user;

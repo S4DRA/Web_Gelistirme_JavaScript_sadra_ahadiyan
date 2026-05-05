@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Dampener",
   description: "Track cash flow, invoices, and financial health.",
+  icons: {
+    icon: "/img/1.svg",
+    shortcut: "/img/1.svg",
+    apple: "/img/1.png",
+  },
 };
 
 const themeInitScript = `

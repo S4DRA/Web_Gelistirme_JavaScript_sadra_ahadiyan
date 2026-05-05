@@ -382,10 +382,6 @@ html[data-mode="dark"] .brand-mark {
     var(--surface);
 }
 
-.brand-visual-panel img {
-  padding: 1.35rem;
-}
-
 .brand-lockup-card,
 .brand-emblem-card {
   background:
@@ -408,6 +404,91 @@ html[data-mode="dark"] .brand-mark {
 
 .brand-emblem-card img {
   transform: scale(1.5);
+}
+
+.interactive-logo-shell {
+  position: relative;
+  min-height: 27rem;
+  width: 100%;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  background:
+    radial-gradient(
+      circle at 68% 24%,
+      color-mix(in srgb, var(--accent) 26%, transparent),
+      transparent 14rem
+    ),
+    radial-gradient(
+      circle at 24% 78%,
+      color-mix(in srgb, var(--primary) 12%, transparent),
+      transparent 13rem
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--surface) 88%, var(--accent-soft)),
+      var(--surface)
+    );
+}
+
+.interactive-logo-shell:active {
+  cursor: grabbing;
+}
+
+.interactive-logo-shell::before {
+  content: "";
+  position: absolute;
+  inset: 1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  border-radius: 1.25rem;
+  pointer-events: none;
+}
+
+.interactive-logo-shell::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 11%;
+  width: 10rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  background: rgb(15 23 42 / 0.14);
+  filter: blur(14px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.interactive-logo-canvas,
+.interactive-logo-canvas canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.interactive-logo-fallback {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  padding: 2rem;
+}
+
+.interactive-logo-shell.is-compact {
+  min-height: 12.5rem;
+  border-radius: 1rem;
+}
+
+.interactive-logo-shell.is-compact::before {
+  inset: 0.65rem;
+  border-radius: 0.9rem;
+}
+
+.interactive-logo-shell.is-compact::after {
+  bottom: 9%;
+  width: 7rem;
 }
 
 .app-nav {
@@ -579,6 +660,24 @@ html[data-mode="dark"] .brand-mark {
   .brand-mark {
     height: 1.6rem;
     width: 1.6rem;
+  }
+
+  .brand-visual-panel {
+    min-height: 17rem;
+  }
+
+  .interactive-logo-shell {
+    min-height: 17rem;
+  }
+
+  .interactive-logo-shell::before {
+    inset: 0.7rem;
+    border-radius: 0.9rem;
+  }
+
+  .interactive-logo-shell::after {
+    width: 7rem;
+    height: 1rem;
   }
 
   .app-brand-wrap {

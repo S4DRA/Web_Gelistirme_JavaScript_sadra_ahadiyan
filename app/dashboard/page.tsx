@@ -56,6 +56,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     async function loadDashboard() {
@@ -136,6 +137,7 @@ export default function DashboardPage() {
 
     setResetting(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await fetch("/api/reset", {
@@ -153,9 +155,25 @@ export default function DashboardPage() {
         throw new Error(data.error || "Failed to reset data.");
       }
 
-      window.location.reload();
+      setDashboard({
+        totalIncome: 0,
+        totalExpenses: 0,
+        netBalance: 0,
+      });
+      setPrediction({
+        futureBalance: 0,
+        sevenDayBalance: 0,
+        ninetyDayBalance: 0,
+        dailyNetCashFlow: 0,
+        risk: false,
+        daysUntilNegative: null,
+      });
+      setTransactions([]);
+      setInvoices([]);
+      setSuccessMessage("Workspace data was reset successfully.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to reset data.");
+    } finally {
       setResetting(false);
     }
   }
@@ -219,6 +237,12 @@ export default function DashboardPage() {
       {error ? (
         <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
           {error}
+        </section>
+      ) : null}
+
+      {successMessage ? (
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-700">
+          {successMessage}
         </section>
       ) : null}
 

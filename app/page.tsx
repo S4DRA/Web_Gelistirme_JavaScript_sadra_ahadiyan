@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import { InteractiveLogo3D } from "@/components/interactive-logo-3d";
 
 export default function Home() {
   const [checkingSession, setCheckingSession] = useState(true);
@@ -13,7 +13,8 @@ export default function Home() {
         const response = await fetch("/api/auth/me");
 
         if (response.ok) {
-          window.location.assign("/dashboard");
+          const data = await response.json();
+          window.location.assign(data.user.emailVerified ? "/dashboard" : "/verify-email");
           return;
         }
       } finally {
@@ -59,15 +60,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="brand-visual-panel hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
-          <Image
-            src="/img/3.jpg"
-            alt="Dampener cash flow intelligence platform"
-            width={2560}
-            height={2560}
-            priority
-            className="h-full w-full object-contain"
-          />
+        <div className="brand-visual-panel overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <InteractiveLogo3D />
         </div>
       </div>
     </main>

@@ -16,6 +16,10 @@ export async function getActiveWorkspaceForRequest(request: Request) {
     return null;
   }
 
+  if (!user.emailVerifiedAt) {
+    return null;
+  }
+
   const prisma = getPrisma();
   const preference = await prisma.userPreference.findUnique({
     where: { userId: user.id },

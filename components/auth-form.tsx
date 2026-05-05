@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
+import { InteractiveLogo3D } from "@/components/interactive-logo-3d";
 
 type AuthFormProps = {
   mode: "login" | "signup";
@@ -34,7 +34,12 @@ const copy = {
 export function AuthForm({ mode }: AuthFormProps) {
   const content = copy[mode];
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [loginCode, setLoginCode] = useState("");
+  const [devCode, setDevCode] = useState("");
+  const [awaitingLoginCode, setAwaitingLoginCode] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -44,12 +49,30 @@ export function AuthForm({ mode }: AuthFormProps) {
     setError("");
 
     try {
+      if (mode === "login" && awaitingLoginCode) {
+        const response = await fetch("/api/auth/login/verify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, code: loginCode }),
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Authentication failed.");
+        }
+
+        window.location.assign("/dashboard");
+        return;
+      }
+
       const response = await fetch(content.endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, username, phoneNumber }),
       });
       const data = await response.json();
 
@@ -57,7 +80,23 @@ export function AuthForm({ mode }: AuthFormProps) {
         throw new Error(data.error || "Authentication failed.");
       }
 
-      window.location.assign(mode === "signup" ? "/onboarding" : "/dashboard");
+      if (data.requiresEmailVerification) {
+        if (data.devCode) {
+          setDevCode(data.devCode);
+          window.sessionStorage.setItem("dampener-dev-verification-code", data.devCode);
+        }
+
+        window.location.assign("/verify-email");
+        return;
+      }
+
+      if (data.requiresLoginCode) {
+        setAwaitingLoginCode(true);
+        setDevCode(data.devCode || "");
+        return;
+      }
+
+      window.location.assign(mode === "signup" ? "/verify-email" : "/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed.");
     } finally {
@@ -80,13 +119,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             own account.
           </p>
           <div className="brand-lockup-card hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:block">
-            <Image
-              src="/img/2.jpg"
-              alt="Dampener"
-              width={2048}
-              height={2048}
-              className="h-44 w-full object-contain"
-            />
+            <InteractiveLogo3D compact />
           </div>
         </div>
 
@@ -102,12 +135,44 @@ export function AuthForm({ mode }: AuthFormProps) {
           </div>
 
           <div className="mt-6 grid gap-4">
+            {mode === "signup" ? (
+              <>
+                <label className="grid gap-2 text-sm font-medium text-slate-700">
+                  Username
+                  <input
+                    required
+                    minLength={3}
+                    type="text"
+                    autoComplete="username"
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+                    placeholder="sadra"
+                  />
+                </label>
+
+                <label className="grid gap-2 text-sm font-medium text-slate-700">
+                  Phone number
+                  <input
+                    required
+                    type="tel"
+                    autoComplete="tel"
+                    value={phoneNumber}
+                    onChange={(event) => setPhoneNumber(event.target.value)}
+                    className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+                    placeholder="+1 555 123 4567"
+                  />
+                </label>
+              </>
+            ) : null}
+
             <label className="grid gap-2 text-sm font-medium text-slate-700">
               Email
               <input
                 required
                 type="email"
                 autoComplete="email"
+                disabled={awaitingLoginCode}
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
@@ -122,13 +187,35 @@ export function AuthForm({ mode }: AuthFormProps) {
                 minLength={mode === "signup" ? 8 : undefined}
                 type="password"
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                disabled={awaitingLoginCode}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                 placeholder={mode === "signup" ? "At least 8 characters" : "Password"}
               />
             </label>
+
+            {mode === "login" && awaitingLoginCode ? (
+              <label className="grid gap-2 text-sm font-medium text-slate-700">
+                Email login code
+                <input
+                  required
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={loginCode}
+                  onChange={(event) => setLoginCode(event.target.value)}
+                  className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+                  placeholder="123456"
+                />
+              </label>
+            ) : null}
           </div>
+
+          {devCode ? (
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              Development code: {devCode}
+            </div>
+          ) : null}
 
           <div className="mt-5 min-h-6 text-sm text-rose-600">{error}</div>
 
@@ -137,7 +224,11 @@ export function AuthForm({ mode }: AuthFormProps) {
             disabled={submitting}
             className="mt-2 w-full rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
-            {submitting ? content.pending : content.button}
+            {submitting
+              ? content.pending
+              : awaitingLoginCode
+                ? "Verify login code"
+                : content.button}
           </button>
 
           <p className="mt-5 text-center text-sm text-slate-500">

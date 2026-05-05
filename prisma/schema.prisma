@@ -39,16 +39,40 @@ enum BudgetPeriod {
   yearly
 }
 
+enum VerificationPurpose {
+  email_verification
+  login
+}
+
 model User {
-  id               String                    @id @default(cuid())
-  email            String                    @unique
-  password         String
-  transactions     Transaction[]
-  invoices         Invoice[]
-  preference       UserPreference?
-  trackingFolders  FinancialTrackingFolder[]
-  ownedWorkspaces  Workspace[]               @relation("WorkspaceOwner")
-  workspaceMembers WorkspaceMember[]
+  id                String                    @id @default(cuid())
+  email             String                    @unique
+  username          String?                   @unique
+  phoneNumber       String?
+  password          String
+  emailVerifiedAt   DateTime?
+  transactions      Transaction[]
+  invoices          Invoice[]
+  preference        UserPreference?
+  trackingFolders   FinancialTrackingFolder[]
+  ownedWorkspaces   Workspace[]               @relation("WorkspaceOwner")
+  workspaceMembers  WorkspaceMember[]
+  verificationCodes EmailVerificationCode[]
+}
+
+model EmailVerificationCode {
+  id         String              @id @default(cuid())
+  userId     String
+  codeHash   String
+  purpose    VerificationPurpose
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int                 @default(0)
+  createdAt  DateTime            @default(now())
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, createdAt])
+  @@index([expiresAt])
 }
 
 model UserPreference {

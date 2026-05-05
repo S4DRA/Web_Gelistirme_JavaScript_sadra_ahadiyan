@@ -8,5 +8,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  return NextResponse.json({ user });
+  return NextResponse.json({
+    user: {
+      ...user,
+      emailVerified: Boolean(user.emailVerifiedAt),
+    },
+  });
 }

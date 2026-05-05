@@ -1,6 +1,6 @@
 import { InvoiceStatus } from "@prisma/client";
 import { connection, NextResponse } from "next/server";
-import { getDemoUser } from "@/lib/demo-user";
+import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 
 function formatInvoice(invoice: {
@@ -21,12 +21,16 @@ function formatInvoice(invoice: {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await connection();
 
     const prisma = getPrisma();
-    const user = await getDemoUser();
+    const user = await getCurrentUser(request);
+
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
 
     const invoices = await prisma.invoice.findMany({
       where: { userId: user.id },
@@ -47,6 +51,12 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const prisma = getPrisma();
+    const user = await getCurrentUser(request);
+
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
+
     const body = await request.json();
     const { clientName, amount, dueDate, status } = body;
 
@@ -81,8 +91,6 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-
-    const user = await getDemoUser();
 
     const invoice = await prisma.invoice.create({
       data: {

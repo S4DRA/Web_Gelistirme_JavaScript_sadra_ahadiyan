@@ -19,16 +19,16 @@ export default function Home() {
 
         <div className="flex flex-wrap gap-3">
           <Link
-            href="/dashboard"
+            href="/signup"
             className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
           >
-            Open dashboard
+            Create account
           </Link>
           <Link
-            href="/transactions"
+            href="/login"
             className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
           >
-            View transactions
+            Log in
           </Link>
         </div>
       </div>

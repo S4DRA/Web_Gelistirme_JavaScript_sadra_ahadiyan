@@ -68,6 +68,16 @@ export default function DashboardPage() {
           fetch("/api/invoices"),
         ]);
 
+        if (
+          dashboardResponse.status === 401 ||
+          transactionsResponse.status === 401 ||
+          predictionResponse.status === 401 ||
+          invoicesResponse.status === 401
+        ) {
+          window.location.assign("/login");
+          return;
+        }
+
         const dashboardData = await dashboardResponse.json();
         const transactionData = await transactionsResponse.json();
         const predictionData = await predictionResponse.json();
@@ -125,6 +135,11 @@ export default function DashboardPage() {
       const response = await fetch("/api/reset", {
         method: "DELETE",
       });
+
+      if (response.status === 401) {
+        window.location.assign("/login");
+        return;
+      }
 
       const data = await response.json();
 

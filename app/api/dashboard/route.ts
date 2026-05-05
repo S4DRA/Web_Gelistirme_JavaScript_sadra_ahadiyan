@@ -1,4 +1,5 @@
 import { connection, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 
 type TransactionTotals = {
@@ -11,12 +12,19 @@ type TransactionSummary = {
   amount: { toString(): string };
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await connection();
 
     const prisma = getPrisma();
+    const user = await getCurrentUser(request);
+
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
+
     const transactions = await prisma.transaction.findMany({
+      where: { userId: user.id },
       select: {
         type: true,
         amount: true,

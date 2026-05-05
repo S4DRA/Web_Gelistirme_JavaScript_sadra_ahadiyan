@@ -31,6 +31,12 @@ export default function InvoicesPage() {
         setError("");
 
         const response = await fetch("/api/invoices");
+
+        if (response.status === 401) {
+          window.location.assign("/login");
+          return;
+        }
+
         const data = await response.json();
 
         if (!response.ok) {
@@ -67,6 +73,11 @@ export default function InvoicesPage() {
         }),
       });
 
+      if (response.status === 401) {
+        window.location.assign("/login");
+        return;
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -101,6 +112,11 @@ export default function InvoicesPage() {
           status: "paid",
         }),
       });
+
+      if (response.status === 401) {
+        window.location.assign("/login");
+        return;
+      }
 
       const data = await response.json();
 

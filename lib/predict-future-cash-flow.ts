@@ -1,4 +1,3 @@
-import { getDemoUser } from "@/lib/demo-user";
 import { getPrisma } from "@/lib/prisma";
 
 type PredictionResult = {
@@ -18,12 +17,11 @@ type TransactionForPrediction = {
   date: Date;
 };
 
-export async function predictFutureCashFlow(): Promise<PredictionResult> {
+export async function predictFutureCashFlow(userId: string): Promise<PredictionResult> {
   const prisma = getPrisma();
-  const user = await getDemoUser();
 
   const transactions = await prisma.transaction.findMany({
-    where: { userId: user.id },
+    where: { userId },
     select: {
       type: true,
       amount: true,

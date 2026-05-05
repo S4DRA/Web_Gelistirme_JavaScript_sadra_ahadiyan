@@ -1,6 +1,6 @@
 import { connection, NextResponse } from "next/server";
 import { TransactionType } from "@prisma/client";
-import { getDemoUser } from "@/lib/demo-user";
+import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 
 function formatTransaction(transaction: {
@@ -21,12 +21,16 @@ function formatTransaction(transaction: {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await connection();
 
     const prisma = getPrisma();
-    const user = await getDemoUser();
+    const user = await getCurrentUser(request);
+
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
 
     const transactions = await prisma.transaction.findMany({
       where: { userId: user.id },
@@ -47,6 +51,12 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const prisma = getPrisma();
+    const user = await getCurrentUser(request);
+
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
+
     const body = await request.json();
     const { type, amount, category, date } = body;
 
@@ -81,8 +91,6 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-
-    const user = await getDemoUser();
 
     const transaction = await prisma.transaction.create({
       data: {

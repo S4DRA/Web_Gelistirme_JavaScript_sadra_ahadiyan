@@ -1,6 +1,6 @@
 import { InvoiceStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { getDemoUser } from "@/lib/demo-user";
+import { getCurrentUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 
 type RouteContext = {
@@ -31,6 +31,12 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     const prisma = getPrisma();
     const { id } = await context.params;
+    const user = await getCurrentUser(request);
+
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
+
     const body = await request.json();
     const { status } = body;
 
@@ -40,8 +46,6 @@ export async function PATCH(request: Request, context: RouteContext) {
         { status: 400 },
       );
     }
-
-    const user = await getDemoUser();
 
     const existingInvoice = await prisma.invoice.findFirst({
       where: {

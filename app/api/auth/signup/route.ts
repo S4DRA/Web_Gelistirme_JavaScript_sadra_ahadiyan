@@ -94,7 +94,12 @@ export async function POST(request: Request) {
       },
       { status: 201 },
     );
-    response.headers.append("Set-Cookie", createSessionCookie(user.id));
+    const sessionCookie = createSessionCookie(user.id);
+    response.cookies.set(
+      sessionCookie.name,
+      sessionCookie.value,
+      sessionCookie.options,
+    );
 
     return response;
   } catch (error) {

@@ -48,6 +48,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     try {
       const response = await fetch(content.endpoint, {
         method: "POST",
+        credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
         },
@@ -57,6 +58,15 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       if (!response.ok) {
         throw new Error(data.error || "Authentication failed.");
+      }
+
+      const sessionResponse = await fetch("/api/auth/me", {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
+
+      if (!sessionResponse.ok) {
+        throw new Error("Your session was not saved. Refresh the page and try again.");
       }
 
       window.location.assign(mode === "signup" ? "/onboarding" : "/dashboard");

@@ -54,17 +54,14 @@ function parseCookies(cookieHeader: string | null) {
   return cookies;
 }
 
-function serializeCookie(name: string, value: string, maxAge: number) {
-  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-
-  return [
-    `${name}=${encodeURIComponent(value)}`,
-    "Path=/",
-    "HttpOnly",
-    "SameSite=Lax",
-    `Max-Age=${maxAge}`,
-    secure,
-  ].join("; ");
+function getSessionCookieOptions(maxAge: number) {
+  return {
+    httpOnly: true,
+    maxAge,
+    path: "/",
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+  };
 }
 
 export async function hashPassword(password: string) {
@@ -99,15 +96,19 @@ export function createSessionCookie(userId: string) {
   const encodedPayload = encodeBase64Url(JSON.stringify(payload));
   const signature = sign(encodedPayload);
 
-  return serializeCookie(
-    sessionCookieName,
-    `${encodedPayload}.${signature}`,
-    sessionDurationSeconds,
-  );
+  return {
+    name: sessionCookieName,
+    options: getSessionCookieOptions(sessionDurationSeconds),
+    value: `${encodedPayload}.${signature}`,
+  };
 }
 
 export function createExpiredSessionCookie() {
-  return serializeCookie(sessionCookieName, "", 0);
+  return {
+    name: sessionCookieName,
+    options: getSessionCookieOptions(0),
+    value: "",
+  };
 }
 
 export async function getCurrentUser(request: Request): Promise<AuthUser | null> {

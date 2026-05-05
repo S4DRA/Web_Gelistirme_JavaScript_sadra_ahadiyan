@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
@@ -90,6 +91,8 @@ export function Navbar() {
               </Link>
             </>
           )}
+
+          <ThemeSwitcher />
         </nav>
       </div>
     </header>

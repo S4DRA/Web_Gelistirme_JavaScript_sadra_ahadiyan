@@ -316,6 +316,7 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setProfileOpen(false)}
                 className={`mobile-bottom-link ${active ? "is-active" : ""}`}
               >
                 <AppIcon name={item.icon} className="mobile-bottom-icon" solid={active} />
@@ -323,7 +324,61 @@ export function Navbar() {
               </Link>
             );
           })}
+
+          <button
+            type="button"
+            onClick={() => setProfileOpen((current) => !current)}
+            className={`mobile-bottom-link mobile-profile-trigger ${
+              pathname === "/settings" ? "is-active" : ""
+            }`}
+            aria-expanded={profileOpen}
+            aria-haspopup="menu"
+          >
+            {profileImage ? (
+              <Image
+                src={profileImage}
+                alt=""
+                width={24}
+                height={24}
+                className="mobile-bottom-avatar"
+                unoptimized
+              />
+            ) : (
+              <AppIcon
+                name="user"
+                className="mobile-bottom-icon"
+                solid={pathname === "/settings"}
+              />
+            )}
+            Profile
+          </button>
         </nav>
+      ) : null}
+
+      {email && profileOpen ? (
+        <div
+          role="menu"
+          className="mobile-profile-menu fixed grid gap-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"
+        >
+          <Link
+            href="/settings"
+            role="menuitem"
+            onClick={() => setProfileOpen(false)}
+            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+          >
+            <AppIcon name="settings" />
+            Settings
+          </Link>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => void handleLogout()}
+            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+          >
+            <AppIcon name="sign-out-alt" />
+            Log out
+          </button>
+        </div>
       ) : null}
 
     </>

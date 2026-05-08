@@ -1039,7 +1039,7 @@ html[data-mode="dark"] .brand-mark {
   .app-header {
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 80;
     overflow: visible;
     border-bottom-color: color-mix(in srgb, var(--border) 70%, transparent) !important;
     background:
@@ -1063,8 +1063,7 @@ html[data-mode="dark"] .brand-mark {
     display: grid !important;
     grid-template-columns: 1fr auto;
     grid-template-areas:
-      "brand nav"
-      "profile profile";
+      "brand nav";
     gap: 0.5rem !important;
     padding: 0.72rem 1rem 0.85rem !important;
   }
@@ -1138,6 +1137,7 @@ html[data-mode="dark"] .brand-mark {
     justify-items: stretch;
     width: auto;
     position: relative;
+    z-index: 85;
   }
 
   .dashboard-menu-button {
@@ -1173,7 +1173,7 @@ html[data-mode="dark"] .brand-mark {
     left: auto;
     right: 0.85rem;
     top: 2.25rem;
-    z-index: 70;
+    z-index: 95;
     width: min(21rem, calc(100vw - 1.7rem)) !important;
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1208,20 +1208,7 @@ html[data-mode="dark"] .brand-mark {
   }
 
   .profile-menu {
-    justify-self: stretch;
-  }
-
-  .profile-menu-button {
-    width: 100%;
-    max-width: none !important;
-    min-height: 2.15rem;
-    font-size: 0.74rem !important;
-  }
-
-  .profile-menu-list {
-    left: 0 !important;
-    right: 0 !important;
-    width: auto !important;
+    display: none !important;
   }
 
   .auth-nav-actions {
@@ -1608,9 +1595,9 @@ html[data-mode="dark"] .brand-mark {
     left: max(0.75rem, env(safe-area-inset-left));
     right: max(0.75rem, env(safe-area-inset-right));
     bottom: max(0.8rem, env(safe-area-inset-bottom));
-    z-index: 60;
+    z-index: 90;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 0.25rem;
     border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
     border-radius: 1rem;
@@ -1630,6 +1617,8 @@ html[data-mode="dark"] .brand-mark {
     min-height: 3.05rem;
     padding: 0.48rem 0.16rem 0.42rem;
     color: var(--muted);
+    border: 0;
+    background: transparent;
     font-size: 0.66rem;
     font-weight: 700;
     line-height: 1.05;
@@ -1638,6 +1627,21 @@ html[data-mode="dark"] .brand-mark {
 
   .mobile-bottom-icon {
     font-size: 0.92rem;
+  }
+
+  .mobile-bottom-avatar {
+    height: 1.25rem;
+    width: 1.25rem;
+    border-radius: 999px;
+    object-fit: cover;
+  }
+
+  .mobile-profile-menu {
+    left: max(0.75rem, env(safe-area-inset-left));
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: calc(4.95rem + env(safe-area-inset-bottom));
+    z-index: 110;
+    background: var(--surface) !important;
   }
 
   .mobile-bottom-dot {

@@ -6,30 +6,76 @@
 - Local:         http://localhost:3000
 - Network:       http://192.168.1.108:3000
 - Environments: .env
-✓ Ready in 428ms
+✓ Ready in 482ms
 Creating turbopack project { dir: 'D:\\Exairon Github\\Dampener', testMode: true }
 
- GET /dashboard 200 in 375ms (next.js: 175ms, application-code: 200ms)
- GET /dashboard 200 in 46ms (next.js: 3ms, application-code: 43ms)
- GET /api/auth/me 200 in 863ms (next.js: 152ms, application-code: 712ms)
- GET /api/dashboard 200 in 4.5s (next.js: 252ms, application-code: 4.3s)
- GET /api/transactions 200 in 4.5s (next.js: 152ms, application-code: 4.3s)
- GET /api/prediction 200 in 4.7s (next.js: 152ms, application-code: 4.6s)
- GET /api/invoices 200 in 4.8s (next.js: 152ms, application-code: 4.6s)
- GET /api/dashboard 200 in 4.7s (next.js: 1976µs, application-code: 4.7s)
- GET /api/transactions 200 in 4.1s (next.js: 3ms, application-code: 4.1s)
- GET /api/auth/me 200 in 724ms (next.js: 2ms, application-code: 722ms)
- GET /api/prediction 200 in 1814ms (next.js: 2ms, application-code: 1812ms)
- GET /api/invoices 200 in 1816ms (next.js: 2ms, application-code: 1814ms)
- GET /dashboard 200 in 64ms (next.js: 3ms, application-code: 61ms)
- GET /api/auth/me 200 in 805ms (next.js: 9ms, application-code: 796ms)
- GET /api/dashboard 200 in 2.2s (next.js: 4ms, application-code: 2.2s)
- GET /api/transactions 200 in 2.2s (next.js: 10ms, application-code: 2.2s)
- GET /api/prediction 200 in 2.5s (next.js: 3ms, application-code: 2.5s)
- GET /api/invoices 200 in 2.5s (next.js: 4ms, application-code: 2.5s)
- GET /dashboard 200 in 68ms (next.js: 7ms, application-code: 61ms)
- GET /api/auth/me 200 in 569ms (next.js: 23ms, application-code: 546ms)
- GET /api/dashboard 200 in 2.1s (next.js: 4ms, application-code: 2.1s)
- GET /api/transactions 200 in 2.1s (next.js: 5ms, application-code: 2.1s)
- GET /api/prediction 200 in 2.4s (next.js: 11ms, application-code: 2.3s)
- GET /api/invoices 200 in 2.4s (next.js: 18ms, application-code: 2.4s)
+ GET /dashboard 200 in 371ms (next.js: 166ms, application-code: 205ms)
+ GET /dashboard 200 in 42ms (next.js: 3ms, application-code: 39ms)
+ GET /api/auth/me 200 in 768ms (next.js: 118ms, application-code: 650ms)
+ GET /api/dashboard 200 in 4.0s (next.js: 236ms, application-code: 3.8s)
+ GET /api/transactions 200 in 3.9s (next.js: 124ms, application-code: 3.8s)
+ GET /api/prediction 200 in 4.2s (next.js: 119ms, application-code: 4.1s)
+ GET /api/invoices 200 in 4.3s (next.js: 119ms, application-code: 4.1s)
+ GET /api/dashboard 200 in 4.2s (next.js: 1676µs, application-code: 4.2s)
+ GET /api/transactions 200 in 3.7s (next.js: 2ms, application-code: 3.7s)
+ GET /api/auth/me 200 in 779ms (next.js: 1727µs, application-code: 777ms)
+ GET /api/prediction 200 in 1877ms (next.js: 3ms, application-code: 1874ms)
+ GET /api/invoices 200 in 1897ms (next.js: 1794µs, application-code: 1895ms)
+✓ Compiled in 737ms
+✓ Compiled in 377ms
+✓ Compiled in 369ms
+✓ Compiled in 320ms
+✓ Compiled in 302ms
+ GET /dashboard 200 in 71ms (next.js: 6ms, application-code: 64ms)
+ GET /api/auth/me 200 in 1915ms (next.js: 2ms, application-code: 1913ms)
+ GET /api/dashboard 200 in 3.2s (next.js: 4ms, application-code: 3.2s)
+ GET /api/transactions 200 in 3.3s (next.js: 10ms, application-code: 3.3s)
+ GET /api/prediction 200 in 3.5s (next.js: 2ms, application-code: 3.5s)
+ GET /api/invoices 200 in 3.6s (next.js: 5ms, application-code: 3.6s)
+✓ Compiled in 335ms
+✓ Compiled in 321ms
+ GET /dashboard 200 in 64ms (next.js: 4ms, application-code: 61ms)
+ GET /api/auth/me 200 in 1247ms (next.js: 9ms, application-code: 1237ms)
+ GET /api/dashboard 200 in 2.6s (next.js: 4ms, application-code: 2.6s)
+ GET /api/transactions 200 in 2.7s (next.js: 6ms, application-code: 2.6s)
+ GET /api/prediction 200 in 2.9s (next.js: 4ms, application-code: 2.9s)
+ GET /api/invoices 200 in 3.0s (next.js: 4ms, application-code: 2.9s)
+✓ Compiled in 341ms
+ GET /dashboard 200 in 65ms (next.js: 3ms, application-code: 61ms)
+ GET /api/auth/me 200 in 1214ms (next.js: 14ms, application-code: 1201ms)
+ GET /api/dashboard 200 in 2.8s (next.js: 4ms, application-code: 2.8s)
+ GET /api/transactions 200 in 2.9s (next.js: 4ms, application-code: 2.8s)
+ GET /api/prediction 200 in 3.1s (next.js: 9ms, application-code: 3.1s)
+ GET /api/invoices 200 in 3.2s (next.js: 9ms, application-code: 3.2s)
+✓ Compiled in 346ms
+ GET /dashboard 200 in 62ms (next.js: 2ms, application-code: 59ms)
+ GET /api/auth/me 200 in 1062ms (next.js: 9ms, application-code: 1053ms)
+ GET /api/dashboard 200 in 2.6s (next.js: 5ms, application-code: 2.6s)
+ GET /api/transactions 200 in 2.6s (next.js: 4ms, application-code: 2.6s)
+ GET /api/prediction 200 in 2.9s (next.js: 9ms, application-code: 2.9s)
+ GET /api/invoices 200 in 2.9s (next.js: 4ms, application-code: 2.9s)
+✓ Compiled in 338ms
+✓ Compiled in 326ms
+✓ Compiled in 325ms
+✓ Compiled in 311ms
+✓ Compiled in 334ms
+ GET /dashboard 200 in 67ms (next.js: 5ms, application-code: 62ms)
+ GET /api/auth/me 200 in 1510ms (next.js: 11ms, application-code: 1499ms)
+ GET /api/dashboard 200 in 2.9s (next.js: 5ms, application-code: 2.9s)
+ GET /api/transactions 200 in 3.0s (next.js: 12ms, application-code: 3.0s)
+ GET /api/prediction 200 in 3.2s (next.js: 19ms, application-code: 3.2s)
+ GET /api/invoices 200 in 3.3s (next.js: 26ms, application-code: 3.3s)
+✓ Compiled in 331ms
+ GET /dashboard 200 in 64ms (next.js: 4ms, application-code: 60ms)
+ GET /api/auth/me 200 in 1185ms (next.js: 15ms, application-code: 1170ms)
+ GET /api/dashboard 200 in 3.0s (next.js: 4ms, application-code: 3.0s)
+ GET /api/transactions 200 in 3.1s (next.js: 3ms, application-code: 3.1s)
+ GET /api/prediction 200 in 3.3s (next.js: 10ms, application-code: 3.3s)
+ GET /api/invoices 200 in 3.4s (next.js: 11ms, application-code: 3.4s)
+✓ Compiled in 303ms
+ GET /dashboard 200 in 66ms (next.js: 4ms, application-code: 62ms)
+ GET /api/auth/me 200 in 1193ms (next.js: 15ms, application-code: 1178ms)
+ GET /api/dashboard 200 in 2.7s (next.js: 3ms, application-code: 2.7s)
+ GET /api/transactions 200 in 2.7s (next.js: 6ms, application-code: 2.7s)
+ GET /api/prediction 200 in 3.0s (next.js: 4ms, application-code: 3.0s)
+ GET /api/invoices 200 in 3.1s (next.js: 8ms, application-code: 3.0s)

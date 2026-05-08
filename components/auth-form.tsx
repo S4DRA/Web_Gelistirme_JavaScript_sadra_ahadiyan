@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { DemoRequestModal } from "@/components/demo-request-modal";
 import { InteractiveLogo3D } from "@/components/interactive-logo-3d";
 
 type AuthFormProps = {
@@ -15,9 +16,9 @@ const copy = {
     button: "Log in",
     pending: "Logging in...",
     endpoint: "/api/auth/login",
-    alternateText: "Need an account?",
+    alternateText: "Want a walkthrough?",
     alternateHref: "/signup",
-    alternateLabel: "Sign up",
+    alternateLabel: "Sign up for demo",
   },
   signup: {
     title: "Sign up",
@@ -42,6 +43,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [verificationCode, setVerificationCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -243,15 +245,26 @@ export function AuthForm({ mode }: AuthFormProps) {
 
           <p className="mt-5 text-center text-sm text-slate-500">
             {content.alternateText}{" "}
-            <Link
-              href={content.alternateHref}
-              className="font-medium text-slate-900 hover:text-slate-700"
-            >
-              {content.alternateLabel}
-            </Link>
+            {mode === "login" ? (
+              <button
+                type="button"
+                onClick={() => setDemoOpen(true)}
+                className="font-medium text-slate-900 hover:text-slate-700"
+              >
+                {content.alternateLabel}
+              </button>
+            ) : (
+              <Link
+                href={content.alternateHref}
+                className="font-medium text-slate-900 hover:text-slate-700"
+              >
+                {content.alternateLabel}
+              </Link>
+            )}
           </p>
         </form>
       </section>
+      <DemoRequestModal open={demoOpen} onClose={() => setDemoOpen(false)} />
     </main>
   );
 }

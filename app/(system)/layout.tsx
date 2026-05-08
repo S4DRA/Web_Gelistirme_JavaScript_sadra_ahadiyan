@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { Navbar } from "@/components/navbar";
-import "./globals.css";
+import "../globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +35,7 @@ const themeInitScript = `
 })();
 `;
 
-export default function RootLayout({
+export default function SystemLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -48,7 +48,6 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head />
       <body className="min-h-full bg-slate-50 text-slate-900">
         <Script
           id="dampener-theme-init"

@@ -394,12 +394,14 @@ html[data-mode="dark"] .prediction-card.bg-emerald-50 {
 }
 
 input,
-select {
+select,
+textarea {
   background-color: var(--surface) !important;
   color: var(--text) !important;
 }
 
-input::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: var(--muted) !important;
 }
 
@@ -703,7 +705,7 @@ html[data-mode="dark"] .brand-mark {
 }
 
 .auth-nav-link-primary {
-  min-width: 6.5rem;
+  min-width: 8.75rem;
 }
 
 .dashboard-menu {
@@ -1119,7 +1121,7 @@ html[data-mode="dark"] .brand-mark {
   }
 
   .auth-nav-link-primary {
-    min-width: 5.4rem;
+    min-width: 8rem;
   }
 
   .logout-button {

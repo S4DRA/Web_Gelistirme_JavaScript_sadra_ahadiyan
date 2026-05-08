@@ -44,13 +44,46 @@ model User {
   email            String                    @unique
   username         String?                   @unique
   phoneNumber      String?
+  profileImage     String?
   password         String
   transactions     Transaction[]
   invoices         Invoice[]
   preference       UserPreference?
+  emailChangeCodes EmailChangeVerificationCode[]
   trackingFolders  FinancialTrackingFolder[]
   ownedWorkspaces  Workspace[]               @relation("WorkspaceOwner")
   workspaceMembers WorkspaceMember[]
+}
+
+model SignupVerificationCode {
+  id         String    @id @default(cuid())
+  email      String
+  codeHash   String
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([expiresAt])
+  @@index([email, consumedAt, expiresAt])
+}
+
+model EmailChangeVerificationCode {
+  id         String    @id @default(cuid())
+  userId     String
+  email      String
+  codeHash   String
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([email, createdAt])
+  @@index([expiresAt])
+  @@index([userId, email, consumedAt, expiresAt])
 }
 
 model UserPreference {

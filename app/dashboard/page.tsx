@@ -2,9 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { CashFlowChart } from "@/components/cash-flow-chart";
+import { CategoryBreakdownChart, InvoiceAgingChart } from "@/components/analytics-charts";
+import { AppIcon } from "@/components/app-icon";
 import { PageShell } from "@/components/page-shell";
 
 type DashboardData = {
+  analytics?: {
+    categoryBreakdown: { category: string; amount: number; percent: number }[];
+    invoiceAging: {
+      dueSoon: number;
+      overdue: number;
+      paid: number;
+      unpaid: number;
+    };
+    recommendations: string[];
+    runwayMonths: number | null;
+  };
   totalIncome: number;
   totalExpenses: number;
   netBalance: number;
@@ -181,18 +194,43 @@ export default function DashboardPage() {
   const cards = [
     {
       label: "Total Income",
+      icon: "arrow-trend-up",
       value: formatCurrency(dashboard.totalIncome),
       tone: "text-emerald-600",
     },
     {
       label: "Total Expenses",
+      icon: "arrow-trend-down",
       value: formatCurrency(dashboard.totalExpenses),
       tone: "text-rose-600",
     },
     {
       label: "Net Balance",
+      icon: "wallet",
       value: formatCurrency(dashboard.netBalance),
       tone: "text-slate-900",
+    },
+    {
+      label: "Runway",
+      icon: "calendar-clock",
+      value:
+        dashboard.analytics?.runwayMonths === null ||
+        dashboard.analytics?.runwayMonths === undefined
+          ? "Not set"
+          : `${dashboard.analytics.runwayMonths} months`,
+      tone: "text-blue-700",
+    },
+    {
+      label: "Overdue invoices",
+      icon: "receipt",
+      value: formatCurrency(dashboard.analytics?.invoiceAging.overdue ?? 0),
+      tone: "text-rose-600",
+    },
+    {
+      label: "Due soon",
+      icon: "bell",
+      value: formatCurrency(dashboard.analytics?.invoiceAging.dueSoon ?? 0),
+      tone: "text-amber-700",
     },
   ];
 
@@ -266,7 +304,12 @@ export default function DashboardPage() {
             key={card.label}
             className="metric-card rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
           >
-            <p className="text-sm text-slate-500">{card.label}</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-slate-500">{card.label}</p>
+              <span className="icon-badge">
+                <AppIcon name={card.icon} className="text-lg" />
+              </span>
+            </div>
             <p className={`mt-3 text-3xl font-semibold tracking-tight ${card.tone}`}>
               {loading ? "..." : card.value}
             </p>
@@ -278,55 +321,86 @@ export default function DashboardPage() {
         <article
           className={`prediction-card rounded-2xl border p-6 shadow-sm ${
             prediction.risk
-              ? "border-rose-200 bg-rose-50"
-              : "border-emerald-200 bg-emerald-50"
+              ? "forecast-risk border-rose-200 bg-rose-50"
+              : "forecast-stable border-emerald-200 bg-emerald-50"
           }`}
         >
-          <p
-            className={`text-sm font-medium ${
-              prediction.risk ? "text-rose-700" : "text-emerald-700"
-            }`}
-          >
-            Cash Prediction
-          </p>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-            {loading ? "..." : formatCurrency(prediction.futureBalance)}
-          </p>
-          <p
-            className={`mt-3 text-sm font-medium ${
-              prediction.risk ? "text-rose-700" : "text-emerald-700"
-            }`}
-          >
-            {loading
-              ? "Loading prediction..."
-              : prediction.risk
-                ? `\u26A0\uFE0F You may run out of money in ${prediction.daysUntilNegative ?? 0} days`
-                : "\u2705 Your cash flow is stable"}
-          </p>
-          <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
-            <div className="rounded-xl bg-white/60 p-3">
-              <p className="text-slate-500">7 days</p>
-              <p className="mt-1 font-semibold text-slate-900">
-                {loading ? "..." : formatCurrency(prediction.sevenDayBalance)}
-              </p>
+          <div className="forecast-card-inner">
+            <div className="forecast-summary">
+              <span className="icon-badge forecast-icon">
+                <AppIcon name="chart-line-up" className="text-lg" />
+              </span>
+              <div>
+                <p
+                  className={`text-sm font-medium ${
+                    prediction.risk ? "text-rose-700" : "text-emerald-700"
+                  }`}
+                >
+                  Cash Prediction
+                </p>
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+                  {loading ? "..." : formatCurrency(prediction.futureBalance)}
+                </p>
+                <p
+                  className={`mt-2 text-sm font-medium ${
+                    prediction.risk ? "text-rose-700" : "text-emerald-700"
+                  }`}
+                >
+                  {loading
+                    ? "Loading prediction..."
+                    : prediction.risk
+                      ? `You may run out of money in ${prediction.daysUntilNegative ?? 0} days`
+                      : "Your cash flow is stable"}
+                </p>
+              </div>
             </div>
-            <div className="rounded-xl bg-white/60 p-3">
-              <p className="text-slate-500">30 days</p>
-              <p className="mt-1 font-semibold text-slate-900">
-                {loading ? "..." : formatCurrency(prediction.futureBalance)}
-              </p>
-            </div>
-            <div className="rounded-xl bg-white/60 p-3">
-              <p className="text-slate-500">90 days</p>
-              <p className="mt-1 font-semibold text-slate-900">
-                {loading ? "..." : formatCurrency(prediction.ninetyDayBalance)}
-              </p>
+
+            <div className="forecast-metrics">
+              {[
+                ["7 days", prediction.sevenDayBalance],
+                ["30 days", prediction.futureBalance],
+                ["90 days", prediction.ninetyDayBalance],
+              ].map(([label, value]) => (
+                <div key={label} className="forecast-mini-card">
+                  <p>{label}</p>
+                  <p>{loading ? "..." : formatCurrency(value as number)}</p>
+                </div>
+              ))}
             </div>
           </div>
         </article>
       </section>
 
+      {dashboard.analytics?.recommendations.length ? (
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-4">
+            <h2 className="text-lg font-medium text-slate-900">Next best actions</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Signals worth checking before you add more data.
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {dashboard.analytics.recommendations.map((recommendation) => (
+              <div
+                key={recommendation}
+                className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-700"
+              >
+                <AppIcon name="lightbulb-on" className="mt-0.5 text-base text-amber-700" />
+                {recommendation}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <CashFlowChart transactions={transactions} />
+
+      {dashboard.analytics ? (
+        <section className="grid gap-4 xl:grid-cols-2">
+          <CategoryBreakdownChart data={dashboard.analytics.categoryBreakdown} />
+          <InvoiceAgingChart data={dashboard.analytics.invoiceAging} />
+        </section>
+      ) : null}
     </PageShell>
   );
 }

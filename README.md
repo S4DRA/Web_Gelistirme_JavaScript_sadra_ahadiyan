@@ -16,6 +16,21 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Gmail SMTP
+
+This app sends email through Gmail SMTP. Add your Gmail app password in `.env`:
+
+```env
+EMAIL_FROM="Dampener <yourgmail@gmail.com>"
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="465"
+SMTP_SECURE="true"
+SMTP_USER="yourgmail@gmail.com"
+SMTP_PASS="your-16-character-app-password"
+```
+
+The app password can include spaces when Google displays it. The server removes spaces before using it.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

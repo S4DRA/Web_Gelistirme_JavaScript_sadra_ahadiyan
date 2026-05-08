@@ -16,6 +16,7 @@ export type AuthUser = {
   email: string;
   username: string | null;
   phoneNumber: string | null;
+  profileImage: string | null;
 };
 
 function getSessionSecret() {
@@ -139,6 +140,7 @@ export async function getCurrentUser(request: Request): Promise<AuthUser | null>
         email: true,
         username: true,
         phoneNumber: true,
+        profileImage: true,
       },
     });
 

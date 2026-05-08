@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AppIcon } from "@/components/app-icon";
 import { PageShell } from "@/components/page-shell";
 
 type Transaction = {
@@ -23,6 +24,9 @@ export default function TransactionsPage() {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importCsv, setImportCsv] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -58,6 +62,7 @@ export default function TransactionsPage() {
     event.preventDefault();
     setSubmitting(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await fetch("/api/transactions", {
@@ -86,10 +91,54 @@ export default function TransactionsPage() {
 
       setTransactions((current) => [data, ...current]);
       setForm(initialForm);
+      setSuccessMessage("Transaction added.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create transaction.");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleImport(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setImporting(true);
+    setError("");
+    setSuccessMessage("");
+
+    try {
+      const response = await fetch("/api/transactions/import", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ csv: importCsv }),
+      });
+
+      if (response.status === 401) {
+        window.location.assign("/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to import transactions.");
+      }
+
+      const transactionsResponse = await fetch("/api/transactions");
+      const transactionsData = await transactionsResponse.json();
+
+      if (!transactionsResponse.ok) {
+        throw new Error(transactionsData.error || "Failed to reload transactions.");
+      }
+
+      setTransactions(transactionsData);
+      setImportCsv("");
+      setSuccessMessage(`Imported ${data.imported} transactions.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to import transactions.");
+    } finally {
+      setImporting(false);
     }
   }
 
@@ -115,7 +164,10 @@ export default function TransactionsPage() {
     >
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-6">
-          <h2 className="text-lg font-medium text-slate-900">Add transaction</h2>
+          <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
+            <AppIcon name="add" />
+            Add transaction
+          </h2>
           <p className="mt-1 text-sm text-slate-500">
             Keep cash flow records up to date with a simple form.
           </p>
@@ -195,9 +247,43 @@ export default function TransactionsPage() {
         </form>
       </section>
 
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6">
+          <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
+            <AppIcon name="upload" />
+            Import CSV
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Paste rows with headers: type, amount, category, date.
+          </p>
+        </div>
+
+        <form className="grid gap-4" onSubmit={handleImport}>
+          <textarea
+            value={importCsv}
+            onChange={(event) => setImportCsv(event.target.value)}
+            className="min-h-36 rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm text-slate-900 outline-none transition focus:border-slate-400"
+            placeholder={"type,amount,category,date\nincome,1200,Consulting,2026-05-08\nexpense,80,Software,2026-05-08"}
+          />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-h-6 text-sm text-emerald-700">{successMessage}</div>
+            <button
+              type="submit"
+              disabled={importing}
+              className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              {importing ? "Importing..." : "Import transactions"}
+            </button>
+          </div>
+        </form>
+      </section>
+
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-lg font-medium text-slate-900">Transaction list</h2>
+          <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
+            <AppIcon name="list" />
+            Transaction list
+          </h2>
         </div>
 
         {loading ? (

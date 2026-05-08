@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { WorkspaceRole } from "@prisma/client";
+import { sendWorkspaceAccessEmail } from "@/lib/email";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -88,6 +89,14 @@ export async function POST(request: Request) {
         role,
       },
       include: { user: { select: { email: true } } },
+    });
+
+    await sendWorkspaceAccessEmail({
+      role,
+      to: member.user.email,
+      workspaceName: context.workspace.name,
+    }).catch((emailError) => {
+      console.error("Failed to send workspace access email:", emailError);
     });
 
     return NextResponse.json(formatMember(member), { status: 201 });

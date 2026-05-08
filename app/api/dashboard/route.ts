@@ -1,4 +1,5 @@
 import { connection, NextResponse } from "next/server";
+import { buildAnalytics } from "@/lib/analytics";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -23,13 +24,32 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
-    const transactions = await prisma.transaction.findMany({
-      where: { workspaceId: context.workspace.id },
-      select: {
-        type: true,
-        amount: true,
-      },
-    });
+    const [transactions, invoices, budgets] = await Promise.all([
+      prisma.transaction.findMany({
+        where: { workspaceId: context.workspace.id },
+        select: {
+          amount: true,
+          category: true,
+          date: true,
+          type: true,
+        },
+      }),
+      prisma.invoice.findMany({
+        where: { workspaceId: context.workspace.id },
+        select: {
+          amount: true,
+          dueDate: true,
+          status: true,
+        },
+      }),
+      prisma.categoryBudget.findMany({
+        where: { workspaceId: context.workspace.id, period: "monthly" },
+        select: {
+          amount: true,
+          category: true,
+        },
+      }),
+    ]);
 
     const totals = transactions.reduce<TransactionTotals>(
       (result: TransactionTotals, transaction: TransactionSummary) => {
@@ -51,11 +71,23 @@ export async function GET(request: Request) {
       },
     );
 
+    const netBalance =
+      Number(context.workspace.startingBalance.toString()) +
+      totals.totalIncome -
+      totals.totalExpenses;
+    const analytics = buildAnalytics({
+      budgets,
+      invoices,
+      monthlyFixedExpenses: Number(context.workspace.monthlyFixedExpenses.toString()),
+      netBalance,
+      transactions,
+    });
+
     return NextResponse.json({
+      analytics,
       totalIncome: totals.totalIncome,
       totalExpenses: totals.totalExpenses,
-      netBalance:
-        context.workspace.startingBalance + totals.totalIncome - totals.totalExpenses,
+      netBalance,
       workspace: context.workspace,
     });
   } catch (error) {

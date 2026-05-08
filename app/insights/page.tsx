@@ -1,12 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  CategoryBreakdownChart,
+  InvoiceAgingChart,
+  MonthlyTrendChart,
+} from "@/components/analytics-charts";
+import { AppIcon } from "@/components/app-icon";
 import { PageShell } from "@/components/page-shell";
 
 type Insights = {
+  categoryBreakdown: { category: string; amount: number; percent: number }[];
   currentIncome: number;
   currentExpenses: number;
   expenseChangePercent: number | null;
+  incomeChangePercent: number | null;
+  invoiceAging: {
+    dueSoon: number;
+    overdue: number;
+    paid: number;
+    unpaid: number;
+  };
+  monthlyTrend: { label: string; income: number; expenses: number; net: number }[];
+  recommendations: string[];
+  runwayMonths: number | null;
   topCategory: { category: string; amount: number } | null;
   overdueInvoices: number;
   overdueAmount: number;
@@ -87,16 +104,66 @@ export default function InsightsPage() {
               </p>
             </article>
             <article className="metric-card rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm text-slate-500">Runway from fixed costs</p>
+              <p className="mt-3 text-3xl font-semibold text-slate-900">
+                {insights.runwayMonths === null ? "Not set" : `${insights.runwayMonths} mo`}
+              </p>
+            </article>
+          </section>
+
+          {insights.recommendations.length > 0 ? (
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-medium text-slate-900">Action queue</h2>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {insights.recommendations.map((recommendation) => (
+                  <div
+                    key={recommendation}
+                    className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-700"
+                  >
+                    <AppIcon name="sparkles" className="mt-0.5 text-base text-amber-700" />
+                    {recommendation}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <section className="grid gap-4">
+            <MonthlyTrendChart data={insights.monthlyTrend} />
+          </section>
+
+          <section className="grid gap-4 xl:grid-cols-2">
+            <CategoryBreakdownChart data={insights.categoryBreakdown} />
+            <InvoiceAgingChart data={insights.invoiceAging} />
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-3">
+            <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
+                <AppIcon name="arrow-trend-up" />
+                Income movement
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                {insights.incomeChangePercent === null
+                  ? "There is not enough previous month income data yet."
+                  : `Income changed ${insights.incomeChangePercent}% compared with last month.`}
+              </p>
+              <p className="mt-4 text-2xl font-semibold text-emerald-700">
+                {formatCurrency(insights.currentIncome)}
+              </p>
+            </article>
+
+            <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm text-slate-500">90 day forecast</p>
               <p className="mt-3 text-3xl font-semibold text-slate-900">
                 {formatCurrency(insights.prediction.ninetyDayBalance)}
               </p>
             </article>
-          </section>
-
-          <section className="grid gap-4 md:grid-cols-2">
             <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-medium text-slate-900">Spend movement</h2>
+              <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
+                <AppIcon name="arrow-trend-down" />
+                Spend movement
+              </h2>
               <p className="mt-3 text-sm leading-6 text-slate-600">
                 {insights.expenseChangePercent === null
                   ? "There is not enough previous month data yet."
@@ -108,7 +175,10 @@ export default function InsightsPage() {
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-medium text-slate-900">Top pressure point</h2>
+              <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
+                <AppIcon name="bullseye-arrow" />
+                Top pressure point
+              </h2>
               <p className="mt-3 text-sm leading-6 text-slate-600">
                 {insights.topCategory
                   ? `${insights.topCategory.category} is your biggest expense category this month.`
@@ -120,14 +190,10 @@ export default function InsightsPage() {
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-medium text-slate-900">Invoice risk</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                {insights.overdueInvoices} overdue invoices worth {formatCurrency(insights.overdueAmount)}.
-              </p>
-            </article>
-
-            <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-medium text-slate-900">Budget warnings</h2>
+              <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
+                <AppIcon name="triangle-warning" />
+                Budget warnings
+              </h2>
               {insights.budgetWarnings.length === 0 ? (
                 <p className="mt-3 text-sm text-slate-600">No budget is over 80% this month.</p>
               ) : (

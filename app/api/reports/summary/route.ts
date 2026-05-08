@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildAnalytics } from "@/lib/analytics";
 import { getPrisma } from "@/lib/prisma";
-import { predictFutureCashFlow } from "@/lib/predict-future-cash-flow";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
 export async function GET(request: Request) {
@@ -13,21 +12,19 @@ export async function GET(request: Request) {
     }
 
     const prisma = getPrisma();
-    const [transactions, invoices, budgets, prediction] = await Promise.all([
+    const [transactions, invoices, budgets] = await Promise.all([
       prisma.transaction.findMany({
-        where: {
-          workspaceId: context.workspace.id,
-        },
-        select: { type: true, amount: true, category: true, date: true },
+        where: { workspaceId: context.workspace.id },
+        select: { amount: true, category: true, date: true, type: true },
       }),
       prisma.invoice.findMany({
         where: { workspaceId: context.workspace.id },
-        select: { status: true, amount: true, dueDate: true },
+        select: { amount: true, dueDate: true, status: true },
       }),
       prisma.categoryBudget.findMany({
         where: { workspaceId: context.workspace.id, period: "monthly" },
+        select: { amount: true, category: true },
       }),
-      predictFutureCashFlow(context.workspace.id),
     ]);
     const totalIncome = transactions
       .filter((item) => item.type === "income")
@@ -48,13 +45,23 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json({
-      workspace: context.workspace,
-      ...analytics,
-      prediction,
+      analytics,
+      totals: {
+        netBalance,
+        totalExpenses,
+        totalIncome,
+      },
+      workspace: {
+        currency: context.workspace.currency,
+        name: context.workspace.name,
+      },
     });
   } catch (error) {
-    console.error("Failed to load insights:", error);
+    console.error("Failed to load report summary:", error);
 
-    return NextResponse.json({ error: "Failed to load insights." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to load report summary." },
+      { status: 500 },
+    );
   }
 }

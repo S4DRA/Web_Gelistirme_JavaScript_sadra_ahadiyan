@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "@flaticon/flaticon-uicons/css/regular/rounded.css";
+@import "@flaticon/flaticon-uicons/css/solid/rounded.css";
 
 :root {
   --background: #f5f7fb;
@@ -150,6 +152,31 @@ th {
     box-shadow 180ms ease;
 }
 
+.app-icon {
+  display: inline-flex;
+  width: 1em;
+  height: 1em;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
+.app-icon::before {
+  line-height: 1;
+}
+
+.icon-badge {
+  display: inline-flex;
+  height: 2.35rem;
+  width: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--accent-soft) 74%, var(--surface));
+  color: var(--accent-text);
+}
+
 .bg-slate-50 {
   background-color: var(--app-bg) !important;
 }
@@ -265,6 +292,72 @@ a.bg-slate-900:hover {
   color: var(--text);
 }
 
+.prediction-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.prediction-card.forecast-stable,
+.prediction-card.forecast-risk {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--surface) 92%, var(--accent-soft)),
+      var(--surface)
+    ) !important;
+}
+
+.prediction-card.forecast-risk {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--danger-soft) 54%, var(--surface)),
+      var(--surface)
+    ) !important;
+}
+
+.forecast-card-inner {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.forecast-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.forecast-icon {
+  height: 2.75rem;
+  width: 2.75rem;
+}
+
+.forecast-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.forecast-mini-card {
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--surface) 76%, transparent);
+  padding: 0.85rem 1rem;
+}
+
+.forecast-mini-card p:first-child {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.forecast-mini-card p:last-child {
+  margin-top: 0.3rem;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
 html[data-mode="dark"] .alert-card.bg-amber-50,
 html[data-mode="dark"] .alert-card.bg-amber-100 {
   background:
@@ -341,6 +434,8 @@ input::placeholder {
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 60;
+    display: flex;
+    flex-direction: column;
     width: 17rem;
     padding: 1.5rem;
     box-shadow: var(--shadow);
@@ -361,6 +456,15 @@ input::placeholder {
   .sidebar-link {
     display: flex;
     align-items: center;
+  }
+
+  .sidebar-nav {
+    padding-bottom: 1rem;
+  }
+
+  .sidebar-footer {
+    border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+    padding-top: 1rem;
   }
 
   .sidebar-link:first-child {
@@ -397,12 +501,12 @@ input::placeholder {
 .app-brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
 .brand-mark {
-  height: 1.9rem;
-  width: 1.9rem;
+  height: 2.35rem;
+  width: 2.35rem;
   flex: 0 0 auto;
   object-fit: contain;
 }
@@ -623,6 +727,21 @@ html[data-mode="dark"] .brand-mark {
   max-width: min(18rem, 100%);
 }
 
+.profile-avatar {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  background: var(--surface);
+}
+
+.profile-avatar-fallback {
+  color: var(--muted-strong);
+}
+
 .profile-menu-list {
   text-align: left;
 }
@@ -715,8 +834,16 @@ html[data-mode="dark"] .brand-mark {
 .page-shell-unified-surface .prediction-card,
 .page-shell-unified-surface .cash-flow-card {
   border-top: 1px solid color-mix(in srgb, var(--border) 64%, transparent) !important;
-  border-radius: 0 !important;
   padding-top: 1.1rem !important;
+}
+
+.page-shell-unified-surface .prediction-card {
+  border-radius: 1rem !important;
+  padding: 1.15rem !important;
+}
+
+.page-shell-unified-surface .cash-flow-card {
+  border-radius: 0 !important;
 }
 
 .page-shell-unified-surface .cash-flow-card {
@@ -726,8 +853,8 @@ html[data-mode="dark"] .brand-mark {
 
 @media (min-width: 1024px) {
   .page-shell-inner.page-shell-unified-surface {
-    width: min(88vw, 104rem) !important;
-    max-width: min(88vw, 104rem) !important;
+    width: min(94vw, 116rem) !important;
+    max-width: min(94vw, 116rem) !important;
     gap: 1.55rem !important;
     margin-top: 2rem !important;
     padding: 1.75rem 2rem !important;
@@ -821,18 +948,18 @@ html[data-mode="dark"] .brand-mark {
     grid-template-areas:
       "brand nav"
       "profile profile";
-    gap: 0.35rem !important;
-    padding: 0.5rem 0.75rem 0.55rem !important;
+    gap: 0.5rem !important;
+    padding: 0.72rem 1rem 0.85rem !important;
   }
 
   .app-brand {
-    font-size: 1rem !important;
+    font-size: 1.08rem !important;
     letter-spacing: 0 !important;
   }
 
   .brand-mark {
-    height: 1.35rem;
-    width: 1.35rem;
+    height: 1.72rem;
+    width: 1.72rem;
   }
 
   .brand-visual-panel {
@@ -960,7 +1087,7 @@ html[data-mode="dark"] .brand-mark {
     max-width: none !important;
     min-width: 0;
     padding-inline: 0.75rem !important;
-    background: color-mix(in srgb, var(--surface-strong) 72%, var(--surface)) !important;
+    background: transparent !important;
   }
 
   .profile-menu {
@@ -970,7 +1097,7 @@ html[data-mode="dark"] .brand-mark {
   .profile-menu-button {
     width: 100%;
     max-width: none !important;
-    min-height: 1.9rem;
+    min-height: 2.15rem;
     font-size: 0.74rem !important;
   }
 
@@ -1027,14 +1154,18 @@ html[data-mode="dark"] .brand-mark {
   }
 
   main .mx-auto {
-    padding-left: 0.72rem;
-    padding-right: 0.72rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
   }
 
   .page-shell-inner {
-    gap: 0.62rem !important;
-    padding-top: 0.55rem !important;
-    padding-bottom: 4.7rem !important;
+    gap: 0.9rem !important;
+    padding-top: 2.75rem !important;
+    padding-bottom: 11.25rem !important;
+  }
+
+  .page-shell-inner > :first-child {
+    margin-top: 0.4rem;
   }
 
   .page-shell-heading {
@@ -1050,7 +1181,7 @@ html[data-mode="dark"] .brand-mark {
         color-mix(in srgb, var(--surface-strong) 80%, var(--surface)) 100%
       );
     box-shadow: var(--shadow);
-    padding: 0.72rem !important;
+    padding: 0.86rem !important;
   }
 
   .page-shell-heading::after {
@@ -1083,7 +1214,7 @@ html[data-mode="dark"] .brand-mark {
   .page-shell-actions button {
     width: 100%;
     border-radius: 0.72rem !important;
-    padding-block: 0.58rem !important;
+    padding-block: 0.72rem !important;
     font-size: 0.76rem !important;
   }
 
@@ -1130,7 +1261,29 @@ html[data-mode="dark"] .brand-mark {
   section.rounded-2xl,
   form.rounded-2xl,
   .cash-flow-card {
-    padding: 0.75rem !important;
+    padding: 0.88rem !important;
+  }
+
+  section form {
+    gap: 0.9rem !important;
+  }
+
+  section form button,
+  section form a {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  label {
+    gap: 0.45rem !important;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 2.85rem;
+    font-size: 0.9rem !important;
   }
 
   .alert-card {
@@ -1164,6 +1317,37 @@ html[data-mode="dark"] .brand-mark {
     font-size: 0.74rem !important;
   }
 
+  .forecast-card-inner {
+    gap: 0.95rem;
+  }
+
+  .forecast-summary {
+    gap: 0.75rem;
+  }
+
+  .forecast-icon {
+    height: 2.35rem;
+    width: 2.35rem;
+  }
+
+  .forecast-metrics {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .forecast-mini-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.68rem 0.75rem;
+  }
+
+  .forecast-mini-card p:last-child {
+    margin-top: 0;
+    font-size: 0.9rem;
+  }
+
   .cash-flow-card {
     overflow: hidden;
   }
@@ -1181,19 +1365,34 @@ html[data-mode="dark"] .brand-mark {
   }
 
   .cash-flow-canvas {
-    height: 10.5rem !important;
-    min-width: 24rem;
+    height: 13rem !important;
+    min-width: 0;
+    width: 100%;
   }
 
   .cash-flow-card {
-    overflow-x: auto;
+    overflow-x: hidden;
+  }
+
+  .h-72 {
+    height: 14rem !important;
+  }
+
+  .h-80 {
+    height: 15rem !important;
   }
 
   .page-shell-unified-surface {
     border-radius: 0.95rem !important;
     gap: 0.78rem !important;
-    margin-bottom: 0;
-    padding: 0.72rem !important;
+    width: calc(100% - 0.9rem) !important;
+    margin-bottom: 3.25rem;
+    padding: 0.9rem !important;
+  }
+
+  .page-shell-inner > section:last-child,
+  .page-shell-inner > article:last-child {
+    margin-bottom: 3.25rem;
   }
 
   .page-shell-unified-surface .page-shell-heading {
@@ -1231,12 +1430,10 @@ html[data-mode="dark"] .brand-mark {
   }
 
   .page-shell-unified-surface .prediction-card {
-    border: 0 !important;
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 62%, transparent) !important;
-    border-radius: 0 !important;
-    background: transparent !important;
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border)) !important;
+    border-radius: 0.9rem !important;
     box-shadow: none !important;
-    padding: 0.75rem 0 0.85rem !important;
+    padding: 0.85rem !important;
   }
 
   .page-shell-unified-surface .prediction-card .rounded-xl {
@@ -1253,9 +1450,9 @@ html[data-mode="dark"] .brand-mark {
 
   .mobile-bottom-nav {
     position: fixed;
-    left: 0.85rem;
-    right: 0.85rem;
-    bottom: 0.65rem;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1.35rem;
     z-index: 60;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1272,14 +1469,20 @@ html[data-mode="dark"] .brand-mark {
     display: grid;
     min-width: 0;
     justify-items: center;
-    gap: 0.22rem;
+    align-content: center;
+    gap: 0.34rem;
     border-radius: 0.78rem;
-    padding: 0.38rem 0.16rem;
+    min-height: 3.25rem;
+    padding: 0.48rem 0.16rem 0.42rem;
     color: var(--muted);
     font-size: 0.66rem;
     font-weight: 700;
-    line-height: 1;
+    line-height: 1.05;
     text-decoration: none;
+  }
+
+  .mobile-bottom-icon {
+    font-size: 0.92rem;
   }
 
   .mobile-bottom-dot {
@@ -1306,8 +1509,8 @@ html[data-mode="dark"] .brand-mark {
 
 @media (min-width: 1024px) {
   body main .dashboard-unified-shell {
-    width: min(88vw, 104rem) !important;
-    max-width: min(88vw, 104rem) !important;
+    width: min(94vw, 116rem) !important;
+    max-width: min(94vw, 116rem) !important;
     margin-top: 2rem !important;
     padding: 2rem 2.25rem !important;
   }

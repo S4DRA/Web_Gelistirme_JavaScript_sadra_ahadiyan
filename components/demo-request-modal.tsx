@@ -6,6 +6,7 @@ import { AppIcon } from "@/components/app-icon";
 type DemoRequestModalProps = {
   open: boolean;
   onClose: () => void;
+  source?: "demo" | "contact";
 };
 
 const initialForm = {
@@ -17,15 +18,20 @@ const initialForm = {
   note: "",
 };
 
-export function DemoRequestModal({ open, onClose }: DemoRequestModalProps) {
+export function DemoRequestModal({ open, onClose, source = "demo" }: DemoRequestModalProps) {
   const titleId = useId();
   const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const hasCompany = form.companyName.trim().length > 0;
+  const isContact = source === "contact";
 
   const handleClose = useCallback(() => {
     setSubmitted(false);
+    setSubmitting(false);
+    setError("");
     setForm(initialForm);
     onClose();
   }, [onClose]);
@@ -62,10 +68,35 @@ export function DemoRequestModal({ open, onClose }: DemoRequestModalProps) {
     }));
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitted(true);
-    setForm(initialForm);
+    setSubmitting(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...form,
+          source: isContact ? "contact" : "demo",
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send request.");
+      }
+
+      setSubmitted(true);
+      setForm(initialForm);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send request.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -85,9 +116,11 @@ export function DemoRequestModal({ open, onClose }: DemoRequestModalProps) {
       <div className="relative max-h-[calc(100vh-3rem)] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-emerald-700">Demo request</p>
+            <p className="text-sm font-semibold text-emerald-700">
+              {isContact ? "Contact Dampener" : "Demo request"}
+            </p>
             <h2 id={titleId} className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
-              Sign up for demo
+              {isContact ? "Contact us" : "Sign up for demo"}
             </h2>
           </div>
           <button
@@ -102,7 +135,7 @@ export function DemoRequestModal({ open, onClose }: DemoRequestModalProps) {
 
         {submitted ? (
           <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-700">
-            Thanks. Your demo request has been received.
+            Thanks. Your request has been sent.
           </div>
         ) : (
           <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
@@ -176,11 +209,18 @@ export function DemoRequestModal({ open, onClose }: DemoRequestModalProps) {
               />
             </label>
 
+            {error ? (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
+                {error}
+              </div>
+            ) : null}
+
             <button
               type="submit"
-              className="mt-2 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+              disabled={submitting}
+              className="mt-2 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
-              Send request
+              {submitting ? "Sending..." : "Send request"}
             </button>
           </form>
         )}

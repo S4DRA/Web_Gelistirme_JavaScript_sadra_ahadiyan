@@ -6,6 +6,8 @@ import { AppIcon } from "@/components/app-icon";
 import { PageShell } from "@/components/page-shell";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
+const RESET_CONFIRMATION_PHRASE = "I WOULD LIKE TO RESET THE DATA";
+
 export default function SettingsPage() {
   const [accountForm, setAccountForm] = useState({
     email: "",
@@ -29,6 +31,11 @@ export default function SettingsPage() {
     configured: boolean;
     from: string | null;
   } | null>(null);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetConfirmation, setResetConfirmation] = useState("");
+  const [resettingData, setResettingData] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState("");
 
   useEffect(() => {
     async function loadSettings() {
@@ -213,6 +220,58 @@ export default function SettingsPage() {
       }
     };
     reader.readAsDataURL(file);
+  }
+
+  function closeResetModal() {
+    if (resettingData) {
+      return;
+    }
+
+    setResetModalOpen(false);
+    setResetConfirmation("");
+    setResetError("");
+  }
+
+  async function handleResetData(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (resetConfirmation !== RESET_CONFIRMATION_PHRASE) {
+      setResetError(`Type exactly: ${RESET_CONFIRMATION_PHRASE}`);
+      return;
+    }
+
+    setResettingData(true);
+    setResetError("");
+    setResetMessage("");
+
+    try {
+      const response = await fetch("/api/reset", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ confirmationPhrase: resetConfirmation }),
+      });
+
+      if (response.status === 401) {
+        window.location.assign("/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to reset data.");
+      }
+
+      setResetMessage("Workspace data was reset successfully.");
+      setResetModalOpen(false);
+      setResetConfirmation("");
+    } catch (error) {
+      setResetError(error instanceof Error ? error.message : "Failed to reset data.");
+    } finally {
+      setResettingData(false);
+    }
   }
 
   return (
@@ -499,16 +558,104 @@ export default function SettingsPage() {
             Data control
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            Reset workspace records from the dashboard when you need a clean start.
+            Permanently reset this workspace when you need a clean start.
           </p>
-          <a
-            href="/dashboard"
+          <button
+            type="button"
+            onClick={() => {
+              setResetModalOpen(true);
+              setResetError("");
+              setResetMessage("");
+            }}
             className="mt-5 inline-flex rounded-full bg-rose-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-700"
           >
-            Go to reset
-          </a>
+            Reset data
+          </button>
+          {resetMessage ? (
+            <p className="mt-3 text-sm font-medium text-emerald-700">{resetMessage}</p>
+          ) : null}
         </article>
       </section>
+
+      {resetModalOpen ? (
+        <div
+          className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reset-data-title"
+        >
+          <form
+            onSubmit={handleResetData}
+            className="w-full max-w-lg rounded-2xl border border-rose-200 bg-white p-6 shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="inline-flex rounded-full bg-rose-100 px-3 py-1 text-xs font-bold uppercase text-rose-700">
+                  Dangerous action
+                </p>
+                <h2 id="reset-data-title" className="mt-4 text-2xl font-semibold text-slate-900">
+                  Reset workspace data?
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={closeResetModal}
+                disabled={resettingData}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label="Close reset confirmation"
+              >
+                <AppIcon name="cross-small" />
+              </button>
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-800">
+              Resetting will permanently delete this workspace&apos;s transactions, invoices,
+              recurring transactions, budgets, and tracking folders. It will also set the
+              starting balance and monthly fixed expenses back to zero.
+            </div>
+
+            <label className="mt-5 grid gap-2 text-sm font-medium text-slate-700">
+              Type this phrase to confirm:
+              <span className="rounded-xl bg-slate-100 px-3 py-2 font-mono text-xs text-slate-900">
+                {RESET_CONFIRMATION_PHRASE}
+              </span>
+              <input
+                autoFocus
+                type="text"
+                value={resetConfirmation}
+                onChange={(event) => {
+                  setResetConfirmation(event.target.value);
+                  setResetError("");
+                }}
+                className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-rose-400"
+                placeholder={RESET_CONFIRMATION_PHRASE}
+              />
+            </label>
+
+            {resetError ? (
+              <p className="mt-3 text-sm font-medium text-rose-700">{resetError}</p>
+            ) : null}
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={closeResetModal}
+                disabled={resettingData}
+                className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={resettingData || resetConfirmation !== RESET_CONFIRMATION_PHRASE}
+                className="rounded-full bg-rose-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {resettingData ? "Resetting..." : "Reset data"}
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
 
     </PageShell>
   );

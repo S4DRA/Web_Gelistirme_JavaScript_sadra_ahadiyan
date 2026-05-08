@@ -113,6 +113,32 @@ html[data-mode="dark"] {
   --shadow: 0 22px 70px rgb(0 0 0 / 0.42);
 }
 
+html[data-theme="hampoiel"],
+html[data-theme="hampoiel"][data-mode="dark"] {
+  --background: #020617;
+  --foreground: #ffffff;
+  --app-bg: #020617;
+  --surface: #06122b;
+  --surface-strong: #0b1e45;
+  --surface-soft: #091733;
+  --border: #7c3aed;
+  --text: #ffffff;
+  --muted: #dbeafe;
+  --muted-strong: #ffffff;
+  --primary: #e11d48;
+  --primary-hover: #fb7185;
+  --primary-text: #ffffff;
+  --accent: #a855f7;
+  --accent-soft: #2e1065;
+  --accent-text: #ffffff;
+  --danger: #fb7185;
+  --danger-soft: #4c0519;
+  --danger-text: #ffffff;
+  --warning-soft: #3b0764;
+  --warning-text: #ffffff;
+  --shadow: 0 24px 80px rgb(0 0 0 / 0.65);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -152,6 +178,17 @@ th {
     box-shadow 180ms ease;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .app-icon {
   display: inline-flex;
   width: 1em;
@@ -170,6 +207,8 @@ th {
   display: inline-flex;
   height: 2.35rem;
   width: 2.35rem;
+  min-width: 2.35rem;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   border-radius: 0.8rem;
@@ -406,14 +445,84 @@ textarea::placeholder {
 }
 
 @media (min-width: 641px) {
+  body:has(.app-sidebar) {
+    --main-content-zoom:0.95;
+    --sidebar-open-width: clamp(14rem, 22vw, 17rem);
+    --sidebar-content-zoom: 0.90;
+    min-height: 100vh;
+    background: var(--app-bg) !important;
+    background-color: var(--app-bg) !important;
+  }
+
+  body:has(.app-sidebar) > div {
+    min-height: 100vh;
+    background: var(--app-bg);
+  }
+
+  body:has(.app-sidebar) .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 70;
+    overflow: visible;
+  }
+
   body:has(.app-sidebar) .app-header,
   body:has(.app-sidebar) main {
-    transition: margin-left 220ms ease;
+    max-width: 100%;
+    margin-left: 0 !important;
+    transition:
+      margin-left 220ms ease,
+      width 220ms ease,
+      max-width 220ms ease,
+      transform 220ms ease;
+    width: 100%;
   }
 
   body:has(.app-sidebar.is-open) .app-header,
   body:has(.app-sidebar.is-open) main {
-    margin-left: 17rem;
+    margin-left: var(--sidebar-open-width) !important;
+    width: calc(100% - var(--sidebar-open-width));
+    max-width: calc(100% - var(--sidebar-open-width));
+  }
+
+  body:has(.app-sidebar) main {
+    transform-origin: top left;
+    min-height: calc(100vh / var(--main-content-zoom));
+    background: var(--app-bg);
+  }
+
+  body:has(.app-sidebar.is-open) main {
+    width: calc((100% - var(--sidebar-open-width)) / var(--sidebar-content-zoom));
+    max-width: calc((100% - var(--sidebar-open-width)) / var(--sidebar-content-zoom));
+    min-height: calc(100vh / var(--sidebar-content-zoom));
+    transform: scale(var(--sidebar-content-zoom));
+  }
+
+  body:has(.app-sidebar.is-open) .app-header-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  body:has(.app-sidebar.is-open) .page-shell-inner {
+    width: min(
+      100%,
+      calc((100vw - var(--sidebar-open-width) - 2rem) / var(--sidebar-content-zoom))
+    ) !important;
+    max-width: min(
+      76rem,
+      calc((100vw - var(--sidebar-open-width) - 2rem) / var(--sidebar-content-zoom))
+    ) !important;
+  }
+
+  body:has(.app-sidebar.is-open) .page-shell-unified-surface {
+    width: min(
+      calc((100vw - var(--sidebar-open-width) - 2rem) / var(--sidebar-content-zoom)),
+      116rem
+    ) !important;
+    max-width: min(
+      calc((100vw - var(--sidebar-open-width) - 2rem) / var(--sidebar-content-zoom)),
+      116rem
+    ) !important;
   }
 
   body:has(.app-sidebar) .dashboard-menu {
@@ -438,7 +547,7 @@ textarea::placeholder {
     z-index: 60;
     display: flex;
     flex-direction: column;
-    width: 17rem;
+    width: var(--sidebar-open-width);
     padding: 1.5rem;
     box-shadow: var(--shadow);
     transform: translateX(-105%);
@@ -722,6 +831,8 @@ html[data-mode="dark"] .brand-mark {
   justify-self: end;
   min-width: 0;
   max-width: 100%;
+  position: relative;
+  z-index: 90;
 }
 
 .profile-menu-button {
@@ -746,6 +857,8 @@ html[data-mode="dark"] .brand-mark {
 
 .profile-menu-list {
   text-align: left;
+  z-index: 100 !important;
+  box-shadow: var(--shadow);
 }
 
 .dashboard-menu-button {
@@ -904,6 +1017,7 @@ html[data-mode="dark"] .brand-mark {
 
   html {
     scroll-padding-top: 6rem;
+    overflow-x: hidden;
   }
 
   body {
@@ -917,8 +1031,9 @@ html[data-mode="dark"] .brand-mark {
         180deg,
         color-mix(in srgb, var(--app-bg) 84%, white),
         var(--app-bg)
-      );
+    );
     font-size: 14px;
+    overflow-x: hidden;
   }
 
   .app-header {
@@ -1155,19 +1270,45 @@ html[data-mode="dark"] .brand-mark {
     width: auto !important;
   }
 
+  main {
+    min-width: 0;
+    width: 100%;
+  }
+
   main .mx-auto {
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+    box-sizing: border-box;
+    max-width: 100vw;
+    padding-left: clamp(0.75rem, 4vw, 1.25rem);
+    padding-right: clamp(0.75rem, 4vw, 1.25rem);
   }
 
   .page-shell-inner {
-    gap: 0.9rem !important;
-    padding-top: 3.25rem !important;
-    padding-bottom: 11.25rem !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    gap: 0.75rem !important;
+    overflow-x: clip;
+    padding-top: clamp(1rem, 3.5vh, 2rem) !important;
+    padding-bottom: calc(6.75rem + env(safe-area-inset-bottom)) !important;
   }
 
   .page-shell-inner > :first-child {
-    margin-top: 0.75rem;
+    margin-top: 0;
+  }
+
+  .page-shell-inner > *,
+  .page-shell-inner section,
+  .page-shell-inner article,
+  .page-shell-inner form,
+  .page-shell-inner .grid,
+  .page-shell-inner .flex {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 
   .page-shell-heading {
@@ -1183,7 +1324,7 @@ html[data-mode="dark"] .brand-mark {
         color-mix(in srgb, var(--surface-strong) 80%, var(--surface)) 100%
       );
     box-shadow: var(--shadow);
-    padding: 0.86rem !important;
+    padding: clamp(0.78rem, 3vw, 0.95rem) !important;
   }
 
   .page-shell-heading::after {
@@ -1198,7 +1339,7 @@ html[data-mode="dark"] .brand-mark {
   }
 
   .page-shell-heading p {
-    max-width: 17rem !important;
+    max-width: min(100%, 22rem) !important;
     font-size: 0.76rem !important;
     line-height: 1.45 !important;
   }
@@ -1221,7 +1362,7 @@ html[data-mode="dark"] .brand-mark {
   }
 
   .metric-grid {
-    gap: 0.48rem !important;
+    gap: 0.55rem !important;
   }
 
   .metric-card {
@@ -1234,7 +1375,7 @@ html[data-mode="dark"] .brand-mark {
         var(--surface),
         color-mix(in srgb, var(--surface-strong) 46%, var(--surface))
       ) !important;
-    padding: 0.68rem 0.78rem !important;
+    padding: 0.72rem 0.82rem !important;
   }
 
   .metric-card::before {
@@ -1386,11 +1527,15 @@ html[data-mode="dark"] .brand-mark {
 
   .page-shell-unified-surface {
     border-radius: 0.95rem !important;
-    gap: 0.78rem !important;
-    width: calc(100% - 1rem) !important;
-    margin-top: 0.5rem !important;
+    gap: 0.72rem !important;
+    width: calc(100vw - clamp(1rem, 5vw, 1.5rem)) !important;
+    max-width: calc(100vw - clamp(1rem, 5vw, 1.5rem)) !important;
+    margin-top: 0.45rem !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     margin-bottom: 1.5rem;
-    padding: 0.9rem !important;
+    overflow: clip;
+    padding: clamp(0.72rem, 3vw, 0.95rem) !important;
   }
 
   .page-shell-inner > section:last-child,
@@ -1416,16 +1561,22 @@ html[data-mode="dark"] .brand-mark {
   }
 
   .page-shell-unified-surface .metric-grid {
-    gap: 0 !important;
+    gap: 0.55rem !important;
+    min-width: 0;
   }
 
   .page-shell-unified-surface .metric-card {
-    border: 0 !important;
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 62%, transparent) !important;
-    border-radius: 0 !important;
-    background: transparent !important;
+    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent) !important;
+    border-radius: 0.8rem !important;
+    background: color-mix(in srgb, var(--surface) 72%, transparent) !important;
     box-shadow: none !important;
-    padding: 0.7rem 0 !important;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0.78rem !important;
+  }
+
+  .page-shell-unified-surface .metric-card p {
+    overflow-wrap: anywhere;
   }
 
   .page-shell-unified-surface .metric-card::before {
@@ -1448,14 +1599,15 @@ html[data-mode="dark"] .brand-mark {
     border-radius: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
+    min-width: 0;
     padding: 0.15rem 0 0 !important;
   }
 
   .mobile-bottom-nav {
     position: fixed;
-    left: 1rem;
-    right: 1rem;
-    bottom: 1.35rem;
+    left: max(0.75rem, env(safe-area-inset-left));
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: max(0.8rem, env(safe-area-inset-bottom));
     z-index: 60;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1475,7 +1627,7 @@ html[data-mode="dark"] .brand-mark {
     align-content: center;
     gap: 0.34rem;
     border-radius: 0.78rem;
-    min-height: 3.25rem;
+    min-height: 3.05rem;
     padding: 0.48rem 0.16rem 0.42rem;
     color: var(--muted);
     font-size: 0.66rem;
@@ -1507,6 +1659,67 @@ html[data-mode="dark"] .brand-mark {
 
   table {
     min-width: 680px;
+  }
+}
+
+@media (min-width: 390px) and (max-width: 640px) {
+  body .page-shell-unified-surface .metric-grid.grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .page-shell-unified-surface .metric-card p:last-child {
+    font-size: clamp(1.08rem, 5vw, 1.32rem) !important;
+  }
+
+  .page-shell-unified-surface .icon-badge {
+    height: 2rem;
+    width: 2rem;
+    min-width: 2rem;
+  }
+}
+
+@media (max-width: 389.98px) {
+  body .page-shell-unified-surface .metric-grid.grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .page-shell-unified-surface .metric-card {
+    min-height: 4.6rem;
+    padding: 0.68rem !important;
+  }
+
+  .page-shell-unified-surface .metric-card p:first-child {
+    font-size: 0.68rem !important;
+  }
+
+  .page-shell-unified-surface .metric-card p:last-child {
+    font-size: clamp(1rem, 5vw, 1.18rem) !important;
+  }
+
+  .page-shell-unified-surface .icon-badge {
+    height: 1.85rem;
+    width: 1.85rem;
+    min-width: 1.85rem;
+  }
+}
+
+@media (max-height: 740px) and (max-width: 640px) {
+  .app-header-inner {
+    padding-top: 0.55rem !important;
+    padding-bottom: 0.62rem !important;
+  }
+
+  .page-shell-inner {
+    padding-top: 0.7rem !important;
+  }
+
+  .page-shell-heading {
+    padding: 0.7rem !important;
+  }
+
+  .mobile-bottom-link {
+    min-height: 2.85rem;
+    gap: 0.22rem;
   }
 }
 

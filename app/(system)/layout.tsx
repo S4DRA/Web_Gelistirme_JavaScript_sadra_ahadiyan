@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { Navbar } from "@/components/navbar";
@@ -22,6 +22,12 @@ export const metadata: Metadata = {
     shortcut: "/img/1.svg",
     apple: "/img/1.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 const themeInitScript = `

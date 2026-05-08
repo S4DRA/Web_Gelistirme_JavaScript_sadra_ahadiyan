@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 
@@ -20,6 +20,12 @@ export const metadata: Metadata = {
     shortcut: "/img/1.svg",
     apple: "/img/1.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function AuthLayout({

@@ -91,47 +91,58 @@ const chartBars = ["h-12", "h-16", "h-14", "h-20", "h-[4.5rem]", "h-24", "h-[5.5
 
 export default function Home() {
   return (
-    <main className="flex flex-1 flex-col bg-white text-black">
+    <main className="flex flex-1 flex-col overflow-x-hidden bg-white text-black">
       <section className="relative overflow-hidden bg-gradient-to-b from-white via-emerald-50/70 to-white">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 py-14 sm:px-6 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)] lg:gap-12 lg:py-24">
-          <div className="max-w-3xl space-y-7">
-            <span className="inline-flex rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
+        <div className="pointer-events-none absolute -right-20 top-28 h-48 w-48 rounded-full bg-emerald-200/60 blur-3xl sm:h-72 sm:w-72" />
+        <div className="pointer-events-none absolute -left-24 bottom-16 h-44 w-44 rounded-full bg-slate-200/70 blur-3xl sm:h-64 sm:w-64" />
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-8 px-5 py-10 sm:px-6 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)] lg:gap-12 lg:py-24">
+          <div className="relative min-w-0 max-w-3xl space-y-6 sm:space-y-7">
+            <span className="inline-flex w-fit max-w-full whitespace-normal rounded-full border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold leading-5 text-emerald-700 shadow-sm sm:px-4 sm:text-sm">
               Cash-flow intelligence for independent businesses
             </span>
-            <div className="space-y-5">
-              <h1 className="text-4xl font-semibold tracking-tight text-black sm:text-6xl lg:text-7xl">
+            <div className="space-y-4 sm:space-y-5">
+              <h1 className="max-w-[11ch] text-5xl font-semibold leading-[0.95] tracking-tight text-black sm:max-w-none sm:text-6xl lg:text-7xl">
                 Cash flow, under control.
               </h1>
-              <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-xl sm:leading-8">
+              <p className="max-w-[calc(100vw-2.5rem)] text-base leading-7 text-slate-600 sm:hidden">
+                Track income, expenses, invoices, and reports from one clean workspace.
+              </p>
+              <p className="hidden max-w-2xl text-xl leading-8 text-slate-600 sm:block">
                 Track income, expenses, invoices, reports, and financial health from one
                 clean workspace.
               </p>
             </div>
-            <div className="grid gap-3 sm:flex sm:flex-wrap">
+            <div className="grid w-[calc(100vw-7rem)] max-w-full gap-3 sm:flex sm:w-auto sm:flex-wrap">
               <LeadFormTrigger
                 source="demo"
-                className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex min-w-0 items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
                 Try Demo
               </LeadFormTrigger>
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:border-emerald-300 hover:text-emerald-700"
+                className="inline-flex min-w-0 items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:border-emerald-300 hover:text-emerald-700"
               >
                 Login
               </Link>
             </div>
-            <div className="grid max-w-2xl gap-3 sm:grid-cols-3">
+            <div className="hidden w-[calc(100vw-4rem)] max-w-full gap-3 sm:grid sm:w-auto sm:max-w-2xl sm:grid-cols-3">
               {statItems.map((item) => (
-                <div key={item.label} className="border-l border-emerald-200 pl-4">
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-emerald-100 bg-white/80 p-4 shadow-sm sm:border-l sm:border-r-0 sm:border-y-0 sm:bg-transparent sm:p-0 sm:pl-4 sm:shadow-none"
+                >
                   <p className="text-2xl font-semibold text-black">{item.value}</p>
-                  <p className="mt-1 text-sm text-slate-600">{item.label}</p>
+                  <p className="mt-1 text-sm leading-5 text-slate-600">{item.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+          <div className="relative min-w-0 max-w-[calc(100vw-6rem)] rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:max-w-none sm:p-4">
+            <div className="absolute right-3 top-3 rounded-full bg-black px-3 py-1 text-xs font-semibold text-white shadow-sm sm:hidden">
+              Preview
+            </div>
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 sm:p-5">
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -143,22 +154,22 @@ export default function Home() {
                 </span>
               </div>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="mt-5 grid grid-cols-2 gap-3">
                 {previewMetrics.map((metric) => (
-                  <div key={metric.label} className="rounded-xl border border-slate-200 bg-white p-4">
+                  <div key={metric.label} className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
                     <span className={`block h-1.5 w-10 rounded-full ${metric.accent}`} />
-                    <p className="mt-4 text-sm font-medium text-slate-500">{metric.label}</p>
-                    <p className="mt-1 text-2xl font-semibold text-black">{metric.value}</p>
+                    <p className="mt-3 text-xs font-medium text-slate-500 sm:text-sm">{metric.label}</p>
+                    <p className="mt-1 text-lg font-semibold text-black sm:text-2xl">{metric.value}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
+              <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4">
                 <div className="flex items-center justify-between text-sm font-medium text-slate-500">
                   <span>Cash flow trend</span>
                   <span>Next 30 days</span>
                 </div>
-                <div className="mt-5 flex h-28 items-end gap-2">
+                <div className="mt-5 flex h-24 items-end gap-2 sm:h-28">
                   {chartBars.map((heightClass, index) => (
                     <span
                       key={index}
@@ -180,11 +191,11 @@ export default function Home() {
               The finance workspace between your bank account and your decisions.
             </h2>
           </div>
-          <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          <div className="-mx-5 mt-8 flex snap-x gap-4 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-4">
             {features.map((feature) => (
               <article
                 key={feature.title}
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                className="min-w-[17rem] snap-start rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:min-w-0"
               >
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-xl text-emerald-700">
                   <AppIcon name={feature.icon} />
@@ -278,7 +289,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-white px-5 py-14 sm:px-6 sm:py-16">
+      <section id="contact" className="bg-white px-5 py-14 sm:px-6 sm:py-16">
         <div className="mx-auto grid max-w-6xl gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:grid-cols-[0.9fr_1fr]">
           <div>
             <p className="text-sm font-bold uppercase text-emerald-700">Contact us</p>
@@ -312,16 +323,14 @@ export default function Home() {
           </div>
           <div className="grid gap-4">
             <div className="rounded-2xl bg-slate-50 p-5">
-              <p className="text-sm font-semibold text-slate-500">Lead destination</p>
-              <p className="mt-2 text-xl font-semibold text-black">sadraahadiyan@gmail.com</p>
-            </div>
-            <div className="rounded-2xl bg-emerald-50 p-5">
-              <p className="text-sm font-semibold text-emerald-700">Shared form</p>
+              
               <p className="mt-2 text-sm leading-6 text-slate-700">
-                Try Demo and Contact us use the same request form with name, country,
-                phone number, optional company details, company website, and notes.
+                Try Demo and Contact us.
               </p>
+              
             </div>
+            
+           
           </div>
         </div>
       </section>

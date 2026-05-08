@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type ThemeName = "default" | "boys" | "men" | "girls" | "women";
+type ThemeName = "default" | "boys" | "men" | "girls" | "women" | "hampoiel";
 type ThemeMode = "light" | "dark";
 
 const themes: { value: ThemeName; label: string }[] = [
@@ -11,6 +11,7 @@ const themes: { value: ThemeName; label: string }[] = [
   { value: "men", label: "Executive" },
   { value: "girls", label: "Spark" },
   { value: "women", label: "Elegance" },
+  { value: "hampoiel", label: "Hampoiel" },
 ];
 
 function applyTheme(theme: ThemeName, mode: ThemeMode) {
@@ -45,11 +46,15 @@ export function ThemeSwitcher() {
     applyTheme(theme, mode);
   }, [loadedPreferences, theme, mode]);
 
-  function handleThemeChange(value: ThemeName) {
+function handleThemeChange(value: ThemeName) {
+    const nextMode = value === "hampoiel" ? "dark" : mode;
+
     setTheme(value);
+    setMode(nextMode);
     setOpen(false);
-    applyTheme(value, mode);
+    applyTheme(value, nextMode);
     window.localStorage.setItem("dampener-theme", value);
+    window.localStorage.setItem("dampener-mode", nextMode);
   }
 
   function handleModeChange() {
@@ -103,14 +108,16 @@ export function ThemeSwitcher() {
         </div>
       ) : null}
 
-      <button
-        type="button"
-        onClick={handleModeChange}
-        className="theme-mode-button h-9 rounded-full bg-slate-900 px-3 text-sm font-medium text-white transition hover:bg-slate-700"
-        aria-pressed={mode === "dark"}
-      >
-        {mode === "dark" ? "Light" : "Dark"}
-      </button>
+      {theme !== "hampoiel" ? (
+        <button
+          type="button"
+          onClick={handleModeChange}
+          className="theme-mode-button h-9 rounded-full bg-slate-900 px-3 text-sm font-medium text-white transition hover:bg-slate-700"
+          aria-pressed={mode === "dark"}
+        >
+          {mode === "dark" ? "Light" : "Dark"}
+        </button>
+      ) : null}
     </div>
   );
 }

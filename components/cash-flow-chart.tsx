@@ -30,6 +30,7 @@ type CashFlowTransaction = {
 };
 
 type CashFlowChartProps = {
+  currency?: string;
   transactions: CashFlowTransaction[];
 };
 
@@ -53,7 +54,7 @@ function formatLabel(date: string) {
   });
 }
 
-export function CashFlowChart({ transactions }: CashFlowChartProps) {
+export function CashFlowChart({ currency = "USD", transactions }: CashFlowChartProps) {
   const lastThirtyDays = getLastThirtyDays();
   const groupedAmounts = new Map<string, number>();
 
@@ -110,7 +111,11 @@ export function CashFlowChart({ transactions }: CashFlowChartProps) {
       y: {
         ticks: {
           callback(value) {
-            return `$${value}`;
+            return new Intl.NumberFormat("en-US", {
+              currency,
+              maximumFractionDigits: 0,
+              style: "currency",
+            }).format(Number(value));
           },
         },
       },

@@ -7,14 +7,20 @@ type Invoice = {
   id: string;
   clientName: string;
   amount: number;
+  currency: string;
   dueDate: string;
   reminderDate: string | null;
   status: "draft" | "sent" | "paid" | "unpaid" | "overdue" | "cancelled";
+  originalAmount: number | null;
+  originalCurrency: string | null;
 };
+
+const currencies = ["USD", "EUR", "TRY", "GBP", "IRR", "AED", "CAD", "AUD", "JPY", "CHF"];
 
 const initialForm = {
   clientName: "",
   amount: "",
+  currency: "USD",
   dueDate: "",
   reminderDate: "",
   status: "unpaid",
@@ -26,6 +32,7 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [workspaceCurrency, setWorkspaceCurrency] = useState("USD");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -33,9 +40,12 @@ export default function InvoicesPage() {
       try {
         setError("");
 
-        const response = await fetch("/api/invoices");
+        const [response, currencyResponse] = await Promise.all([
+          fetch("/api/invoices"),
+          fetch("/api/currency"),
+        ]);
 
-        if (response.status === 401) {
+        if (response.status === 401 || currencyResponse.status === 401) {
           window.location.assign("/login");
           return;
         }
@@ -47,6 +57,12 @@ export default function InvoicesPage() {
         }
 
         setInvoices(data);
+
+        if (currencyResponse.ok) {
+          const currencyData = await currencyResponse.json();
+          setWorkspaceCurrency(currencyData.baseCurrency);
+          setForm((current) => ({ ...current, currency: currencyData.baseCurrency }));
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load invoices.");
       } finally {
@@ -71,6 +87,7 @@ export default function InvoicesPage() {
         body: JSON.stringify({
           clientName: form.clientName,
           amount: Number(form.amount),
+          currency: form.currency,
           dueDate: form.dueDate,
           reminderDate: form.reminderDate || null,
           status: form.status,
@@ -94,7 +111,7 @@ export default function InvoicesPage() {
             new Date(left.dueDate).getTime() - new Date(right.dueDate).getTime(),
         ),
       );
-      setForm(initialForm);
+      setForm((current) => ({ ...initialForm, currency: current.currency }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create invoice.");
     } finally {
@@ -138,10 +155,10 @@ export default function InvoicesPage() {
     }
   }
 
-  function formatCurrency(amount: number) {
+  function formatCurrency(amount: number, currency = workspaceCurrency) {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency,
     }).format(amount);
   }
 
@@ -253,6 +270,23 @@ export default function InvoicesPage() {
           </label>
 
           <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Currency
+            <select
+              value={form.currency}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, currency: event.target.value }))
+              }
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+            >
+              {currencies.map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
             Reminder date
             <input
               type="date"
@@ -342,7 +376,20 @@ export default function InvoicesPage() {
                         {invoice.clientName}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-700">
-                        {formatCurrency(invoice.amount)}
+                        <div className="font-medium text-slate-900">
+                          {formatCurrency(invoice.amount, invoice.currency)}
+                        </div>
+                        {invoice.originalCurrency &&
+                        invoice.originalCurrency !== invoice.currency &&
+                        invoice.originalAmount ? (
+                          <div className="mt-1 text-xs text-slate-500">
+                            Original{" "}
+                            {formatCurrency(
+                              invoice.originalAmount,
+                              invoice.originalCurrency,
+                            )}
+                          </div>
+                        ) : null}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-700">
                         {formatDate(invoice.dueDate)}

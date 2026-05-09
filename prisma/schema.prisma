@@ -91,6 +91,8 @@ model UserPreference {
   userId               String     @unique
   activeWorkspaceId    String?
   currency             String     @default("USD")
+  dashboardLayout      Json?
+  predictionSettings   Json?
   startingBalance      Decimal    @default(0) @db.Decimal(12, 2)
   monthlyFixedExpenses Decimal    @default(0) @db.Decimal(12, 2)
   onboardingComplete   Boolean    @default(false)
@@ -153,34 +155,45 @@ model FinancialTrackingFolder {
 }
 
 model Transaction {
-  id          String          @id @default(cuid())
-  userId      String
-  workspaceId String?
-  type        TransactionType
-  amount      Decimal         @db.Decimal(12, 2)
-  category    String
-  date        DateTime
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace   Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id               String          @id @default(cuid())
+  userId           String
+  workspaceId      String?
+  type             TransactionType
+  amount           Decimal         @db.Decimal(12, 2)
+  category         String
+  date             DateTime
+  note             String?
+  currency         String          @default("USD")
+  originalAmount   Decimal?        @db.Decimal(12, 2)
+  originalCurrency String?
+  exchangeRate     Decimal?        @db.Decimal(18, 8)
+  importFingerprint String?
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace        Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, date])
   @@index([workspaceId])
   @@index([workspaceId, date])
   @@index([workspaceId, category])
+  @@index([workspaceId, importFingerprint])
 }
 
 model Invoice {
-  id           String        @id @default(cuid())
-  userId       String
-  workspaceId  String?
-  clientName   String
-  amount       Decimal       @db.Decimal(12, 2)
-  dueDate      DateTime
-  reminderDate DateTime?
-  status       InvoiceStatus @default(unpaid)
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace    Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id               String        @id @default(cuid())
+  userId           String
+  workspaceId      String?
+  clientName       String
+  amount           Decimal       @db.Decimal(12, 2)
+  dueDate          DateTime
+  reminderDate     DateTime?
+  status           InvoiceStatus @default(unpaid)
+  currency         String        @default("USD")
+  originalAmount   Decimal?      @db.Decimal(12, 2)
+  originalCurrency String?
+  exchangeRate     Decimal?      @db.Decimal(18, 8)
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace        Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, dueDate])
@@ -196,6 +209,7 @@ model RecurringTransaction {
   type        TransactionType
   amount      Decimal             @db.Decimal(12, 2)
   category    String
+  currency    String              @default("USD")
   frequency   RecurrenceFrequency
   nextDate    DateTime
   active      Boolean             @default(true)

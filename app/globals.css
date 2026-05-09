@@ -578,11 +578,6 @@ textarea::placeholder {
     padding-top: 1rem;
   }
 
-  .sidebar-link:first-child {
-    background: var(--primary);
-    color: var(--primary-text) !important;
-  }
-
   .sidebar-close {
     position: absolute;
     right: 1rem;
@@ -797,6 +792,43 @@ html[data-mode="dark"] .brand-mark {
 
 .app-nav-link {
   white-space: nowrap;
+}
+
+.sidebar-link,
+.app-nav-link,
+.profile-menu-list a,
+.profile-menu-list button,
+.mobile-profile-menu a,
+.mobile-profile-menu button {
+  color: var(--muted-strong) !important;
+}
+
+.sidebar-link:hover,
+.app-nav-link:hover,
+.profile-menu-list a:hover,
+.profile-menu-list button:hover,
+.mobile-profile-menu a:hover,
+.mobile-profile-menu button:hover {
+  background-color: color-mix(in srgb, var(--accent-soft) 62%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+.sidebar-link.is-active,
+.app-nav-link.is-active,
+.sidebar-link[aria-current="page"],
+.app-nav-link[aria-current="page"] {
+  background: var(--primary) !important;
+  color: var(--primary-text) !important;
+  border-color: color-mix(in srgb, var(--primary) 72%, var(--border)) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.sidebar-link.is-active:hover,
+.app-nav-link.is-active:hover,
+.sidebar-link[aria-current="page"]:hover,
+.app-nav-link[aria-current="page"]:hover {
+  background: var(--primary-hover) !important;
+  color: var(--primary-text) !important;
 }
 
 .auth-nav-actions {
@@ -1275,7 +1307,7 @@ html[data-mode="dark"] .brand-mark {
     gap: 0.75rem !important;
     overflow-x: clip;
     padding-top: clamp(1rem, 3.5vh, 2rem) !important;
-    padding-bottom: calc(6.75rem + env(safe-area-inset-bottom)) !important;
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom)) !important;
   }
 
   .page-shell-inner > :first-child {
@@ -1522,12 +1554,24 @@ html[data-mode="dark"] .brand-mark {
     margin-right: auto !important;
     margin-bottom: 1.5rem;
     overflow: clip;
-    padding: clamp(0.72rem, 3vw, 0.95rem) !important;
+    padding: clamp(0.2rem, 3vw, 0.5rem) !important;
   }
 
   .page-shell-inner > section:last-child,
   .page-shell-inner > article:last-child {
-    margin-bottom: 3.25rem;
+    margin-bottom: 3rem;
+  }
+
+  .page-shell-inner::after {
+    content: "";
+    display: block;
+    flex: 0 0 calc(7rem + env(safe-area-inset-bottom));
+  }
+
+  .page-shell-unified-surface::after {
+    content: "";
+    display: block;
+    min-height: calc(3rem + env(safe-area-inset-bottom));
   }
 
   .page-shell-unified-surface .page-shell-heading {
@@ -1734,4 +1778,41 @@ html[data-mode="dark"] .brand-mark {
     margin-top: 2rem !important;
     padding: 2rem 2.25rem !important;
   }
+}
+
+/* Keep navigation state readable after all theme and responsive overrides. */
+.app-sidebar .sidebar-link,
+.dashboard-menu-list .app-nav-link,
+.desktop-nav-links .app-nav-link {
+  color: var(--muted-strong) !important;
+}
+
+.app-sidebar .sidebar-link:hover,
+.dashboard-menu-list .app-nav-link:hover,
+.desktop-nav-links .app-nav-link:hover {
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+.app-sidebar .sidebar-link.is-active,
+.app-sidebar .sidebar-link[aria-current="page"],
+.dashboard-menu-list .app-nav-link.is-active,
+.dashboard-menu-list .app-nav-link[aria-current="page"],
+.desktop-nav-links .app-nav-link.is-active,
+.desktop-nav-links .app-nav-link[aria-current="page"],
+.mobile-bottom-link.is-active {
+  background: var(--primary) !important;
+  color: var(--primary-text) !important;
+  border-color: color-mix(in srgb, var(--primary) 75%, var(--border)) !important;
+}
+
+.app-sidebar .sidebar-link.is-active:hover,
+.app-sidebar .sidebar-link[aria-current="page"]:hover,
+.dashboard-menu-list .app-nav-link.is-active:hover,
+.dashboard-menu-list .app-nav-link[aria-current="page"]:hover,
+.desktop-nav-links .app-nav-link.is-active:hover,
+.desktop-nav-links .app-nav-link[aria-current="page"]:hover,
+.mobile-bottom-link.is-active:hover {
+  background: var(--primary-hover) !important;
+  color: var(--primary-text) !important;
 }

@@ -15,9 +15,13 @@ function formatInvoice(invoice: {
   workspaceId: string | null;
   clientName: string;
   amount: { toString(): string };
+  currency: string;
   dueDate: Date;
+  exchangeRate: { toString(): string } | null;
   reminderDate: Date | null;
   status: string;
+  originalAmount: { toString(): string } | null;
+  originalCurrency: string | null;
 }) {
   return {
     id: invoice.id,
@@ -25,9 +29,15 @@ function formatInvoice(invoice: {
     workspaceId: invoice.workspaceId,
     clientName: invoice.clientName,
     amount: Number(invoice.amount.toString()),
+    currency: invoice.currency,
     dueDate: invoice.dueDate.toISOString(),
+    exchangeRate: invoice.exchangeRate ? Number(invoice.exchangeRate.toString()) : null,
     reminderDate: invoice.reminderDate?.toISOString() ?? null,
     status: invoice.status,
+    originalAmount: invoice.originalAmount
+      ? Number(invoice.originalAmount.toString())
+      : null,
+    originalCurrency: invoice.originalCurrency,
   };
 }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { RecurrenceFrequency, TransactionType } from "@prisma/client";
+import { normalizeCurrency } from "@/lib/currency";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -9,6 +10,7 @@ function formatRecurring(item: {
   type: string;
   amount: { toString(): string };
   category: string;
+  currency: string;
   frequency: string;
   nextDate: Date;
   active: boolean;
@@ -19,6 +21,7 @@ function formatRecurring(item: {
     type: item.type,
     amount: Number(item.amount.toString()),
     category: item.category,
+    currency: item.currency,
     frequency: item.frequency,
     nextDate: item.nextDate.toISOString(),
     active: item.active,
@@ -63,6 +66,7 @@ export async function POST(request: Request) {
     const category = typeof body.category === "string" ? body.category.trim() : "";
     const amount = Number(body.amount);
     const nextDate = new Date(body.nextDate);
+    const currency = normalizeCurrency(body.currency, context.workspace.currency);
 
     if (!name || !category) {
       return NextResponse.json(
@@ -101,6 +105,7 @@ export async function POST(request: Request) {
         type: body.type,
         amount,
         category,
+        currency,
         frequency: body.frequency,
         nextDate,
       },

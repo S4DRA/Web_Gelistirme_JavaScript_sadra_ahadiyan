@@ -1,5 +1,7 @@
 import { connection, NextResponse } from "next/server";
 import { TransactionType } from "@prisma/client";
+import { convertCurrencyAmount, normalizeCurrency } from "@/lib/currency";
+import { createTransactionFingerprint } from "@/lib/transaction-import";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -9,6 +11,11 @@ function formatTransaction(transaction: {
   amount: { toString(): string };
   category: string;
   date: Date;
+  note: string | null;
+  currency: string;
+  originalAmount: { toString(): string } | null;
+  originalCurrency: string | null;
+  exchangeRate: { toString(): string } | null;
   userId: string;
   workspaceId: string | null;
 }) {
@@ -18,7 +25,16 @@ function formatTransaction(transaction: {
     type: transaction.type,
     amount: Number(transaction.amount.toString()),
     category: transaction.category,
+    currency: transaction.currency,
     date: transaction.date.toISOString(),
+    exchangeRate: transaction.exchangeRate
+      ? Number(transaction.exchangeRate.toString())
+      : null,
+    note: transaction.note,
+    originalAmount: transaction.originalAmount
+      ? Number(transaction.originalAmount.toString())
+      : null,
+    originalCurrency: transaction.originalCurrency,
     workspaceId: transaction.workspaceId,
   };
 }
@@ -61,6 +77,8 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { type, amount, category, date } = body;
+    const note = typeof body.note === "string" ? body.note.trim() : null;
+    const originalCurrency = normalizeCurrency(body.currency, context.workspace.currency);
 
     if (type !== TransactionType.income && type !== TransactionType.expense) {
       return NextResponse.json(
@@ -94,14 +112,47 @@ export async function POST(request: Request) {
       );
     }
 
+    const conversion = await convertCurrencyAmount(
+      parsedAmount,
+      originalCurrency,
+      context.workspace.currency,
+    );
+    const fingerprint = createTransactionFingerprint({
+      amount: conversion.amount,
+      category: category.trim(),
+      date: parsedDate.toISOString().slice(0, 10),
+      note,
+      type,
+    });
+    const existingTransaction = await prisma.transaction.findFirst({
+      where: {
+        importFingerprint: fingerprint,
+        workspaceId: context.workspace.id,
+      },
+      select: { id: true },
+    });
+
+    if (existingTransaction) {
+      return NextResponse.json(
+        { error: "A matching transaction already exists." },
+        { status: 409 },
+      );
+    }
+
     const transaction = await prisma.transaction.create({
       data: {
         userId: context.user.id,
         workspaceId: context.workspace.id,
         type,
-        amount: parsedAmount,
+        amount: conversion.amount,
         category: category.trim(),
+        currency: context.workspace.currency,
         date: parsedDate,
+        exchangeRate: conversion.exchangeRate,
+        importFingerprint: fingerprint,
+        note,
+        originalAmount: parsedAmount,
+        originalCurrency,
       },
     });
 

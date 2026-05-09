@@ -9,6 +9,7 @@ type RecurringItem = {
   type: "income" | "expense";
   amount: number;
   category: string;
+  currency: string;
   frequency: "weekly" | "monthly" | "yearly";
   nextDate: string;
   active: boolean;
@@ -17,11 +18,13 @@ type RecurringItem = {
 const initialForm = {
   name: "",
   amount: "",
+  currency: "USD",
   type: "expense",
   category: "",
   frequency: "monthly",
   nextDate: "",
 };
+const currencies = ["USD", "EUR", "TRY", "GBP", "IRR", "AED", "CAD", "AUD", "JPY", "CHF"];
 
 export default function RecurringPage() {
   const [items, setItems] = useState<RecurringItem[]>([]);
@@ -33,9 +36,12 @@ export default function RecurringPage() {
   useEffect(() => {
     async function loadItems() {
       try {
-        const response = await fetch("/api/recurring-transactions");
+        const [response, currencyResponse] = await Promise.all([
+          fetch("/api/recurring-transactions"),
+          fetch("/api/currency"),
+        ]);
 
-        if (response.status === 401) {
+        if (response.status === 401 || currencyResponse.status === 401) {
           window.location.assign("/login");
           return;
         }
@@ -47,6 +53,11 @@ export default function RecurringPage() {
         }
 
         setItems(data);
+
+        if (currencyResponse.ok) {
+          const currencyData = await currencyResponse.json();
+          setForm((current) => ({ ...current, currency: currencyData.baseCurrency }));
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load recurring items.");
       } finally {
@@ -75,7 +86,7 @@ export default function RecurringPage() {
       }
 
       setItems((current) => [data, ...current]);
-      setForm(initialForm);
+      setForm((current) => ({ ...initialForm, currency: current.currency }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save recurring item.");
     } finally {
@@ -83,8 +94,8 @@ export default function RecurringPage() {
     }
   }
 
-  function formatCurrency(amount: number) {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  function formatCurrency(amount: number, currency = "USD") {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
   }
 
   return (
@@ -118,6 +129,19 @@ export default function RecurringPage() {
             className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
             placeholder="1200.00"
           />
+          <select
+            value={form.currency}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, currency: event.target.value }))
+            }
+            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+          >
+            {currencies.map((currency) => (
+              <option key={currency} value={currency}>
+                {currency}
+              </option>
+            ))}
+          </select>
           <input
             required
             value={form.category}
@@ -185,7 +209,7 @@ export default function RecurringPage() {
                   </p>
                 </div>
                 <p className={item.type === "income" ? "text-emerald-600" : "text-rose-600"}>
-                  {item.type === "income" ? "+" : "-"}{formatCurrency(item.amount)}
+                  {item.type === "income" ? "+" : "-"}{formatCurrency(item.amount, item.currency)}
                 </p>
               </article>
             ))}

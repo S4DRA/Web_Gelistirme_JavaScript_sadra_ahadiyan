@@ -1,5 +1,6 @@
 import { InvoiceStatus } from "@prisma/client";
 import { connection, NextResponse } from "next/server";
+import { convertCurrencyAmount, normalizeCurrency } from "@/lib/currency";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -9,9 +10,13 @@ function formatInvoice(invoice: {
   workspaceId: string | null;
   clientName: string;
   amount: { toString(): string };
+  currency: string;
   dueDate: Date;
+  exchangeRate: { toString(): string } | null;
   reminderDate: Date | null;
   status: string;
+  originalAmount: { toString(): string } | null;
+  originalCurrency: string | null;
 }) {
   return {
     id: invoice.id,
@@ -19,9 +24,15 @@ function formatInvoice(invoice: {
     workspaceId: invoice.workspaceId,
     clientName: invoice.clientName,
     amount: Number(invoice.amount.toString()),
+    currency: invoice.currency,
     dueDate: invoice.dueDate.toISOString(),
+    exchangeRate: invoice.exchangeRate ? Number(invoice.exchangeRate.toString()) : null,
     reminderDate: invoice.reminderDate?.toISOString() ?? null,
     status: invoice.status,
+    originalAmount: invoice.originalAmount
+      ? Number(invoice.originalAmount.toString())
+      : null,
+    originalCurrency: invoice.originalCurrency,
   };
 }
 
@@ -63,6 +74,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { clientName, amount, dueDate, reminderDate, status } = body;
+    const originalCurrency = normalizeCurrency(body.currency, context.workspace.currency);
 
     if (typeof clientName !== "string" || clientName.trim().length === 0) {
       return NextResponse.json(
@@ -107,13 +119,23 @@ export async function POST(request: Request) {
       );
     }
 
+    const conversion = await convertCurrencyAmount(
+      parsedAmount,
+      originalCurrency,
+      context.workspace.currency,
+    );
+
     const invoice = await prisma.invoice.create({
       data: {
         userId: context.user.id,
         workspaceId: context.workspace.id,
         clientName: clientName.trim(),
-        amount: parsedAmount,
+        amount: conversion.amount,
+        currency: context.workspace.currency,
         dueDate: parsedDueDate,
+        exchangeRate: conversion.exchangeRate,
+        originalAmount: parsedAmount,
+        originalCurrency,
         reminderDate: parsedReminderDate,
         status,
       },

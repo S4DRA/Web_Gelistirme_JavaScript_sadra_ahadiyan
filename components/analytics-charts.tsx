@@ -36,11 +36,21 @@ type InvoiceAging = {
 
 const palette = ["#0f766e", "#be123c", "#7c3aed", "#ca8a04", "#2563eb", "#475569"];
 
-function moneyTick(value: string | number) {
-  return `$${Number(value).toLocaleString("en-US")}`;
+function moneyTick(value: string | number, currency = "USD") {
+  return new Intl.NumberFormat("en-US", {
+    currency,
+    maximumFractionDigits: 0,
+    style: "currency",
+  }).format(Number(value));
 }
 
-export function MonthlyTrendChart({ data }: { data: MonthlyTrendItem[] }) {
+export function MonthlyTrendChart({
+  currency = "USD",
+  data,
+}: {
+  currency?: string;
+  data: MonthlyTrendItem[];
+}) {
   const options: ChartOptions<"bar"> = {
     maintainAspectRatio: false,
     responsive: true,
@@ -51,7 +61,9 @@ export function MonthlyTrendChart({ data }: { data: MonthlyTrendItem[] }) {
       x: { grid: { display: false } },
       y: {
         ticks: {
-          callback: moneyTick,
+          callback(value) {
+            return moneyTick(value, currency);
+          },
         },
       },
     },
@@ -89,7 +101,12 @@ export function MonthlyTrendChart({ data }: { data: MonthlyTrendItem[] }) {
   );
 }
 
-export function CategoryBreakdownChart({ data }: { data: CategoryItem[] }) {
+export function CategoryBreakdownChart({
+  data,
+}: {
+  currency?: string;
+  data: CategoryItem[];
+}) {
   const visibleData = data.slice(0, 6);
 
   return (
@@ -130,7 +147,13 @@ export function CategoryBreakdownChart({ data }: { data: CategoryItem[] }) {
   );
 }
 
-export function InvoiceAgingChart({ data }: { data: InvoiceAging }) {
+export function InvoiceAgingChart({
+  currency = "USD",
+  data,
+}: {
+  currency?: string;
+  data: InvoiceAging;
+}) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="mb-6">
@@ -158,7 +181,13 @@ export function InvoiceAgingChart({ data }: { data: InvoiceAging }) {
             responsive: true,
             scales: {
               x: { grid: { display: false } },
-              y: { ticks: { callback: moneyTick } },
+              y: {
+                ticks: {
+                  callback(value) {
+                    return moneyTick(value, currency);
+                  },
+                },
+              },
             },
           }}
         />

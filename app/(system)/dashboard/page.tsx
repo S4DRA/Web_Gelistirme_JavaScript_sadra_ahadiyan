@@ -1,10 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { CashFlowChart } from "@/components/cash-flow-chart";
 import { CategoryBreakdownChart, InvoiceAgingChart } from "@/components/analytics-charts";
 import { AppIcon } from "@/components/app-icon";
 import { PageShell } from "@/components/page-shell";
+
+type MetricId =
+  | "totalIncome"
+  | "totalExpenses"
+  | "netBalance"
+  | "runway"
+  | "overdueInvoices"
+  | "dueSoon";
+type SectionId =
+  | "alerts"
+  | "metrics"
+  | "prediction"
+  | "recommendations"
+  | "cashFlow"
+  | "analytics";
+type PredictionMode = "conservative" | "balanced" | "optimistic";
+type PredictionPeriod = 7 | 30 | 90 | 180 | 365;
+
+type DashboardLayout = {
+  hiddenCards: MetricId[];
+  hiddenSections: SectionId[];
+  metricOrder: MetricId[];
+  sectionOrder: SectionId[];
+};
+
+type PredictionSettings = {
+  includePlannedExpenses: boolean;
+  includeRecurring: boolean;
+  includeUnpaidInvoices: boolean;
+  mode: PredictionMode;
+  periodDays: PredictionPeriod;
+};
 
 type DashboardData = {
   analytics?: {
@@ -18,18 +51,26 @@ type DashboardData = {
     recommendations: string[];
     runwayMonths: number | null;
   };
+  currency: string;
+  dashboardLayout: DashboardLayout;
+  predictionSettings: PredictionSettings;
   totalIncome: number;
   totalExpenses: number;
   netBalance: number;
 };
 
 type PredictionData = {
-  futureBalance: number;
-  sevenDayBalance: number;
-  ninetyDayBalance: number;
+  currentBalance: number;
   dailyNetCashFlow: number;
-  risk: boolean;
   daysUntilNegative: number | null;
+  explanation: string[];
+  futureBalance: number;
+  mode: PredictionMode;
+  periodDays: PredictionPeriod;
+  risk: boolean;
+  sevenDayBalance: number;
+  thirtyDayBalance: number;
+  ninetyDayBalance: number;
 };
 
 type Transaction = {
@@ -42,7 +83,7 @@ type Transaction = {
 
 type Invoice = {
   id: string;
-  status: "paid" | "unpaid";
+  status: "paid" | "unpaid" | "sent" | "overdue" | "draft" | "cancelled";
 };
 
 type AlertItem = {
@@ -50,46 +91,123 @@ type AlertItem = {
   classes: string;
 };
 
+const defaultLayout: DashboardLayout = {
+  hiddenCards: [],
+  hiddenSections: [],
+  metricOrder: [
+    "totalIncome",
+    "totalExpenses",
+    "netBalance",
+    "runway",
+    "overdueInvoices",
+    "dueSoon",
+  ],
+  sectionOrder: [
+    "alerts",
+    "metrics",
+    "prediction",
+    "recommendations",
+    "cashFlow",
+    "analytics",
+  ],
+};
+
+const defaultPredictionSettings: PredictionSettings = {
+  includePlannedExpenses: true,
+  includeRecurring: true,
+  includeUnpaidInvoices: true,
+  mode: "balanced",
+  periodDays: 30,
+};
+
+const metricLabels: Record<MetricId, string> = {
+  dueSoon: "Due soon",
+  netBalance: "Net Balance",
+  overdueInvoices: "Overdue invoices",
+  runway: "Runway",
+  totalExpenses: "Total Expenses",
+  totalIncome: "Total Income",
+};
+
+const sectionLabels: Record<SectionId, string> = {
+  alerts: "Alerts",
+  analytics: "Analytics",
+  cashFlow: "Cash flow",
+  metrics: "Financial widgets",
+  prediction: "Prediction",
+  recommendations: "Next actions",
+};
+
 export default function DashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardData>({
-    totalIncome: 0,
-    totalExpenses: 0,
+    currency: "USD",
+    dashboardLayout: defaultLayout,
     netBalance: 0,
+    predictionSettings: defaultPredictionSettings,
+    totalExpenses: 0,
+    totalIncome: 0,
   });
+  const [layout, setLayout] = useState<DashboardLayout>(defaultLayout);
   const [prediction, setPrediction] = useState<PredictionData>({
-    futureBalance: 0,
-    sevenDayBalance: 0,
-    ninetyDayBalance: 0,
+    currentBalance: 0,
     dailyNetCashFlow: 0,
-    risk: false,
     daysUntilNegative: null,
+    explanation: [],
+    futureBalance: 0,
+    mode: "balanced",
+    periodDays: 30,
+    risk: false,
+    sevenDayBalance: 0,
+    thirtyDayBalance: 0,
+    ninetyDayBalance: 0,
   });
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [savingLayout, setSavingLayout] = useState(false);
+  const [customizing, setCustomizing] = useState(false);
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  async function loadPrediction(settings: PredictionSettings) {
+    const params = new URLSearchParams({
+      includePlannedExpenses: String(settings.includePlannedExpenses),
+      includeRecurring: String(settings.includeRecurring),
+      includeUnpaidInvoices: String(settings.includeUnpaidInvoices),
+      mode: settings.mode,
+      periodDays: String(settings.periodDays),
+    });
+    const predictionResponse = await fetch(`/api/prediction?${params.toString()}`);
+
+    if (predictionResponse.status === 401) {
+      window.location.assign("/login");
+      return;
+    }
+
+    const predictionData = await predictionResponse.json();
+
+    if (!predictionResponse.ok) {
+      throw new Error(predictionData.error || "Failed to load prediction.");
+    }
+
+    setPrediction(predictionData);
+  }
 
   useEffect(() => {
     async function loadDashboard() {
       try {
         setError("");
 
-        const [
-          dashboardResponse,
-          transactionsResponse,
-          predictionResponse,
-          invoicesResponse,
-        ] = await Promise.all([
-          fetch("/api/dashboard"),
-          fetch("/api/transactions"),
-          fetch("/api/prediction"),
-          fetch("/api/invoices"),
-        ]);
+        const [dashboardResponse, transactionsResponse, invoicesResponse] =
+          await Promise.all([
+            fetch("/api/dashboard"),
+            fetch("/api/transactions"),
+            fetch("/api/invoices"),
+          ]);
 
         if (
           dashboardResponse.status === 401 ||
           transactionsResponse.status === 401 ||
-          predictionResponse.status === 401 ||
           invoicesResponse.status === 401
         ) {
           window.location.assign("/login");
@@ -98,7 +216,6 @@ export default function DashboardPage() {
 
         const dashboardData = await dashboardResponse.json();
         const transactionData = await transactionsResponse.json();
-        const predictionData = await predictionResponse.json();
         const invoiceData = await invoicesResponse.json();
 
         if (!dashboardResponse.ok) {
@@ -109,18 +226,15 @@ export default function DashboardPage() {
           throw new Error(transactionData.error || "Failed to load transactions.");
         }
 
-        if (!predictionResponse.ok) {
-          throw new Error(predictionData.error || "Failed to load prediction.");
-        }
-
         if (!invoicesResponse.ok) {
           throw new Error(invoiceData.error || "Failed to load invoices.");
         }
 
         setDashboard(dashboardData);
+        setLayout(dashboardData.dashboardLayout ?? defaultLayout);
         setTransactions(transactionData);
-        setPrediction(predictionData);
         setInvoices(invoiceData);
+        await loadPrediction(dashboardData.predictionSettings ?? defaultPredictionSettings);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load dashboard.");
       } finally {
@@ -128,96 +242,170 @@ export default function DashboardPage() {
       }
     }
 
-    loadDashboard();
+    void loadDashboard();
   }, []);
 
-  function formatCurrency(amount: number) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 2,
-    }).format(amount);
+  async function saveLayout(nextLayout = layout) {
+    setSavingLayout(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/dashboard/layout", {
+        body: JSON.stringify({ dashboardLayout: nextLayout }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to save dashboard layout.");
+      }
+
+      setLayout(data.dashboardLayout);
+      setMessage("Dashboard layout saved.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save dashboard layout.");
+    } finally {
+      setSavingLayout(false);
+    }
   }
 
-  const cards = [
-    {
-      label: "Total Income",
-      icon: "arrow-trend-up",
-      value: formatCurrency(dashboard.totalIncome),
-      tone: "text-emerald-600",
-    },
-    {
-      label: "Total Expenses",
-      icon: "arrow-trend-down",
-      value: formatCurrency(dashboard.totalExpenses),
-      tone: "text-rose-600",
-    },
-    {
-      label: "Net Balance",
-      icon: "wallet",
-      value: formatCurrency(dashboard.netBalance),
-      tone: "text-slate-900",
-    },
-    {
-      label: "Runway",
-      icon: "calendar-clock",
-      value:
-        dashboard.analytics?.runwayMonths === null ||
-        dashboard.analytics?.runwayMonths === undefined
-          ? "Not set"
-          : `${dashboard.analytics.runwayMonths} months`,
-      tone: "text-blue-700",
-    },
-    {
-      label: "Overdue invoices",
-      icon: "receipt",
-      value: formatCurrency(dashboard.analytics?.invoiceAging.overdue ?? 0),
-      tone: "text-rose-600",
-    },
-    {
-      label: "Due soon",
-      icon: "bell",
-      value: formatCurrency(dashboard.analytics?.invoiceAging.dueSoon ?? 0),
-      tone: "text-amber-700",
-    },
-  ];
+  async function resetLayout() {
+    setSavingLayout(true);
+    setError("");
+    setMessage("");
 
-  const unpaidInvoices = invoices.filter((invoice) => invoice.status === "unpaid").length;
+    try {
+      const response = await fetch("/api/dashboard/layout", { method: "DELETE" });
+      const data = await response.json();
 
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to reset dashboard layout.");
+      }
+
+      setLayout(data.dashboardLayout);
+      setMessage("Dashboard layout reset.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to reset dashboard layout.");
+    } finally {
+      setSavingLayout(false);
+    }
+  }
+
+  const formatCurrency = useCallback((amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      currency: dashboard.currency,
+      maximumFractionDigits: 2,
+      style: "currency",
+    }).format(amount);
+  }, [dashboard.currency]);
+
+  function moveItem<T extends string>(items: T[], item: T, direction: -1 | 1) {
+    const index = items.indexOf(item);
+    const nextIndex = index + direction;
+
+    if (index < 0 || nextIndex < 0 || nextIndex >= items.length) {
+      return items;
+    }
+
+    const nextItems = [...items];
+    const [removed] = nextItems.splice(index, 1);
+    nextItems.splice(nextIndex, 0, removed);
+    return nextItems;
+  }
+
+  const cards = useMemo(
+    () => ({
+      dueSoon: {
+        icon: "bell",
+        label: metricLabels.dueSoon,
+        tone: "text-amber-700",
+        value: formatCurrency(dashboard.analytics?.invoiceAging.dueSoon ?? 0),
+      },
+      netBalance: {
+        icon: "wallet",
+        label: metricLabels.netBalance,
+        tone: "text-slate-900",
+        value: formatCurrency(dashboard.netBalance),
+      },
+      overdueInvoices: {
+        icon: "receipt",
+        label: metricLabels.overdueInvoices,
+        tone: "text-rose-600",
+        value: formatCurrency(dashboard.analytics?.invoiceAging.overdue ?? 0),
+      },
+      runway: {
+        icon: "calendar-clock",
+        label: metricLabels.runway,
+        tone: "text-blue-700",
+        value:
+          dashboard.analytics?.runwayMonths === null ||
+          dashboard.analytics?.runwayMonths === undefined
+            ? "Not set"
+            : `${dashboard.analytics.runwayMonths} months`,
+      },
+      totalExpenses: {
+        icon: "arrow-trend-down",
+        label: metricLabels.totalExpenses,
+        tone: "text-rose-600",
+        value: formatCurrency(dashboard.totalExpenses),
+      },
+      totalIncome: {
+        icon: "arrow-trend-up",
+        label: metricLabels.totalIncome,
+        tone: "text-emerald-600",
+        value: formatCurrency(dashboard.totalIncome),
+      },
+    }),
+    [dashboard, formatCurrency],
+  );
+
+  const unpaidInvoices = invoices.filter((invoice) =>
+    ["unpaid", "sent", "overdue"].includes(invoice.status),
+  ).length;
   const alerts: AlertItem[] = [
     dashboard.totalExpenses > dashboard.totalIncome
       ? {
-          message: "\u26A0\uFE0F Your expenses are higher than your income",
           classes: "border-amber-200 bg-amber-50 text-amber-800",
+          message: "Your expenses are higher than your income",
         }
       : null,
     unpaidInvoices > 3
       ? {
-          message: "\u26A0\uFE0F You have multiple unpaid invoices",
           classes: "border-amber-200 bg-amber-50 text-amber-800",
+          message: "You have multiple unpaid invoices",
         }
       : null,
     prediction.risk
       ? {
-          message: "\uD83D\uDEA8 Cash may run out soon",
           classes: "border-rose-200 bg-rose-50 text-rose-800",
+          message: "Cash may run out soon",
         }
       : null,
   ].filter((alert): alert is AlertItem => alert !== null);
+  const predictionDelta = prediction.futureBalance - prediction.currentBalance;
+  const predictionTone = prediction.risk
+    ? {
+        icon: "triangle-warning",
+        label: "Needs attention",
+        text: "Projected cash falls below zero in this horizon.",
+      }
+    : predictionDelta < 0
+      ? {
+          icon: "arrow-trend-down",
+          label: "Cash tightening",
+          text: "Cash is projected to decrease, but remain above zero.",
+        }
+      : {
+          icon: "shield-check",
+          label: "Stable outlook",
+          text: "Cash is projected to stay steady for the selected horizon.",
+        };
 
-  return (
-    <PageShell
-      title="Dashboard"
-      description="See a quick snapshot of your income, expenses, and recent cash flow."
-      unifiedSurface
-    >
-      {error ? (
-        <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-          {error}
-        </section>
-      ) : null}
-
-      {!loading && alerts.length > 0 ? (
+  const sectionRenderers: Record<SectionId, ReactNode> = {
+    alerts:
+      alerts.length > 0 ? (
         <section className="grid gap-3">
           {alerts.map((alert) => (
             <article
@@ -228,27 +416,49 @@ export default function DashboardPage() {
             </article>
           ))}
         </section>
-      ) : null}
-
-      <section className="metric-grid grid gap-4 md:grid-cols-3">
-        {cards.map((card) => (
-          <article
-            key={card.label}
-            className="metric-card overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <p className="min-w-0 break-words text-sm text-slate-500">{card.label}</p>
-              <span className="icon-badge shrink-0">
-                <AppIcon name={card.icon} className="text-lg" />
-              </span>
-            </div>
-            <p className={`mt-3 text-3xl font-semibold tracking-tight ${card.tone}`}>
-              {loading ? "..." : card.value}
-            </p>
-          </article>
-        ))}
+      ) : null,
+    analytics: dashboard.analytics ? (
+      <section className="grid gap-4 xl:grid-cols-2">
+        <CategoryBreakdownChart
+          currency={dashboard.currency}
+          data={dashboard.analytics.categoryBreakdown}
+        />
+        <InvoiceAgingChart
+          currency={dashboard.currency}
+          data={dashboard.analytics.invoiceAging}
+        />
       </section>
+    ) : null,
+    cashFlow: <CashFlowChart currency={dashboard.currency} transactions={transactions} />,
+    metrics: (
+      <section className="metric-grid grid gap-4 md:grid-cols-3">
+        {layout.metricOrder
+          .filter((cardId) => !layout.hiddenCards.includes(cardId))
+          .map((cardId) => {
+            const card = cards[cardId];
 
+            return (
+              <article
+                key={card.label}
+                className="metric-card overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <p className="min-w-0 break-words text-sm text-slate-500">
+                    {card.label}
+                  </p>
+                  <span className="icon-badge shrink-0">
+                    <AppIcon name={card.icon} className="text-lg" />
+                  </span>
+                </div>
+                <p className={`mt-3 text-3xl font-semibold tracking-tight ${card.tone}`}>
+                  {loading ? "..." : card.value}
+                </p>
+              </article>
+            );
+          })}
+      </section>
+    ),
+    prediction: (
       <section className="grid gap-4">
         <article
           className={`prediction-card rounded-2xl border p-6 shadow-sm ${
@@ -257,32 +467,43 @@ export default function DashboardPage() {
               : "forecast-stable border-emerald-200 bg-emerald-50"
           }`}
         >
-          <div className="forecast-card-inner">
-            <div className="forecast-summary">
-              <span className="icon-badge forecast-icon">
-                <AppIcon name="chart-line-up" className="text-lg" />
-              </span>
-              <div>
-                <p
-                  className={`text-sm font-medium ${
-                    prediction.risk ? "text-rose-700" : "text-emerald-700"
-                  }`}
-                >
-                  Cash Prediction
+          <div className="grid gap-5 lg:grid-cols-[1.05fr_1.4fr] lg:items-stretch">
+            <div className="flex flex-col justify-between gap-5">
+              <div className="forecast-summary">
+                <span className="icon-badge forecast-icon">
+                  <AppIcon name={predictionTone.icon} className="text-lg" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-slate-700">Cash outlook</p>
+                  <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+                    {loading ? "..." : formatCurrency(prediction.futureBalance)}
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-slate-600">
+                    {loading
+                      ? "Loading forecast..."
+                      : `${predictionTone.label} · ${prediction.periodDays} days · ${prediction.mode}`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white/80 p-4">
+                <p className="text-sm font-semibold text-slate-900">
+                  {predictionTone.text}
                 </p>
-                <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
-                  {loading ? "..." : formatCurrency(prediction.futureBalance)}
-                </p>
-                <p
-                  className={`mt-2 text-sm font-medium ${
-                    prediction.risk ? "text-rose-700" : "text-emerald-700"
-                  }`}
-                >
-                  {loading
-                    ? "Loading prediction..."
-                    : prediction.risk
-                      ? `You may run out of money in ${prediction.daysUntilNegative ?? 0} days`
-                      : "Your cash flow is stable"}
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Expected change from today:{" "}
+                  <span
+                    className={
+                      predictionDelta < 0
+                        ? "font-semibold text-rose-700"
+                        : "font-semibold text-emerald-700"
+                    }
+                  >
+                    {loading ? "..." : formatCurrency(predictionDelta)}
+                  </span>
+                  {prediction.risk && prediction.daysUntilNegative !== null
+                    ? `, with a possible negative balance in ${prediction.daysUntilNegative} days.`
+                    : "."}
                 </p>
               </div>
             </div>
@@ -290,7 +511,7 @@ export default function DashboardPage() {
             <div className="forecast-metrics">
               {[
                 ["7 days", prediction.sevenDayBalance],
-                ["30 days", prediction.futureBalance],
+                ["30 days", prediction.thirtyDayBalance],
                 ["90 days", prediction.ninetyDayBalance],
               ].map(([label, value]) => (
                 <div key={label} className="forecast-mini-card">
@@ -302,37 +523,205 @@ export default function DashboardPage() {
           </div>
         </article>
       </section>
+    ),
+    recommendations: dashboard.analytics?.recommendations.length ? (
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-4">
+          <h2 className="text-lg font-medium text-slate-900">Next best actions</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Signals worth checking before you add more data.
+          </p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          {dashboard.analytics.recommendations.map((recommendation) => (
+            <div
+              key={recommendation}
+              className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-700"
+            >
+              <AppIcon name="lightbulb-on" className="mt-0.5 text-base text-amber-700" />
+              {recommendation}
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null,
+  };
 
-      {dashboard.analytics?.recommendations.length ? (
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4">
-            <h2 className="text-lg font-medium text-slate-900">Next best actions</h2>
+  return (
+    <PageShell
+      title="Dashboard"
+      description="See a quick snapshot of your income, expenses, and recent cash flow."
+      unifiedSurface
+      actions={
+        <button
+          type="button"
+          onClick={() => setCustomizing((current) => !current)}
+          className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300"
+        >
+          <AppIcon name="settings-sliders" />
+          Customize
+        </button>
+      }
+    >
+      {error ? (
+        <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          {error}
+        </section>
+      ) : null}
+
+      {message ? (
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-700">
+          {message}
+        </section>
+      ) : null}
+
+      {customizing ? (
+        <section className="grid gap-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm xl:grid-cols-2">
+          <div>
+            <h2 className="text-lg font-medium text-slate-900">Dashboard cards</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Signals worth checking before you add more data.
+              Pick which financial widgets appear first and which stay hidden.
             </p>
+            <div className="mt-4 grid gap-2">
+              {layout.metricOrder.map((cardId, index) => (
+                <div
+                  key={cardId}
+                  className="flex flex-col gap-3 rounded-xl border border-slate-200 p-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <label className="flex items-center gap-3 text-sm font-medium text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={!layout.hiddenCards.includes(cardId)}
+                      onChange={(event) =>
+                        setLayout((current) => ({
+                          ...current,
+                          hiddenCards: event.target.checked
+                            ? current.hiddenCards.filter((item) => item !== cardId)
+                            : [...current.hiddenCards, cardId],
+                        }))
+                      }
+                      className="h-4 w-4"
+                    />
+                    {metricLabels[cardId]}
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() =>
+                        setLayout((current) => ({
+                          ...current,
+                          metricOrder: moveItem(current.metricOrder, cardId, -1),
+                        }))
+                      }
+                      className="rounded-full border border-slate-200 px-3 py-1.5 text-sm text-slate-700 disabled:opacity-40"
+                    >
+                      Up
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === layout.metricOrder.length - 1}
+                      onClick={() =>
+                        setLayout((current) => ({
+                          ...current,
+                          metricOrder: moveItem(current.metricOrder, cardId, 1),
+                        }))
+                      }
+                      className="rounded-full border border-slate-200 px-3 py-1.5 text-sm text-slate-700 disabled:opacity-40"
+                    >
+                      Down
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="grid gap-3 md:grid-cols-2">
-            {dashboard.analytics.recommendations.map((recommendation) => (
-              <div
-                key={recommendation}
-                className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-700"
+
+          <div>
+            <h2 className="text-lg font-medium text-slate-900">Dashboard sections</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Reorder the main dashboard flow or hide sections you do not use.
+            </p>
+            <div className="mt-4 grid gap-2">
+              {layout.sectionOrder.map((sectionId, index) => (
+                <div
+                  key={sectionId}
+                  className="flex flex-col gap-3 rounded-xl border border-slate-200 p-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <label className="flex items-center gap-3 text-sm font-medium text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={!layout.hiddenSections.includes(sectionId)}
+                      onChange={(event) =>
+                        setLayout((current) => ({
+                          ...current,
+                          hiddenSections: event.target.checked
+                            ? current.hiddenSections.filter((item) => item !== sectionId)
+                            : [...current.hiddenSections, sectionId],
+                        }))
+                      }
+                      className="h-4 w-4"
+                    />
+                    {sectionLabels[sectionId]}
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() =>
+                        setLayout((current) => ({
+                          ...current,
+                          sectionOrder: moveItem(current.sectionOrder, sectionId, -1),
+                        }))
+                      }
+                      className="rounded-full border border-slate-200 px-3 py-1.5 text-sm text-slate-700 disabled:opacity-40"
+                    >
+                      Up
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === layout.sectionOrder.length - 1}
+                      onClick={() =>
+                        setLayout((current) => ({
+                          ...current,
+                          sectionOrder: moveItem(current.sectionOrder, sectionId, 1),
+                        }))
+                      }
+                      className="rounded-full border border-slate-200 px-3 py-1.5 text-sm text-slate-700 disabled:opacity-40"
+                    >
+                      Down
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                disabled={savingLayout}
+                onClick={() => void resetLayout()}
+                className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 disabled:opacity-60"
               >
-                <AppIcon name="lightbulb-on" className="mt-0.5 text-base text-amber-700" />
-                {recommendation}
-              </div>
-            ))}
+                Reset default
+              </button>
+              <button
+                type="button"
+                disabled={savingLayout}
+                onClick={() => void saveLayout()}
+                className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 disabled:opacity-60"
+              >
+                {savingLayout ? "Saving..." : "Save layout"}
+              </button>
+            </div>
           </div>
         </section>
       ) : null}
 
-      <CashFlowChart transactions={transactions} />
-
-      {dashboard.analytics ? (
-        <section className="grid gap-4 xl:grid-cols-2">
-          <CategoryBreakdownChart data={dashboard.analytics.categoryBreakdown} />
-          <InvoiceAgingChart data={dashboard.analytics.invoiceAging} />
-        </section>
-      ) : null}
+      {layout.sectionOrder
+        .filter((sectionId) => !layout.hiddenSections.includes(sectionId))
+        .map((sectionId) => (
+          <div key={sectionId}>{sectionRenderers[sectionId]}</div>
+        ))}
     </PageShell>
   );
 }

@@ -1,37 +1,35 @@
-import { connection, NextResponse } from "next/server";
-import { getActiveWorkspaceForRequest } from "@/lib/workspace";
+import { NextResponse } from "next/server";
 import {
+  DEFAULT_PREDICTION_OPTIONS,
   normalizePredictionOptions,
-  predictFutureCashFlow,
 } from "@/lib/predict-future-cash-flow";
 import { getPrisma } from "@/lib/prisma";
+import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
 export async function GET(request: Request) {
   try {
-    await connection();
-
     const context = await getActiveWorkspaceForRequest(request);
 
     if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
-    const url = new URL(request.url);
-    const queryOptions = normalizePredictionOptions({
-      includePlannedExpenses: url.searchParams.get("includePlannedExpenses") !== "false",
-      includeRecurring: url.searchParams.get("includeRecurring") !== "false",
-      includeUnpaidInvoices: url.searchParams.get("includeUnpaidInvoices") !== "false",
-      mode: url.searchParams.get("mode") ?? undefined,
-      periodDays: Number(url.searchParams.get("periodDays") ?? 30),
+    const prisma = getPrisma();
+    const preference = await prisma.userPreference.findUnique({
+      where: { userId: context.user.id },
+      select: { predictionSettings: true },
     });
-    const prediction = await predictFutureCashFlow(context.workspace.id, queryOptions);
 
-    return NextResponse.json(prediction);
+    return NextResponse.json({
+      predictionSettings: normalizePredictionOptions(
+        preference?.predictionSettings ?? DEFAULT_PREDICTION_OPTIONS,
+      ),
+    });
   } catch (error) {
-    console.error("Failed to load prediction data:", error);
+    console.error("Failed to load prediction settings:", error);
 
     return NextResponse.json(
-      { error: "Failed to load prediction data." },
+      { error: "Failed to load prediction settings." },
       { status: 500 },
     );
   }
@@ -48,6 +46,7 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const predictionSettings = normalizePredictionOptions(body);
     const prisma = getPrisma();
+
     await prisma.userPreference.update({
       where: { userId: context.user.id },
       data: { predictionSettings },

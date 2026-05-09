@@ -103,6 +103,14 @@ export function Navbar() {
     );
   }
 
+  function isActiveRoute(href: string) {
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
+  function navLinkClass(baseClassName: string, href: string) {
+    return `${baseClassName} ${isActiveRoute(href) ? "is-active" : ""}`;
+  }
+
   return (
     <>
       {email ? (
@@ -128,16 +136,24 @@ export function Navbar() {
           </Link>
 
           <nav aria-label="Sidebar" className="sidebar-nav mt-8 grid gap-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="sidebar-link gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-              >
-                <AppIcon name={item.icon} className="text-base" />
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const active = isActiveRoute(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={navLinkClass(
+                    "sidebar-link gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900",
+                    item.href,
+                  )}
+                >
+                  <AppIcon name={item.icon} className="text-base" solid={active} />
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="sidebar-footer mt-auto grid gap-2">
@@ -149,9 +165,17 @@ export function Navbar() {
             </div>
             <Link
               href="/settings"
-              className="sidebar-link gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+              aria-current={isActiveRoute("/settings") ? "page" : undefined}
+              className={navLinkClass(
+                "sidebar-link gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900",
+                "/settings",
+              )}
             >
-              <AppIcon name="settings" className="text-base" />
+              <AppIcon
+                name="settings"
+                className="text-base"
+                solid={isActiveRoute("/settings")}
+              />
               Settings
             </Link>
           </div>
@@ -198,9 +222,17 @@ export function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="app-nav-link inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                    aria-current={isActiveRoute(item.href) ? "page" : undefined}
+                    className={navLinkClass(
+                      "app-nav-link inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900",
+                      item.href,
+                    )}
                   >
-                    <AppIcon name={item.icon} className="text-sm" />
+                    <AppIcon
+                      name={item.icon}
+                      className="text-sm"
+                      solid={isActiveRoute(item.href)}
+                    />
                     {item.label}
                   </Link>
                 ))}
@@ -233,18 +265,26 @@ export function Navbar() {
                     className="dashboard-menu-list flex flex-wrap items-center gap-2"
                     aria-hidden={!menuOpen}
                   >
-                    {navItems.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        role="menuitem"
-                        tabIndex={menuOpen ? 0 : -1}
-                        className="app-nav-link inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-                      >
-                        <AppIcon name={item.icon} className="text-sm" />
-                        {item.label}
-                      </Link>
-                    ))}
+                    {navItems.map((item) => {
+                      const active = isActiveRoute(item.href);
+
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          role="menuitem"
+                          tabIndex={menuOpen ? 0 : -1}
+                          aria-current={active ? "page" : undefined}
+                          className={navLinkClass(
+                            "app-nav-link inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900",
+                            item.href,
+                          )}
+                        >
+                          <AppIcon name={item.icon} className="text-sm" solid={active} />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
 

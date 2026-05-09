@@ -1,5 +1,7 @@
 import { connection, NextResponse } from "next/server";
 import { buildAnalytics } from "@/lib/analytics";
+import { normalizeDashboardLayout } from "@/lib/dashboard-layout";
+import { normalizePredictionOptions } from "@/lib/predict-future-cash-flow";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -50,6 +52,10 @@ export async function GET(request: Request) {
         },
       }),
     ]);
+    const preference = await prisma.userPreference.findUnique({
+      where: { userId: context.user.id },
+      select: { dashboardLayout: true, currency: true, predictionSettings: true },
+    });
 
     const totals = transactions.reduce<TransactionTotals>(
       (result: TransactionTotals, transaction: TransactionSummary) => {
@@ -88,6 +94,9 @@ export async function GET(request: Request) {
       totalIncome: totals.totalIncome,
       totalExpenses: totals.totalExpenses,
       netBalance,
+      currency: context.workspace.currency,
+      dashboardLayout: normalizeDashboardLayout(preference?.dashboardLayout),
+      predictionSettings: normalizePredictionOptions(preference?.predictionSettings),
       workspace: context.workspace,
     });
   } catch (error) {

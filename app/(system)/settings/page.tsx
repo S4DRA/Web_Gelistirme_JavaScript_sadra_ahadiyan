@@ -7,6 +7,23 @@ import { PageShell } from "@/components/page-shell";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const RESET_CONFIRMATION_PHRASE = "I WOULD LIKE TO RESET THE DATA";
+const CURRENCIES = ["USD", "EUR", "TRY", "GBP", "IRR", "AED", "CAD", "AUD", "JPY", "CHF"];
+
+type PredictionSettings = {
+  includePlannedExpenses: boolean;
+  includeRecurring: boolean;
+  includeUnpaidInvoices: boolean;
+  mode: "conservative" | "balanced" | "optimistic";
+  periodDays: 7 | 30 | 90 | 180 | 365;
+};
+
+const defaultPredictionSettings: PredictionSettings = {
+  includePlannedExpenses: true,
+  includeRecurring: true,
+  includeUnpaidInvoices: true,
+  mode: "balanced",
+  periodDays: 30,
+};
 
 export default function SettingsPage() {
   const [accountForm, setAccountForm] = useState({
@@ -36,12 +53,29 @@ export default function SettingsPage() {
   const [resettingData, setResettingData] = useState(false);
   const [resetMessage, setResetMessage] = useState("");
   const [resetError, setResetError] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [savingCurrency, setSavingCurrency] = useState(false);
+  const [currencyMessage, setCurrencyMessage] = useState("");
+  const [currencyError, setCurrencyError] = useState("");
+  const [predictionSettings, setPredictionSettings] = useState<PredictionSettings>(
+    defaultPredictionSettings,
+  );
+  const [savingPrediction, setSavingPrediction] = useState(false);
+  const [predictionMessage, setPredictionMessage] = useState("");
+  const [predictionError, setPredictionError] = useState("");
 
   useEffect(() => {
     async function loadSettings() {
-      const [emailResponse, userResponse] = await Promise.all([
+      const [
+        emailResponse,
+        userResponse,
+        currencyResponse,
+        predictionResponse,
+      ] = await Promise.all([
         fetch("/api/email/status"),
         fetch("/api/auth/me"),
+        fetch("/api/currency"),
+        fetch("/api/prediction/settings"),
       ]);
 
       if (emailResponse.ok) {
@@ -56,6 +90,16 @@ export default function SettingsPage() {
           phoneNumber: data.user.phoneNumber ?? "",
           username: data.user.username ?? "",
         });
+      }
+
+      if (currencyResponse.ok) {
+        const data = await currencyResponse.json();
+        setCurrency(data.baseCurrency);
+      }
+
+      if (predictionResponse.ok) {
+        const data = await predictionResponse.json();
+        setPredictionSettings(data.predictionSettings);
       }
     }
 
@@ -271,6 +315,64 @@ export default function SettingsPage() {
       setResetError(error instanceof Error ? error.message : "Failed to reset data.");
     } finally {
       setResettingData(false);
+    }
+  }
+
+  async function handleCurrencySubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSavingCurrency(true);
+    setCurrencyError("");
+    setCurrencyMessage("");
+
+    try {
+      const response = await fetch("/api/currency", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currency }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update currency.");
+      }
+
+      setCurrency(data.currency);
+      setCurrencyMessage("Default currency updated.");
+    } catch (error) {
+      setCurrencyError(
+        error instanceof Error ? error.message : "Failed to update currency.",
+      );
+    } finally {
+      setSavingCurrency(false);
+    }
+  }
+
+  async function handlePredictionSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSavingPrediction(true);
+    setPredictionError("");
+    setPredictionMessage("");
+
+    try {
+      const response = await fetch("/api/prediction/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(predictionSettings),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update prediction settings.");
+      }
+
+      setPredictionSettings(data.predictionSettings);
+      setPredictionMessage("Prediction settings updated.");
+    } catch (error) {
+      setPredictionError(
+        error instanceof Error ? error.message : "Failed to update prediction settings.",
+      );
+    } finally {
+      setSavingPrediction(false);
     }
   }
 
@@ -503,6 +605,152 @@ export default function SettingsPage() {
             className="h-40 w-full object-contain"
           />
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6">
+          <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
+            <AppIcon name="coins" />
+            Currency
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Choose the workspace currency used for dashboards, reports, and converted totals.
+          </p>
+        </div>
+
+        <form
+          className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+          onSubmit={handleCurrencySubmit}
+        >
+          <label className="grid gap-2 text-sm font-medium text-slate-700 sm:w-72">
+            Default currency
+            <select
+              value={currency}
+              onChange={(event) => setCurrency(event.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+            >
+              {CURRENCIES.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="submit"
+            disabled={savingCurrency}
+            className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {savingCurrency ? "Saving..." : "Save currency"}
+          </button>
+        </form>
+        {currencyMessage ? (
+          <p className="mt-3 text-sm font-medium text-emerald-700">{currencyMessage}</p>
+        ) : null}
+        {currencyError ? (
+          <p className="mt-3 text-sm font-medium text-rose-700">{currencyError}</p>
+        ) : null}
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6">
+          <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
+            <AppIcon name="chart-line-up" />
+            Prediction settings
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Control how the dashboard cash outlook is calculated. The dashboard stays
+            focused on the result.
+          </p>
+        </div>
+
+        <form className="grid gap-5" onSubmit={handlePredictionSubmit}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="grid gap-2 text-sm font-medium text-slate-700">
+              Prediction period
+              <select
+                value={predictionSettings.periodDays}
+                onChange={(event) =>
+                  setPredictionSettings((current) => ({
+                    ...current,
+                    periodDays: Number(event.target.value) as PredictionSettings["periodDays"],
+                  }))
+                }
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+              >
+                <option value={7}>7 days</option>
+                <option value={30}>30 days</option>
+                <option value={90}>3 months</option>
+                <option value={180}>6 months</option>
+                <option value={365}>1 year</option>
+              </select>
+            </label>
+
+            <label className="grid gap-2 text-sm font-medium text-slate-700">
+              Prediction mode
+              <select
+                value={predictionSettings.mode}
+                onChange={(event) =>
+                  setPredictionSettings((current) => ({
+                    ...current,
+                    mode: event.target.value as PredictionSettings["mode"],
+                  }))
+                }
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+              >
+                <option value="conservative">Conservative</option>
+                <option value="balanced">Balanced</option>
+                <option value="optimistic">Optimistic</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            {[
+              ["includeRecurring", "Recurring transactions"],
+              ["includeUnpaidInvoices", "Unpaid invoices"],
+              ["includePlannedExpenses", "Planned expenses"],
+            ].map(([key, label]) => (
+              <label
+                key={key}
+                className="flex min-h-14 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
+              >
+                <input
+                  type="checkbox"
+                  checked={Boolean(predictionSettings[key as keyof PredictionSettings])}
+                  onChange={(event) =>
+                    setPredictionSettings((current) => ({
+                      ...current,
+                      [key]: event.target.checked,
+                    }))
+                  }
+                  className="h-4 w-4"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              {predictionMessage ? (
+                <p className="text-sm font-medium text-emerald-700">
+                  {predictionMessage}
+                </p>
+              ) : null}
+              {predictionError ? (
+                <p className="text-sm font-medium text-rose-700">{predictionError}</p>
+              ) : null}
+            </div>
+            <button
+              type="submit"
+              disabled={savingPrediction}
+              className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {savingPrediction ? "Saving..." : "Save prediction settings"}
+            </button>
+          </div>
+        </form>
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">

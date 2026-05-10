@@ -5,6 +5,7 @@ import { getPrisma } from "@/lib/prisma";
 import {
   createVerificationCode,
   hashVerificationCode,
+  hashSignupRequestToken,
 } from "@/lib/signup-verification";
 
 const codeExpiryMinutes = 10;
@@ -12,7 +13,7 @@ const resendCooldownSeconds = 60;
 
 export async function POST(request: Request) {
   try {
-    const { email, username } = await request.json();
+    const { email, inviteToken, username } = await request.json();
 
     if (typeof email !== "string") {
       return NextResponse.json(
@@ -41,6 +42,34 @@ export async function POST(request: Request) {
     const normalizedUsername =
       typeof username === "string" ? username.trim().toLowerCase() : "";
     const prisma = getPrisma();
+    const inviteTokenHash =
+      typeof inviteToken === "string" ? hashSignupRequestToken(inviteToken) : "";
+    const signupRequest = inviteTokenHash
+      ? await prisma.signupRequest.findUnique({
+          where: { inviteTokenHash },
+          select: {
+            approvedAt: true,
+            email: true,
+            expiresAt: true,
+            id: true,
+            usedAt: true,
+          },
+        })
+      : null;
+
+    if (
+      !signupRequest ||
+      signupRequest.email !== normalizedEmail ||
+      !signupRequest.approvedAt ||
+      signupRequest.usedAt ||
+      signupRequest.expiresAt <= new Date()
+    ) {
+      return NextResponse.json(
+        { error: "Use the signup link from your approved request email." },
+        { status: 403 },
+      );
+    }
+
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },
       select: { id: true },

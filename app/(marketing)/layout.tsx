@@ -38,9 +38,9 @@ export default function MarketingLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full bg-white text-black">
-        <div className="flex min-h-screen flex-col overflow-x-hidden">
-          <header className="border-b border-slate-100 bg-white">
-            <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-3.5 sm:px-6 sm:py-4">
+        <div className="marketing-shell flex min-h-screen flex-col overflow-x-hidden">
+          <header className="marketing-header border-b border-slate-100 bg-white">
+            <div className="marketing-header-inner mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-3.5 sm:px-6 sm:py-4">
               <Link
                 href="/"
                 className="inline-flex items-center gap-3 text-lg font-semibold tracking-tight text-black"

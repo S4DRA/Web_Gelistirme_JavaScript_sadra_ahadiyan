@@ -69,6 +69,29 @@ model SignupVerificationCode {
   @@index([email, consumedAt, expiresAt])
 }
 
+model SignupRequest {
+  id                String    @id @default(cuid())
+  email             String
+  fullName          String
+  country           String
+  phoneNumber       String
+  companyName       String?
+  companyWebsite    String?
+  note              String?
+  source            String
+  approvalTokenHash String    @unique
+  inviteTokenHash   String?   @unique
+  approvedAt        DateTime?
+  inviteSentAt      DateTime?
+  usedAt            DateTime?
+  expiresAt         DateTime
+  createdAt         DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([email, approvedAt, usedAt, expiresAt])
+  @@index([expiresAt])
+}
+
 model EmailChangeVerificationCode {
   id         String    @id @default(cuid())
   userId     String

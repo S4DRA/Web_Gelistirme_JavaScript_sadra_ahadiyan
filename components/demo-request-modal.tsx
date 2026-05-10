@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { AppIcon } from "@/components/app-icon";
 
 type DemoRequestModalProps = {
@@ -11,6 +12,7 @@ type DemoRequestModalProps = {
 
 const initialForm = {
   fullName: "",
+  email: "",
   country: "",
   phoneNumber: "",
   companyName: "",
@@ -99,9 +101,9 @@ export function DemoRequestModal({ open, onClose, source = "demo" }: DemoRequest
     }
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-[1000] grid place-items-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -109,11 +111,11 @@ export function DemoRequestModal({ open, onClose, source = "demo" }: DemoRequest
       <button
         type="button"
         aria-label="Close demo request form"
-        className="absolute inset-0 cursor-default"
+        className="absolute inset-0 z-0 cursor-default"
         onClick={handleClose}
       />
 
-      <div className="relative max-h-[calc(100vh-3rem)] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="relative z-10 max-h-[calc(100vh-3rem)] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-emerald-700">
@@ -147,6 +149,19 @@ export function DemoRequestModal({ open, onClose, source = "demo" }: DemoRequest
                 onChange={(event) => updateField("fullName", event.target.value)}
                 className="rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-400"
                 placeholder="Ada Lovelace"
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm font-medium text-slate-700">
+              Email
+              <input
+                required
+                type="email"
+                autoComplete="email"
+                value={form.email}
+                onChange={(event) => updateField("email", event.target.value)}
+                className="rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-400"
+                placeholder="you@example.com"
               />
             </label>
 
@@ -225,6 +240,7 @@ export function DemoRequestModal({ open, onClose, source = "demo" }: DemoRequest
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -3,11 +3,14 @@ import { createSessionCookie, hashPassword } from "@/lib/auth";
 import { sendWelcomeEmail } from "@/lib/email";
 import { validateEmailCanReceiveMail } from "@/lib/email-validation";
 import { getPrisma } from "@/lib/prisma";
-import { hashVerificationCode } from "@/lib/signup-verification";
+import {
+  hashSignupRequestToken,
+  hashVerificationCode,
+} from "@/lib/signup-verification";
 
 export async function POST(request: Request) {
   try {
-    const { email, password, username, phoneNumber, verificationCode } =
+    const { email, inviteToken, password, username, phoneNumber, verificationCode } =
       await request.json();
 
     if (typeof email !== "string") {
@@ -50,6 +53,34 @@ export async function POST(request: Request) {
     const prisma = getPrisma();
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedUsername = username.trim().toLowerCase();
+    const inviteTokenHash =
+      typeof inviteToken === "string" ? hashSignupRequestToken(inviteToken) : "";
+    const signupRequest = inviteTokenHash
+      ? await prisma.signupRequest.findUnique({
+          where: { inviteTokenHash },
+          select: {
+            approvedAt: true,
+            email: true,
+            expiresAt: true,
+            id: true,
+            usedAt: true,
+          },
+        })
+      : null;
+
+    if (
+      !signupRequest ||
+      signupRequest.email !== normalizedEmail ||
+      !signupRequest.approvedAt ||
+      signupRequest.usedAt ||
+      signupRequest.expiresAt <= new Date()
+    ) {
+      return NextResponse.json(
+        { error: "Use the signup link from your approved request email." },
+        { status: 403 },
+      );
+    }
+
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },
       select: {
@@ -138,6 +169,10 @@ export async function POST(request: Request) {
     await prisma.signupVerificationCode.update({
       data: { consumedAt: new Date() },
       where: { id: codeRecord.id },
+    });
+    await prisma.signupRequest.update({
+      data: { usedAt: new Date() },
+      where: { id: signupRequest.id },
     });
 
     await sendWelcomeEmail(user.email).catch((emailError) => {

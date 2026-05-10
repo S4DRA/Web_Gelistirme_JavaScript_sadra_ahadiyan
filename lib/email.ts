@@ -97,6 +97,24 @@ export async function sendSignupVerificationCode(to: string, code: string) {
   });
 }
 
+export async function sendSignupInvitationEmail(options: {
+  signupUrl: string;
+  to: string;
+}) {
+  const signupUrl = escapeHtml(options.signupUrl);
+
+  return sendEmail({
+    html: `
+      <p>Your Dampener signup request was approved.</p>
+      <p><a href="${signupUrl}">Create your Dampener account</a></p>
+      <p>This invitation link expires in 7 days.</p>
+    `,
+    subject: "Your Dampener signup request was approved",
+    text: `Your Dampener signup request was approved. Create your account here: ${options.signupUrl}\n\nThis invitation link expires in 7 days.`,
+    to: options.to,
+  });
+}
+
 export async function sendEmailChangeVerificationCode(to: string, code: string) {
   return sendEmail({
     html: `

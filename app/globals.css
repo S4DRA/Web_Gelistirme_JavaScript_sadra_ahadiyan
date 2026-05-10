@@ -782,6 +782,637 @@ html[data-mode="dark"] .brand-mark {
   }
 }
 
+.landing-page {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 20% 0%, rgb(34 211 238 / 0.18), transparent 30rem),
+    #06110f;
+}
+
+.landing-page section {
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
+.marketing-shell,
+.marketing-header {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
+.landing-hero {
+  background:
+    radial-gradient(circle at 72% 34%, rgb(190 242 100 / 0.18), transparent 18rem),
+    radial-gradient(circle at 18% 78%, rgb(45 212 191 / 0.18), transparent 22rem),
+    linear-gradient(135deg, #06110f 0%, #0c1f1a 52%, #04100d 100%);
+}
+
+.landing-orbit-wrap {
+  perspective: 1100px;
+}
+
+.landing-orbit {
+  position: relative;
+  min-height: 36rem;
+  display: grid;
+  place-items: center;
+}
+
+.landing-orbit-ring {
+  position: absolute;
+  inset: 7%;
+  border: 1px solid rgb(125 211 252 / 0.22);
+  border-radius: 999px;
+  transform: rotateX(62deg) rotateZ(0deg);
+  animation: orbitTurn 16s linear infinite;
+}
+
+.landing-ring-b {
+  inset: 16%;
+  border-color: rgb(190 242 100 / 0.25);
+  animation-direction: reverse;
+  animation-duration: 22s;
+}
+
+.landing-dashboard {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 34rem);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 1.8rem;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.045)),
+    rgb(5 17 15 / 0.86);
+  box-shadow:
+    0 2rem 6rem rgb(0 0 0 / 0.34),
+    inset 0 1px 0 rgb(255 255 255 / 0.16);
+  padding: 1.45rem;
+  backdrop-filter: blur(22px);
+  animation: cockpitFloat 6s ease-in-out infinite;
+}
+
+.landing-dashboard::before {
+  content: "";
+  position: absolute;
+  inset: 0.8rem;
+  z-index: -1;
+  border-radius: 1.35rem;
+  border: 1px solid rgb(125 211 252 / 0.08);
+  pointer-events: none;
+}
+
+.landing-signal-card {
+  min-width: 0;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 1.1rem;
+  background: rgb(255 255 255 / 0.065);
+  padding: 1rem;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.landing-flow-chart {
+  display: flex;
+  height: 10rem;
+  align-items: end;
+  gap: 0.55rem;
+}
+
+.landing-flow-chart span {
+  flex: 1;
+  min-width: 0.75rem;
+  border-radius: 999px 999px 0.45rem 0.45rem;
+  background:
+    linear-gradient(180deg, #bef264, #22d3ee);
+  animation: barPulse 2.8s ease-in-out infinite;
+}
+
+.landing-flow-chart span:nth-child(2n) {
+  animation-delay: -0.8s;
+}
+
+.landing-flow-chart span:nth-child(3n) {
+  animation-delay: -1.4s;
+}
+
+.landing-ticker {
+  display: flex;
+  gap: 0.65rem;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+}
+
+.landing-ticker span {
+  flex: 0 0 auto;
+  min-width: max-content;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: rgb(255 255 255 / 0.06);
+  padding: 0.5rem 0.8rem;
+  color: rgb(236 254 255 / 0.72);
+  font-size: 0.75rem;
+  font-weight: 700;
+  animation: tickerSlide 12s linear infinite;
+}
+
+.landing-feature-card {
+  position: relative;
+  min-height: 20rem;
+  overflow: hidden;
+  border: 1px solid rgb(15 118 110 / 0.14);
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(145deg, white, #edf8f4);
+  padding: 1.45rem;
+  box-shadow:
+    0 1.25rem 3.5rem rgb(15 118 110 / 0.08),
+    inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+.landing-feature-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -15% -35% 28%;
+  height: 12rem;
+  border-radius: 999px;
+  background: rgb(45 212 191 / 0.16);
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+.landing-feature-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-card-index {
+  position: absolute;
+  right: 1.25rem;
+  top: 1rem;
+  color: rgb(15 118 110 / 0.22);
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.landing-flow-step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  border: 1px solid rgb(15 118 110 / 0.12);
+  border-radius: 1.5rem;
+  background: #f8fffb;
+  padding: 1.25rem;
+  box-shadow: 0 1rem 2.5rem rgb(15 23 42 / 0.06);
+}
+
+.landing-flow-step > span {
+  display: inline-flex;
+  height: 2.65rem;
+  width: 2.65rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #052e2b;
+  color: #bef264;
+  font-weight: 800;
+}
+
+.landing-flow-step h3 {
+  color: #04110f;
+  font-size: 1.05rem;
+  font-weight: 750;
+}
+
+.landing-flow-step p {
+  margin-top: 0.35rem;
+  color: #53635f;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.landing-view-card {
+  min-height: 13rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.04));
+  padding: 1.4rem;
+}
+
+.landing-view-card h3 {
+  color: white;
+  font-size: 1.45rem;
+  font-weight: 760;
+}
+
+.landing-view-card p {
+  margin-top: 0.9rem;
+  color: rgb(236 254 255 / 0.68);
+  font-size: 0.96rem;
+  line-height: 1.75;
+}
+
+.landing-detail-card {
+  border: 1px solid rgb(15 118 110 / 0.14);
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(145deg, white, #f8fffb);
+  padding: 1.2rem;
+  box-shadow:
+    0 1rem 2.5rem rgb(15 118 110 / 0.07),
+    inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+.landing-detail-card span {
+  display: inline-flex;
+  height: 2.75rem;
+  width: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: #052e2b;
+  color: #bef264;
+  font-size: 1.25rem;
+}
+
+.landing-detail-card h3 {
+  margin-top: 1.25rem;
+  color: #04110f;
+  font-size: 1.1rem;
+  font-weight: 760;
+}
+
+.landing-detail-card p {
+  margin-top: 0.75rem;
+  color: #53635f;
+  font-size: 0.94rem;
+  line-height: 1.65;
+}
+
+.landing-assumption-panel {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid rgb(255 255 255 / 0.11);
+  border-radius: 1.6rem;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.035));
+  padding: 1rem;
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 0.22);
+}
+
+.landing-assumption-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  border-radius: 1.15rem;
+  background: rgb(255 255 255 / 0.06);
+  padding: 1rem;
+}
+
+.landing-assumption-row span {
+  color: #bef264;
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+.landing-assumption-row p {
+  color: rgb(236 254 255 / 0.76);
+  font-size: 0.96rem;
+  line-height: 1.65;
+}
+
+@keyframes orbitTurn {
+  to {
+    transform: rotateX(62deg) rotateZ(360deg);
+  }
+}
+
+@keyframes cockpitFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotateX(0deg);
+  }
+
+  50% {
+    transform: translateY(-0.7rem) rotateX(1.2deg);
+  }
+}
+
+@keyframes barPulse {
+  0%,
+  100% {
+    filter: saturate(0.92);
+    opacity: 0.84;
+  }
+
+  50% {
+    filter: saturate(1.25);
+    opacity: 1;
+  }
+}
+
+@keyframes tickerSlide {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-13rem);
+  }
+}
+
+@keyframes landingReveal {
+  from {
+    opacity: 0.25;
+    transform: translateY(2.25rem) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .landing-reveal > .mx-auto,
+  .landing-feature-card,
+  .landing-flow-step,
+  .landing-detail-card,
+  .landing-assumption-panel,
+  .landing-view-card {
+    animation: landingReveal both ease-out;
+    animation-timeline: view();
+    animation-range: entry 8% cover 28%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .landing-orbit-wrap {
+    transform: translateX(-18rem);
+  }
+
+  .landing-flow-chart {
+    height: 11.5rem;
+  }
+
+  .landing-feature-card {
+    min-height: 18.5rem;
+  }
+
+  .landing-view-card {
+    min-height: 11.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .marketing-shell,
+  .marketing-header,
+  .marketing-header-inner {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .marketing-header-inner {
+    width: auto !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .marketing-header-inner > a:last-child {
+    display: none !important;
+  }
+
+  .landing-page {
+    min-width: 0;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    transform: translateX(0);
+  }
+
+  .landing-page section {
+    position: relative;
+    left: 0;
+    width: 100%;
+    max-width: 100vw;
+    min-width: 0;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .landing-page .mx-auto {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: clamp(1rem, 5vw, 1.25rem) !important;
+    padding-right: clamp(1rem, 5vw, 1.25rem) !important;
+  }
+
+  .landing-page *,
+  .landing-page *::before,
+  .landing-page *::after {
+    max-width: 100%;
+  }
+
+  .landing-hero {
+    padding-top: 0;
+  }
+
+  .landing-hero > .mx-auto {
+    min-height: auto;
+    gap: 2rem;
+    padding-top: 2.4rem !important;
+    padding-bottom: 2.75rem !important;
+  }
+
+  .landing-hero h1 {
+    max-width: 9.5ch;
+    font-size: clamp(2.55rem, 14vw, 3.45rem);
+  }
+
+  .landing-hero p {
+    max-width: 100%;
+  }
+
+  .landing-hero .grid.grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .landing-hero .grid.grid-cols-3 > div {
+    border-radius: 0.9rem;
+    padding: 0.65rem;
+    min-width: 0;
+  }
+
+  .landing-hero .grid.grid-cols-3 p:first-child {
+    font-size: 1rem;
+    line-height: 1.1;
+  }
+
+  .landing-hero .grid.grid-cols-3 p:last-child {
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  .landing-page .landing-orbit-wrap {
+    width: min(18rem, calc(100vw - 5rem)) !important;
+    max-width: min(18rem, calc(100vw - 5rem)) !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    transform: none;
+  }
+
+  .landing-orbit {
+    min-height: auto;
+    padding-bottom: 0;
+  }
+
+  .landing-orbit-ring {
+    display: none;
+  }
+
+  .landing-dashboard {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    padding: 0.8rem;
+    animation: none;
+  }
+
+  .landing-dashboard::before {
+    inset: 0.55rem;
+    border-radius: 0.95rem;
+  }
+
+  .landing-dashboard .mb-5 {
+    margin-bottom: 0.9rem !important;
+  }
+
+  .landing-dashboard .mb-5 > span {
+    display: none;
+  }
+
+  .landing-signal-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .landing-signal-card {
+    display: block;
+    border-radius: 0.9rem;
+    padding: 0.65rem;
+  }
+
+  .landing-signal-card p {
+    margin-top: 0.25rem !important;
+  }
+
+  .landing-signal-card p:nth-of-type(1) {
+    font-size: 0.58rem;
+    line-height: 1.2;
+  }
+
+  .landing-signal-card p:nth-of-type(2) {
+    font-size: 0.96rem;
+    line-height: 1.1;
+  }
+
+  .landing-signal-card p:nth-of-type(3) {
+    font-size: 0.62rem;
+  }
+
+  .landing-flow-chart {
+    height: 5.4rem;
+    gap: 0.35rem;
+  }
+
+  .landing-ticker {
+    gap: 0.45rem;
+    mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  }
+
+  .landing-ticker span {
+    animation-duration: 10s;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.68rem;
+  }
+
+  .landing-feature-card {
+    min-height: auto;
+    padding: 1.05rem;
+  }
+
+  .landing-card-index {
+    font-size: 2rem;
+  }
+
+  .landing-flow-step {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .landing-assumption-row {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+
+  .landing-view-card {
+    min-height: auto;
+    padding: 1rem;
+  }
+
+  .landing-view-card h3 {
+    font-size: 1rem;
+  }
+
+  .landing-view-card p {
+    margin-top: 0.45rem;
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+
+  .landing-detail-card,
+  .landing-assumption-panel,
+  .landing-assumption-row {
+    border-radius: 1.1rem;
+  }
+
+  .landing-detail-card {
+    padding: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-orbit-ring,
+  .landing-dashboard,
+  .landing-flow-chart span,
+  .landing-ticker span,
+  .landing-reveal > .mx-auto,
+  .landing-feature-card,
+  .landing-flow-step,
+  .landing-detail-card,
+  .landing-assumption-panel,
+  .landing-view-card {
+    animation: none !important;
+  }
+}
+
 .app-nav {
   display: contents !important;
 }

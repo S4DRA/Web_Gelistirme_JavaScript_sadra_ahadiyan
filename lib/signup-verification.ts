@@ -1,4 +1,4 @@
-import { createHmac } from "crypto";
+import { createHmac, randomBytes } from "crypto";
 
 function getVerificationSecret() {
   return process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "dampener-dev-secret";
@@ -6,6 +6,16 @@ function getVerificationSecret() {
 
 export function createVerificationCode() {
   return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+export function createSignupRequestToken() {
+  return randomBytes(32).toString("base64url");
+}
+
+export function hashSignupRequestToken(token: string) {
+  return createHmac("sha256", getVerificationSecret())
+    .update(`signup-request:${token.trim()}`)
+    .digest("base64url");
 }
 
 export function hashVerificationCode(email: string, code: string) {

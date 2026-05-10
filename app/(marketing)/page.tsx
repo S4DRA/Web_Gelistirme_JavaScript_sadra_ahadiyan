@@ -1,77 +1,100 @@
+import Image from "next/image";
 import Link from "next/link";
 import { AppIcon } from "@/components/app-icon";
 import { LeadFormTrigger } from "@/components/lead-form-trigger";
 
-const features = [
+const platformPillars = [
   {
-    title: "Cash Flow Tracking",
-    description: "Track income, expenses, and daily movement with a clean view of money coming in and out.",
-    icon: "chart-histogram",
+    title: "Cash command",
+    description: "Live totals, invoice pressure, runway, and cash movement in one operating view.",
+    icon: "dashboard-monitor",
   },
   {
-    title: "Invoice Management",
-    description: "Monitor unpaid invoices, upcoming due dates, and client balances before they become surprises.",
-    icon: "file-invoice",
+    title: "Imports that clean up",
+    description: "Bring bank activity from CSV or Excel, preview rows, catch duplicates, and confirm safely.",
+    icon: "file-upload",
   },
   {
-    title: "Financial Reports",
-    description: "Turn records into simple reports for planning, reviews, and smarter financial decisions.",
-    icon: "document",
+    title: "Forecast controls",
+    description: "Tune periods, scenarios, recurring records, planned spend, and invoice assumptions.",
+    icon: "chart-line-up",
   },
   {
-    title: "Workspaces & Teams",
-    description: "Separate projects or businesses into workspaces and give teammates the right context.",
-    icon: "users",
-  },
-];
-
-const previewMetrics = [
-  { label: "Income", value: "$12,450", accent: "bg-emerald-500" },
-  { label: "Expenses", value: "$7,820", accent: "bg-black" },
-  { label: "Net Balance", value: "$4,630", accent: "bg-emerald-500" },
-  { label: "Unpaid Invoices", value: "$2,100", accent: "bg-black" },
-];
-
-const statItems = [
-  { value: "4", label: "core finance views" },
-  { value: "30 days", label: "cash flow preview" },
-  { value: "0", label: "spreadsheet chaos required" },
-];
-
-const workflow = [
-  {
-    title: "Capture activity",
-    description: "Add transactions, invoices, and recurring records as the work happens.",
-  },
-  {
-    title: "Understand position",
-    description: "See income, expenses, unpaid invoices, and net balance in one place.",
-  },
-  {
-    title: "Plan next moves",
-    description: "Use reports and workspace views to make decisions with less guesswork.",
+    title: "Currency aware",
+    description: "Track original amounts and convert them into the workspace currency with live rates.",
+    icon: "coins",
   },
 ];
 
-const audiences = [
-  "Freelancers tracking client work",
-  "Small teams managing shared cash flow",
-  "Small businesses replacing finance sheets",
+const proofItems = [
+  "Freelancer-ready",
+  "Multi-currency",
+  "Excel import",
+  "Invoice pipeline",
+  "Team workspaces",
+  "Scenario forecasts",
 ];
 
-const trustPoints = [
+const flowSteps = [
+  ["01", "Collect", "Transactions, invoices, recurring costs, and imported bank rows."],
+  ["02", "Resolve", "Duplicates, currencies, categories, dates, and missing context before saving."],
+  ["03", "Decide", "See the cash story, risk signals, and next actions without rebuilding a spreadsheet."],
+];
+
+const importSafeguards = [
   {
-    title: "One workspace, less switching",
-    description: "Keep transactions, invoices, reports, and team context connected instead of jumping between files.",
+    title: "Preview first",
+    text: "Imported rows are shown before they become transactions, including detected dates, categories, notes, and currencies.",
+    icon: "table-layout",
   },
   {
-    title: "Built around decisions",
-    description: "The dashboard surfaces the numbers that matter when cash is tight, invoices are late, or planning is due.",
+    title: "Catch bad rows",
+    text: "Missing amounts, unknown transaction types, invalid dates, and unclear headers are separated for review.",
+    icon: "shield-check",
   },
   {
-    title: "Simple enough to keep current",
-    description: "Dampener is designed for everyday use by operators who need clarity without accounting software weight.",
+    title: "Skip duplicates",
+    text: "Dampener compares amount, date, type, category, notes, and source fingerprints before saving new records.",
+    icon: "copy-alt",
   },
+];
+
+const predictionControls = [
+  "Pick a 7 day, 30 day, 3 month, 6 month, or 1 year window.",
+  "Switch between conservative, balanced, and optimistic assumptions.",
+  "Include or remove recurring records, planned expenses, and unpaid invoices.",
+  "Read the explanation behind the number so the result is not a black box.",
+];
+
+const signalCards = [
+  { label: "Expected balance", value: "$18.4K", delta: "+12%", icon: "wallet" },
+  { label: "Invoice exposure", value: "$6.2K", delta: "4 open", icon: "receipt" },
+  { label: "Runway", value: "5.8 mo", delta: "balanced", icon: "calendar-clock" },
+];
+
+const workspaceViews = [
+  {
+    title: "Dashboard",
+    text: "A calm first screen with the cards, charts, and sections your team actually wants visible.",
+  },
+  {
+    title: "Transactions",
+    text: "Add records manually or import a bank file with validation before anything touches the database.",
+  },
+  {
+    title: "Insights",
+    text: "Translate movement into plain-language guidance, not just another table of numbers.",
+  },
+  {
+    title: "Settings",
+    text: "Keep currency, prediction behavior, appearance, and data controls where operators expect them.",
+  },
+];
+
+const outcomes = [
+  { value: "7-365", label: "day forecast windows" },
+  { value: "500", label: "rows per safe import" },
+  { value: "13+", label: "supported currencies" },
 ];
 
 const contactChannels = [
@@ -87,153 +110,172 @@ const contactChannels = [
   },
 ];
 
-const chartBars = ["h-12", "h-16", "h-14", "h-20", "h-[4.5rem]", "h-24", "h-[5.5rem]", "h-28"];
-
 export default function Home() {
   return (
-    <main className="flex flex-1 flex-col overflow-x-hidden bg-white text-black">
-      <section className="relative overflow-hidden bg-gradient-to-b from-white via-emerald-50/70 to-white">
-        <div className="pointer-events-none absolute -right-20 top-28 h-48 w-48 rounded-full bg-emerald-200/60 blur-3xl sm:h-72 sm:w-72" />
-        <div className="pointer-events-none absolute -left-24 bottom-16 h-44 w-44 rounded-full bg-slate-200/70 blur-3xl sm:h-64 sm:w-64" />
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-8 px-5 py-10 sm:px-6 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)] lg:gap-12 lg:py-24">
-          <div className="relative min-w-0 max-w-3xl space-y-6 sm:space-y-7">
-            <span className="inline-flex w-fit max-w-full whitespace-normal rounded-full border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold leading-5 text-emerald-700 shadow-sm sm:px-4 sm:text-sm">
-              Cash-flow intelligence for independent businesses
-            </span>
-            <div className="space-y-4 sm:space-y-5">
-              <h1 className="max-w-[11ch] text-5xl font-semibold leading-[0.95] tracking-tight text-black sm:max-w-none sm:text-6xl lg:text-7xl">
-                Cash flow, under control.
-              </h1>
-              <p className="max-w-[calc(100vw-2.5rem)] text-base leading-7 text-slate-600 sm:hidden">
-                Track income, expenses, invoices, and reports from one clean workspace.
-              </p>
-              <p className="hidden max-w-2xl text-xl leading-8 text-slate-600 sm:block">
-                Track income, expenses, invoices, reports, and financial health from one
-                clean workspace.
-              </p>
+    <main className="landing-page flex flex-1 flex-col overflow-x-hidden bg-[#06110f] text-white">
+      <section className="landing-hero relative isolate overflow-hidden">
+        <div className="mx-auto grid min-h-[calc(100vh-4.25rem)] w-full max-w-7xl items-center gap-10 px-5 py-10 sm:px-6 lg:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] lg:gap-10 lg:py-20">
+          <div className="relative z-10 max-w-4xl">
+            <div className="mb-6 inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-300/30 bg-white/8 px-3 py-2 text-xs font-semibold text-cyan-100 shadow-2xl shadow-cyan-950/30 backdrop-blur sm:text-sm">
+              <span className="h-2 w-2 rounded-full bg-lime-300 shadow-[0_0_20px_rgba(190,242,100,0.75)]" />
+              Finance operations without spreadsheet drift
             </div>
-            <div className="grid w-[calc(100vw-7rem)] max-w-full gap-3 sm:flex sm:w-auto sm:flex-wrap">
+
+            <h1 className="max-w-5xl text-[2.65rem] font-semibold leading-[0.96] tracking-tight text-white sm:text-7xl lg:text-8xl">
+              See cash clearly before it moves.
+            </h1>
+
+            <p className="mt-6 max-w-2xl text-base leading-7 text-cyan-50/78 sm:text-xl sm:leading-8">
+              Dampener turns bank activity, invoices, forecasts, currencies, and team
+              workspaces into one readable financial command center.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <LeadFormTrigger
                 source="demo"
-                className="inline-flex min-w-0 items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex items-center justify-center rounded-full bg-lime-300 px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200"
               >
                 Try Demo
               </LeadFormTrigger>
               <Link
                 href="/login"
-                className="inline-flex min-w-0 items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:border-emerald-300 hover:text-emerald-700"
+                className="inline-flex items-center justify-center rounded-full border border-white/18 bg-white/8 px-6 py-3 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
               >
                 Login
               </Link>
             </div>
-            <div className="hidden w-[calc(100vw-4rem)] max-w-full gap-3 sm:grid sm:w-auto sm:max-w-2xl sm:grid-cols-3">
-              {statItems.map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-2xl border border-emerald-100 bg-white/80 p-4 shadow-sm sm:border-l sm:border-r-0 sm:border-y-0 sm:bg-transparent sm:p-0 sm:pl-4 sm:shadow-none"
-                >
-                  <p className="text-2xl font-semibold text-black">{item.value}</p>
-                  <p className="mt-1 text-sm leading-5 text-slate-600">{item.label}</p>
+
+            <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3 sm:mt-10">
+              {outcomes.map((item) => (
+                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/7 p-4 backdrop-blur">
+                  <p className="text-2xl font-semibold text-lime-200">{item.value}</p>
+                  <p className="mt-1 text-xs leading-5 text-cyan-50/70">{item.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="relative min-w-0 max-w-[calc(100vw-6rem)] rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:max-w-none sm:p-4">
-            <div className="absolute right-3 top-3 rounded-full bg-black px-3 py-1 text-xs font-semibold text-white shadow-sm sm:hidden">
-              Preview
-            </div>
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 sm:p-5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-slate-500">Dampener overview</p>
-                  <p className="mt-1 text-2xl font-semibold text-black">$4,630</p>
-                </div>
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                  Healthy
-                </span>
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                {previewMetrics.map((metric) => (
-                  <div key={metric.label} className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
-                    <span className={`block h-1.5 w-10 rounded-full ${metric.accent}`} />
-                    <p className="mt-3 text-xs font-medium text-slate-500 sm:text-sm">{metric.label}</p>
-                    <p className="mt-1 text-lg font-semibold text-black sm:text-2xl">{metric.value}</p>
+          <div className="landing-orbit-wrap relative z-10 mx-auto w-full max-w-[34rem] lg:mx-0 lg:justify-self-center">
+            <div className="landing-orbit">
+              <div className="landing-orbit-ring landing-ring-a" />
+              <div className="landing-orbit-ring landing-ring-b" />
+              <div className="landing-dashboard">
+                <div className="mb-5 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Image src="/img/1.svg" alt="" width={34} height={34} className="h-8 w-8 invert" />
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-100/60">
+                        Dampener
+                      </p>
+                      <p className="text-lg font-semibold text-white">Cash cockpit</p>
+                    </div>
                   </div>
-                ))}
-              </div>
-
-              <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4">
-                <div className="flex items-center justify-between text-sm font-medium text-slate-500">
-                  <span>Cash flow trend</span>
-                  <span>Next 30 days</span>
+                  <span className="rounded-full bg-lime-300 px-3 py-1 text-xs font-bold text-slate-950">
+                    Stable
+                  </span>
                 </div>
-                <div className="mt-5 flex h-24 items-end gap-2 sm:h-28">
-                  {chartBars.map((heightClass, index) => (
-                    <span
-                      key={index}
-                      className={`flex-1 rounded-t-md bg-emerald-500 ${heightClass}`}
-                    />
+
+                <div className="landing-signal-grid grid gap-3 sm:grid-cols-3">
+                  {signalCards.map((card) => (
+                    <div key={card.label} className="landing-signal-card">
+                      <AppIcon name={card.icon} className="text-lg text-cyan-200" />
+                      <p className="mt-3 text-xs text-cyan-50/60">{card.label}</p>
+                      <p className="mt-1 text-xl font-semibold text-white">{card.value}</p>
+                      <p className="mt-2 text-xs font-semibold text-lime-200">{card.delta}</p>
+                    </div>
                   ))}
                 </div>
+
+                <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/50 p-4">
+                  <div className="mb-4 flex items-center justify-between text-xs font-semibold text-cyan-50/62">
+                    <span>Cash path</span>
+                    <span>Next 90 days</span>
+                  </div>
+                  <div className="landing-flow-chart">
+                    {["42%", "58%", "46%", "70%", "64%", "86%", "78%", "92%"].map((height, index) => (
+                      <span key={`${height}-${index}`} style={{ height }} />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="landing-ticker mt-4" aria-label="Recent finance signals">
+                  <span>TRY import detected</span>
+                  <span>3 duplicates skipped</span>
+                  <span>Forecast balanced</span>
+                  <span>Invoice due soon</span>
+                  <span>TRY import detected</span>
+                  <span>3 duplicates skipped</span>
+                  <span>Forecast balanced</span>
+                  <span>Invoice due soon</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
       </section>
 
-      <section className="border-y border-slate-100 bg-white px-5 py-14 sm:px-6 sm:py-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="max-w-2xl">
-            <p className="text-sm font-bold uppercase text-emerald-700">What it brings together</p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-black sm:text-4xl">
-              The finance workspace between your bank account and your decisions.
+      <section className="border-y border-white/10 bg-[#091916] px-5 py-5 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-3">
+          {proofItems.map((item) => (
+            <span
+              key={item}
+              className="rounded-full border border-cyan-200/15 bg-white/6 px-4 py-2 text-sm font-semibold text-cyan-50/76"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section id="workspace" className="landing-reveal bg-[#f4fbf8] px-5 py-16 text-slate-950 sm:px-6 lg:py-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-teal-700">
+              One workspace
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+              Every money signal, connected and explainable.
             </h2>
           </div>
-          <div className="-mx-5 mt-8 flex snap-x gap-4 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-4">
-            {features.map((feature) => (
-              <article
-                key={feature.title}
-                className="min-w-[17rem] snap-start rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:min-w-0"
-              >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-xl text-emerald-700">
-                  <AppIcon name={feature.icon} />
+
+          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {platformPillars.map((item, index) => (
+              <article key={item.title} className="landing-feature-card">
+                <span className="landing-card-index">0{index + 1}</span>
+                <span className="mt-8 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-950 text-xl text-lime-200">
+                  <AppIcon name={item.icon} />
                 </span>
-                <h3 className="mt-5 text-lg font-semibold text-black">{feature.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{feature.description}</p>
+                <h3 className="mt-6 text-xl font-semibold">{item.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{item.description}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-slate-50 px-5 py-14 sm:px-6 sm:py-16">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[0.82fr_1fr]">
-          <div className="space-y-4">
-            <span className="text-sm font-bold uppercase text-emerald-700">
-              Structured by default
-            </span>
-            <h2 className="text-2xl font-semibold tracking-tight text-black sm:text-4xl">
-              Replace messy spreadsheets with a workspace your business can trust.
+      <section className="landing-reveal bg-white px-5 py-16 text-slate-950 sm:px-6 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.85fr_1fr] lg:items-center">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-teal-700">
+              Operating flow
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+              Import, validate, forecast, and act.
             </h2>
-            <p className="text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Dampener helps users replace messy spreadsheets with a structured financial
-              workspace. It keeps the operational details close to the numbers, so teams
-              can understand what happened, what is unpaid, and what needs attention next.
+            <p className="mt-5 text-lg leading-8 text-slate-600">
+              The product is designed around the work operators repeat every week:
+              collecting records, cleaning the messy parts, and making a decision from the result.
             </p>
           </div>
+
           <div className="grid gap-4">
-            {workflow.map((step, index) => (
-              <div key={step.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex gap-4">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black text-sm font-semibold text-white">
-                    {index + 1}
-                  </span>
-                  <div>
-                    <h3 className="font-semibold text-black">{step.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">{step.description}</p>
-                  </div>
+            {flowSteps.map(([number, title, text]) => (
+              <div key={title} className="landing-flow-step">
+                <span>{number}</span>
+                <div>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
                 </div>
               </div>
             ))}
@@ -241,114 +283,144 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-white px-5 py-14 sm:px-6 sm:py-16">
-        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_0.9fr]">
-          <div className="rounded-2xl bg-black p-6 text-white sm:p-8">
-            <p className="text-sm font-bold uppercase text-emerald-300">Built for clarity</p>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-4xl">
-              Know where the money is moving before it becomes urgent.
+      <section className="landing-reveal bg-[#edf7f2] px-5 py-16 text-slate-950 sm:px-6 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-teal-700">
+              Data controls
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+              Imports stay reviewable until you approve them.
             </h2>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
-              Dampener gives freelancers and small operators a simple way to track cash
-              flow, spot unpaid work, and review financial health without building a new
-              spreadsheet every week.
+            <p className="mt-5 text-lg leading-8 text-slate-600">
+              Dampener is designed for real bank exports, messy descriptions, mixed currencies,
+              and repeated rows. The import flow explains what it found before anything is saved.
             </p>
           </div>
-          <div className="grid gap-3">
-            {audiences.map((audience) => (
-              <div key={audience} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                  <AppIcon name="check" />
-                </span>
-                <p className="font-medium text-slate-800">{audience}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      <section className="bg-slate-50 px-5 py-14 sm:px-6 sm:py-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="max-w-3xl">
-            <p className="text-sm font-bold uppercase text-emerald-700">Why Dampener</p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-black sm:text-4xl">
-              A calm financial command center for the work behind the numbers.
-            </h2>
-          </div>
-          <div className="mt-8 grid gap-5 lg:grid-cols-3">
-            {trustPoints.map((point) => (
-              <article key={point.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white">
-                  <AppIcon name="sparkles" />
+          <div className="grid gap-4 md:grid-cols-3">
+            {importSafeguards.map((item) => (
+              <article key={item.title} className="landing-detail-card">
+                <span>
+                  <AppIcon name={item.icon} />
                 </span>
-                <h3 className="mt-5 text-lg font-semibold text-black">{point.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{point.description}</p>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="contact" className="bg-white px-5 py-14 sm:px-6 sm:py-16">
-        <div className="mx-auto grid max-w-6xl gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:grid-cols-[0.9fr_1fr]">
+      <section className="landing-reveal bg-[#07130f] px-5 py-16 text-white sm:px-6 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-center">
           <div>
-            <p className="text-sm font-bold uppercase text-emerald-700">Contact us</p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-black sm:text-4xl">
-              Want to talk through Dampener for your business?
-            </h2>
-            <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Send a demo or contact request and it will go directly to the Dampener team.
-              You can also follow the product updates on LinkedIn and Instagram.
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-lime-200">
+              Forecast logic
             </p>
-            <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap">
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+              Predictions that show their assumptions.
+            </h2>
+            <p className="mt-5 text-lg leading-8 text-cyan-50/72">
+              Cash prediction is not treated like a magic number. Teams can decide how cautious
+              the forecast should be and exactly which records are allowed to influence it.
+            </p>
+          </div>
+
+          <div className="landing-assumption-panel">
+            {predictionControls.map((item, index) => (
+              <div key={item} className="landing-assumption-row">
+                <span>0{index + 1}</span>
+                <p>{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-reveal bg-[#07130f] px-5 py-16 text-white sm:px-6 lg:py-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-lime-200">
+                Product views
+              </p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+                Familiar pages, sharper financial behavior.
+              </h2>
+            </div>
+            <p className="text-lg leading-8 text-cyan-50/72">
+              Dampener keeps the interface calm while the system handles richer data:
+              currency conversion, import validation, dashboard layout, and prediction preferences.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {workspaceViews.map((view) => (
+              <article key={view.title} className="landing-view-card">
+                <h3>{view.title}</h3>
+                <p>{view.text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" className="landing-reveal bg-[#eff8f3] px-5 py-16 text-slate-950 sm:px-6 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-8 rounded-[2rem] border border-teal-900/10 bg-white p-6 shadow-2xl shadow-teal-950/10 sm:p-10 lg:grid-cols-[1fr_0.9fr]">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-teal-700">
+              See Dampener
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+              Start with a demo workspace, then bring your own numbers.
+            </h2>
+            <p className="mt-5 text-lg leading-8 text-slate-600">
+              Try the product with sample data or contact the Dampener team to talk through
+              your workflow.
+            </p>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <LeadFormTrigger
+                source="demo"
+                className="inline-flex items-center justify-center rounded-full bg-teal-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-800"
+              >
+                Try Demo
+              </LeadFormTrigger>
               <LeadFormTrigger
                 source="contact"
-                className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex items-center justify-center rounded-full border border-teal-900/15 bg-white px-6 py-3 text-sm font-bold text-teal-950 transition hover:border-teal-700 hover:text-teal-700"
               >
                 Contact us
               </LeadFormTrigger>
-              {contactChannels.map((channel) => (
-                <Link
-                  key={channel.label}
-                  href={channel.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:border-emerald-300 hover:text-emerald-700"
-                >
-                  <AppIcon name={channel.icon} />
-                  {channel.label}
-                </Link>
-              ))}
             </div>
           </div>
-          <div className="grid gap-4">
-            <div className="rounded-2xl bg-slate-50 p-5">
-              
-              <p className="mt-2 text-sm leading-6 text-slate-700">
-                Try Demo and Contact us.
-              </p>
-              
-            </div>
-            
-           
-          </div>
-        </div>
-      </section>
 
-      <section className="bg-emerald-50 px-5 py-14 sm:px-6 sm:py-16">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
-          <div>
-            <p className="text-sm font-bold uppercase text-emerald-700">Ready to see it?</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-black sm:text-3xl">
-              Try Dampener with sample data first.
-            </h2>
+          <div className="grid content-between gap-4 rounded-[1.5rem] bg-[#07130f] p-5 text-white">
+            <div>
+              <p className="text-sm font-semibold text-cyan-100/70">Follow the build</p>
+              <div className="mt-4 grid gap-3">
+                {contactChannels.map((channel) => (
+                  <Link
+                    key={channel.label}
+                    href={channel.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-between rounded-2xl border border-white/10 bg-white/7 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/12"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <AppIcon name={channel.icon} />
+                      {channel.label}
+                    </span>
+                    <AppIcon name="arrow-small-right" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <p className="rounded-2xl border border-lime-200/20 bg-lime-200/10 p-4 text-sm leading-6 text-lime-50">
+              Built for people who need financial clarity before accounting software becomes
+              the center of the room.
+            </p>
           </div>
-          <LeadFormTrigger
-            source="demo"
-            className="inline-flex w-full items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto"
-          >
-            Try Demo
-          </LeadFormTrigger>
         </div>
       </section>
     </main>

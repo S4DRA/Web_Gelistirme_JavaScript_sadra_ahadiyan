@@ -6,6 +6,8 @@ import { AppIcon } from "@/components/app-icon";
 import { DemoRequestModal } from "@/components/demo-request-modal";
 
 type AuthFormProps = {
+  initialEmail?: string;
+  initialInviteToken?: string;
   mode: "login" | "signup";
 };
 
@@ -40,12 +42,13 @@ const authHighlights = [
   "Workspace-level organization",
 ];
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ initialEmail = "", initialInviteToken = "", mode }: AuthFormProps) {
   const content = copy[mode];
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [username, setUsername] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [inviteToken] = useState(initialInviteToken);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
@@ -66,7 +69,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, username }),
+          body: JSON.stringify({ email, inviteToken, username }),
         });
         const codeData = await codeResponse.json();
 
@@ -87,6 +90,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         },
         body: JSON.stringify({
           email,
+          inviteToken,
           password,
           phoneNumber,
           username,
@@ -253,7 +257,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                     setVerificationCode("");
                     setNotice("");
                   }}
-                  disabled={mode === "signup" && codeSent}
+                  disabled={mode === "signup" && (codeSent || Boolean(initialEmail))}
                   className="min-h-11 w-full border-0 bg-transparent px-0 py-3 text-slate-900 outline-none disabled:cursor-not-allowed sm:min-h-12"
                   placeholder="you@example.com"
                 />

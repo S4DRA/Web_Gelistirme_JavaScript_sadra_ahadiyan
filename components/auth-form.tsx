@@ -19,9 +19,9 @@ const copy = {
     button: "Login",
     pending: "Logging in...",
     endpoint: "/api/auth/login",
-    alternateText: "Want a walkthrough?",
+    alternateText: "Need an account?",
     alternateHref: "/signup",
-    alternateLabel: "Sign up for demo",
+    alternateLabel: "Sign up",
   },
   signup: {
     eyebrow: "Create your workspace",
@@ -52,7 +52,6 @@ export function AuthForm({ initialEmail = "", initialInviteToken = "", mode }: A
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
-  const [codeSent, setCodeSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
 
@@ -63,25 +62,6 @@ export function AuthForm({ initialEmail = "", initialInviteToken = "", mode }: A
     setNotice("");
 
     try {
-      if (mode === "signup" && !codeSent) {
-        const codeResponse = await fetch("/api/auth/signup/send-code", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, inviteToken, username }),
-        });
-        const codeData = await codeResponse.json();
-
-        if (!codeResponse.ok) {
-          throw new Error(codeData.error || "Failed to send verification code.");
-        }
-
-        setCodeSent(true);
-        setNotice("We sent a 6-digit code to your email.");
-        return;
-      }
-
       const response = await fetch(content.endpoint, {
         method: "POST",
         credentials: "same-origin",
@@ -253,11 +233,10 @@ export function AuthForm({ initialEmail = "", initialInviteToken = "", mode }: A
                   value={email}
                   onChange={(event) => {
                     setEmail(event.target.value);
-                    setCodeSent(false);
                     setVerificationCode("");
                     setNotice("");
                   }}
-                  disabled={mode === "signup" && (codeSent || Boolean(initialEmail))}
+                  disabled={mode === "signup" && Boolean(initialEmail)}
                   className="min-h-11 w-full border-0 bg-transparent px-0 py-3 text-slate-900 outline-none disabled:cursor-not-allowed sm:min-h-12"
                   placeholder="you@example.com"
                 />
@@ -281,29 +260,6 @@ export function AuthForm({ initialEmail = "", initialInviteToken = "", mode }: A
               </span>
             </label>
 
-            {mode === "signup" && codeSent ? (
-              <label className="grid gap-2 text-sm font-medium text-slate-700">
-                Verification code
-                <span className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 transition focus-within:border-emerald-400 focus-within:ring-4 focus-within:ring-emerald-100">
-                  <AppIcon name="shield-check" className="text-slate-400" />
-                  <input
-                    required
-                    inputMode="numeric"
-                    maxLength={6}
-                    minLength={6}
-                    pattern="[0-9]{6}"
-                    type="text"
-                    autoComplete="one-time-code"
-                    value={verificationCode}
-                    onChange={(event) =>
-                      setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))
-                    }
-                    className="min-h-11 w-full border-0 bg-transparent px-0 py-3 text-slate-900 outline-none sm:min-h-12"
-                    placeholder="123456"
-                  />
-                </span>
-              </label>
-            ) : null}
           </div>
 
           <div className="mt-5 min-h-6 text-sm font-medium text-emerald-700">{notice}</div>
@@ -314,25 +270,28 @@ export function AuthForm({ initialEmail = "", initialInviteToken = "", mode }: A
             disabled={submitting}
             className="mt-2 w-full rounded-full bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
-            {submitting
-              ? mode === "signup" && !codeSent
-                ? "Sending code..."
-                : content.pending
-              : mode === "signup" && !codeSent
-                ? "Send verification code"
-                : content.button}
+            {submitting ? content.pending : content.button}
           </button>
 
           <p className="mt-5 text-center text-sm text-slate-500">
             {content.alternateText}{" "}
             {mode === "login" ? (
-              <button
-                type="button"
-                onClick={() => setDemoOpen(true)}
-                className="font-medium text-slate-900 hover:text-slate-700"
-              >
-                {content.alternateLabel}
-              </button>
+              <>
+                <Link
+                  href="/signup"
+                  className="font-medium text-slate-900 hover:text-slate-700"
+                >
+                  {content.alternateLabel}
+                </Link>
+                <span> or </span>
+                <button
+                  type="button"
+                  onClick={() => setDemoOpen(true)}
+                  className="font-medium text-slate-900 hover:text-slate-700"
+                >
+                  Try Demo
+                </button>
+              </>
             ) : (
               <Link
                 href={content.alternateHref}

@@ -3,15 +3,10 @@ import { createSessionCookie, hashPassword } from "@/lib/auth";
 import { sendWelcomeEmail } from "@/lib/email";
 import { validateEmailCanReceiveMail } from "@/lib/email-validation";
 import { getPrisma } from "@/lib/prisma";
-import {
-  hashSignupRequestToken,
-  hashVerificationCode,
-} from "@/lib/signup-verification";
 
 export async function POST(request: Request) {
   try {
-    const { email, inviteToken, password, username, phoneNumber, verificationCode } =
-      await request.json();
+    const { email, password, username, phoneNumber } = await request.json();
 
     if (typeof email !== "string") {
       return NextResponse.json(
@@ -53,34 +48,6 @@ export async function POST(request: Request) {
     const prisma = getPrisma();
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedUsername = username.trim().toLowerCase();
-    const inviteTokenHash =
-      typeof inviteToken === "string" ? hashSignupRequestToken(inviteToken) : "";
-    const signupRequest = inviteTokenHash
-      ? await prisma.signupRequest.findUnique({
-          where: { inviteTokenHash },
-          select: {
-            approvedAt: true,
-            email: true,
-            expiresAt: true,
-            id: true,
-            usedAt: true,
-          },
-        })
-      : null;
-
-    if (
-      !signupRequest ||
-      signupRequest.email !== normalizedEmail ||
-      !signupRequest.approvedAt ||
-      signupRequest.usedAt ||
-      signupRequest.expiresAt <= new Date()
-    ) {
-      return NextResponse.json(
-        { error: "Use the signup link from your approved request email." },
-        { status: 403 },
-      );
-    }
-
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },
       select: {
@@ -107,50 +74,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (typeof verificationCode !== "string" || !/^\d{6}$/.test(verificationCode.trim())) {
-      return NextResponse.json(
-        { error: "Enter the 6-digit verification code." },
-        { status: 400 },
-      );
-    }
-
-    const codeRecord = await prisma.signupVerificationCode.findFirst({
-      where: {
-        consumedAt: null,
-        email: normalizedEmail,
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    if (!codeRecord) {
-      return NextResponse.json(
-        { error: "Verification code is expired. Send a new code." },
-        { status: 400 },
-      );
-    }
-
-    if (codeRecord.attempts >= 5) {
-      return NextResponse.json(
-        { error: "Too many attempts. Send a new code." },
-        { status: 429 },
-      );
-    }
-
-    const codeHash = hashVerificationCode(normalizedEmail, verificationCode.trim());
-
-    if (codeHash !== codeRecord.codeHash) {
-      await prisma.signupVerificationCode.update({
-        data: { attempts: { increment: 1 } },
-        where: { id: codeRecord.id },
-      });
-
-      return NextResponse.json(
-        { error: "Verification code is incorrect." },
-        { status: 400 },
-      );
-    }
-
     const user = await prisma.user.create({
       data: {
         email: normalizedEmail,
@@ -164,15 +87,6 @@ export async function POST(request: Request) {
         username: true,
         phoneNumber: true,
       },
-    });
-
-    await prisma.signupVerificationCode.update({
-      data: { consumedAt: new Date() },
-      where: { id: codeRecord.id },
-    });
-    await prisma.signupRequest.update({
-      data: { usedAt: new Date() },
-      where: { id: signupRequest.id },
     });
 
     await sendWelcomeEmail(user.email).catch((emailError) => {

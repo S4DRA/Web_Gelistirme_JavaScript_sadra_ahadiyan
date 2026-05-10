@@ -131,9 +131,15 @@ export default function Home() {
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/signup"
+                className="inline-flex items-center justify-center rounded-full bg-lime-300 px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200"
+              >
+                Sign up
+              </Link>
               <LeadFormTrigger
                 source="demo"
-                className="inline-flex items-center justify-center rounded-full bg-lime-300 px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200"
+                className="inline-flex items-center justify-center rounded-full border border-lime-200/40 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
               >
                 Try Demo
               </LeadFormTrigger>
@@ -380,9 +386,15 @@ export default function Home() {
               your workflow.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/signup"
+                className="inline-flex items-center justify-center rounded-full bg-teal-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-800"
+              >
+                Sign up
+              </Link>
               <LeadFormTrigger
                 source="demo"
-                className="inline-flex items-center justify-center rounded-full bg-teal-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-800"
+                className="inline-flex items-center justify-center rounded-full border border-teal-900/15 bg-white px-6 py-3 text-sm font-bold text-teal-950 transition hover:border-teal-700 hover:text-teal-700"
               >
                 Try Demo
               </LeadFormTrigger>

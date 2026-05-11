@@ -12,9 +12,19 @@ export function createSignupRequestToken() {
   return randomBytes(32).toString("base64url");
 }
 
+export function createAccessRequestToken() {
+  return randomBytes(32).toString("base64url");
+}
+
 export function hashSignupRequestToken(token: string) {
   return createHmac("sha256", getVerificationSecret())
     .update(`signup-request:${token.trim()}`)
+    .digest("base64url");
+}
+
+export function hashAccessRequestToken(token: string) {
+  return createHmac("sha256", getVerificationSecret())
+    .update(`access-request:${token.trim()}`)
     .digest("base64url");
 }
 

@@ -122,7 +122,7 @@ export function DemoRequestModal({ open, onClose, source = "demo" }: DemoRequest
               {isContact ? "Contact Dampener" : "Demo request"}
             </p>
             <h2 id={titleId} className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
-              {isContact ? "Contact us" : "Sign up for demo"}
+              {isContact ? "Contact us" : "Request demo"}
             </h2>
           </div>
           <button

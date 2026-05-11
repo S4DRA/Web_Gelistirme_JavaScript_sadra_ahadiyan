@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { AppIcon } from "@/components/app-icon";
 import { LeadFormTrigger } from "@/components/lead-form-trigger";
 
@@ -112,8 +111,6 @@ const contactChannels = [
 ];
 
 export default function Home() {
-  redirect("/dashboard");
-
   return (
     <main className="landing-page flex flex-1 flex-col overflow-x-hidden bg-[#06110f] text-white">
       <section className="landing-hero relative isolate overflow-hidden">
@@ -135,10 +132,10 @@ export default function Home() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/signup"
+                href="/request-access"
                 className="inline-flex items-center justify-center rounded-full bg-lime-300 px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200"
               >
-                Sign up
+                Request Access
               </Link>
               <LeadFormTrigger
                 source="demo"
@@ -390,10 +387,10 @@ export default function Home() {
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/signup"
+                href="/request-access"
                 className="inline-flex items-center justify-center rounded-full bg-teal-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-800"
               >
-                Sign up
+                Request Access
               </Link>
               <LeadFormTrigger
                 source="demo"

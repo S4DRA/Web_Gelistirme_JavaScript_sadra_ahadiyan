@@ -1,7 +1,7 @@
 import { AuthForm } from "@/components/auth-form";
 
 type SignupPageProps = {
-  searchParams: Promise<{ email?: string | string[]; invite?: string | string[] }>;
+  searchParams: Promise<{ accessToken?: string | string[]; email?: string | string[] }>;
 };
 
 function firstParam(value: string | string[] | undefined) {
@@ -14,7 +14,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
   return (
     <AuthForm
       initialEmail={firstParam(params.email)}
-      initialInviteToken={firstParam(params.invite)}
+      initialAccessToken={firstParam(params.accessToken)}
       mode="signup"
     />
   );

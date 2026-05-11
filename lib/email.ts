@@ -115,6 +115,74 @@ export async function sendSignupInvitationEmail(options: {
   });
 }
 
+export async function sendAccessRequestToAdmin(options: {
+  approvalUrl: string;
+  companyName: string;
+  email: string;
+  fullName: string;
+  message: string | null;
+  role: string;
+  to?: string;
+  useCase: string;
+}) {
+  const adminEmail = options.to || process.env.ACCESS_REQUEST_ADMIN_EMAIL || process.env.SMTP_USER;
+  const fields = [
+    ["Requester name", options.fullName],
+    ["Requester email", options.email],
+    ["Company / project", options.companyName],
+    ["Role", options.role],
+    ["Use case", options.useCase],
+    ["Optional message", options.message || "Not provided"],
+    ["Approval link", options.approvalUrl],
+  ];
+
+  if (!adminEmail) {
+    console.warn("Access request email was not sent because no admin email is configured.");
+    return false;
+  }
+
+  return sendEmail({
+    html: `
+      <h2>New Dampener access request</h2>
+      <table cellpadding="8" cellspacing="0" style="border-collapse: collapse;">
+        ${fields
+          .map(
+            ([label, value]) => `
+              <tr>
+                <td style="border: 1px solid #d1d5db; font-weight: 700;">${escapeHtml(label)}</td>
+                <td style="border: 1px solid #d1d5db;">${escapeHtml(value)}</td>
+              </tr>
+            `,
+          )
+          .join("")}
+      </table>
+      <p style="margin-top: 16px;">
+        <a href="${escapeHtml(options.approvalUrl)}">Approve access request</a>
+      </p>
+    `,
+    subject: `New Dampener access request from ${options.fullName}`,
+    text: fields.map(([label, value]) => `${label}: ${value}`).join("\n"),
+    to: adminEmail,
+  });
+}
+
+export async function sendAccessApprovedToUser(options: {
+  signupUrl: string;
+  to: string;
+}) {
+  const signupUrl = escapeHtml(options.signupUrl);
+
+  return sendEmail({
+    html: `
+      <p>You now have access to Dampener. Please create your account using this link.</p>
+      <p><a href="${signupUrl}">Create your Dampener account</a></p>
+    `,
+    subject: "You now have access to Dampener",
+    text: `You now have access to Dampener. Please create your account using this link.\n\n${options.signupUrl}`,
+    to: options.to,
+  });
+}
+
 export async function sendEmailChangeVerificationCode(to: string, code: string) {
   return sendEmail({
     html: `

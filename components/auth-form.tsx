@@ -6,8 +6,8 @@ import { AppIcon } from "@/components/app-icon";
 import { DemoRequestModal } from "@/components/demo-request-modal";
 
 type AuthFormProps = {
+  initialAccessToken?: string;
   initialEmail?: string;
-  initialInviteToken?: string;
   mode: "login" | "signup";
 };
 
@@ -20,13 +20,13 @@ const copy = {
     pending: "Logging in...",
     endpoint: "/api/auth/login",
     alternateText: "Need an account?",
-    alternateHref: "/signup",
-    alternateLabel: "Sign up",
+    alternateHref: "/request-access",
+    alternateLabel: "Request access",
   },
   signup: {
-    eyebrow: "Create your workspace",
+    eyebrow: "Approved access",
     title: "Start your Dampener account",
-    description: "Create an account to keep financial data organized and private.",
+    description: "Use the approved access link from your email to create your account.",
     button: "Create account",
     pending: "Creating account...",
     endpoint: "/api/auth/signup",
@@ -42,13 +42,13 @@ const authHighlights = [
   "Workspace-level organization",
 ];
 
-export function AuthForm({ initialEmail = "", initialInviteToken = "", mode }: AuthFormProps) {
+export function AuthForm({ initialAccessToken = "", initialEmail = "", mode }: AuthFormProps) {
   const content = copy[mode];
   const [email, setEmail] = useState(initialEmail);
   const [username, setUsername] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [inviteToken] = useState(initialInviteToken);
+  const [accessToken] = useState(initialAccessToken);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
@@ -69,8 +69,8 @@ export function AuthForm({ initialEmail = "", initialInviteToken = "", mode }: A
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          accessToken,
           email,
-          inviteToken,
           password,
           phoneNumber,
           username,
@@ -278,7 +278,7 @@ export function AuthForm({ initialEmail = "", initialInviteToken = "", mode }: A
             {mode === "login" ? (
               <>
                 <Link
-                  href="/signup"
+                  href={content.alternateHref}
                   className="font-medium text-slate-900 hover:text-slate-700"
                 >
                   {content.alternateLabel}

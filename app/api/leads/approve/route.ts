@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { sendSignupInvitationEmail } from "@/lib/email";
+import { sendAccessApprovedToUser } from "@/lib/email";
 import { getPrisma } from "@/lib/prisma";
 import {
+  createAccessRequestToken,
   createSignupRequestToken,
+  hashAccessRequestToken,
   hashSignupRequestToken,
 } from "@/lib/signup-verification";
 
@@ -74,26 +76,40 @@ export async function GET(request: Request) {
     }
 
     const inviteToken = createSignupRequestToken();
+    const accessToken = createAccessRequestToken();
     const inviteUrl = new URL("/signup", url.origin);
-    inviteUrl.searchParams.set("invite", inviteToken);
-    inviteUrl.searchParams.set("email", signupRequest.email);
+    inviteUrl.searchParams.set("accessToken", accessToken);
 
-    await prisma.signupRequest.update({
-      data: {
-        approvedAt: signupRequest.approvedAt ?? new Date(),
-        inviteSentAt: new Date(),
-        inviteTokenHash: hashSignupRequestToken(inviteToken),
-      },
-      where: { id: signupRequest.id },
-    });
+    await prisma.$transaction([
+      prisma.signupRequest.update({
+        data: {
+          approvedAt: signupRequest.approvedAt ?? new Date(),
+          inviteSentAt: new Date(),
+          inviteTokenHash: hashSignupRequestToken(inviteToken),
+        },
+        where: { id: signupRequest.id },
+      }),
+      prisma.accessRequest.create({
+        data: {
+          approvalToken: hashAccessRequestToken(accessToken),
+          companyName: signupRequest.companyName || "Demo request",
+          email: signupRequest.email,
+          fullName: signupRequest.fullName,
+          message: signupRequest.note,
+          role: "Requester",
+          status: "approved",
+          useCase: signupRequest.source,
+        },
+      }),
+    ]);
 
-    await sendSignupInvitationEmail({
+    await sendAccessApprovedToUser({
       signupUrl: inviteUrl.toString(),
       to: signupRequest.email,
     });
 
     return htmlMessage(
-      "Signup invite sent",
+      "Access approved",
       `An email with the signup link was sent to ${signupRequest.email}.`,
     );
   } catch (error) {

@@ -5,8 +5,6 @@ import { getPrisma } from "@/lib/prisma";
 const scrypt = promisify(scryptCallback);
 const sessionCookieName = "dampener_session";
 const sessionDurationSeconds = 60 * 60 * 24 * 7;
-const publicAccessEnabled = true;
-const publicAccessEmail = "public@dampener.app";
 
 type SessionPayload = {
   userId: string;
@@ -118,20 +116,12 @@ export async function getCurrentUser(request: Request): Promise<AuthUser | null>
   const sessionCookie = parseCookies(request.headers.get("cookie")).get(sessionCookieName);
 
   if (!sessionCookie) {
-    if (publicAccessEnabled) {
-      return getPublicAccessUser();
-    }
-
     return null;
   }
 
   const [encodedPayload, signature] = sessionCookie.split(".");
 
   if (!encodedPayload || !signature || sign(encodedPayload) !== signature) {
-    if (publicAccessEnabled) {
-      return getPublicAccessUser();
-    }
-
     return null;
   }
 
@@ -139,10 +129,6 @@ export async function getCurrentUser(request: Request): Promise<AuthUser | null>
     const payload = JSON.parse(decodeBase64Url(encodedPayload)) as SessionPayload;
 
     if (!payload.userId || payload.expiresAt < Date.now()) {
-      if (publicAccessEnabled) {
-        return getPublicAccessUser();
-      }
-
       return null;
     }
 
@@ -158,42 +144,8 @@ export async function getCurrentUser(request: Request): Promise<AuthUser | null>
       },
     });
 
-    if (!user && publicAccessEnabled) {
-      return getPublicAccessUser();
-    }
-
     return user;
   } catch {
-    if (publicAccessEnabled) {
-      return getPublicAccessUser();
-    }
-
     return null;
   }
-}
-
-async function getPublicAccessUser(): Promise<AuthUser> {
-  const prisma = getPrisma();
-
-  return prisma.user.upsert({
-    where: { email: publicAccessEmail },
-    update: {},
-    create: {
-      email: publicAccessEmail,
-      password: "public-access-disabled-login",
-      preference: {
-        create: {
-          currency: "USD",
-          onboardingComplete: true,
-        },
-      },
-    },
-    select: {
-      id: true,
-      email: true,
-      username: true,
-      phoneNumber: true,
-      profileImage: true,
-    },
-  });
 }

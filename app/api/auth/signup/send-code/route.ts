@@ -4,8 +4,8 @@ import { validateEmailCanReceiveMail } from "@/lib/email-validation";
 import { getPrisma } from "@/lib/prisma";
 import {
   createVerificationCode,
+  hashAccessRequestToken,
   hashVerificationCode,
-  hashSignupRequestToken,
 } from "@/lib/signup-verification";
 
 const codeExpiryMinutes = 10;
@@ -13,7 +13,7 @@ const resendCooldownSeconds = 60;
 
 export async function POST(request: Request) {
   try {
-    const { email, inviteToken, username } = await request.json();
+    const { accessToken, email, username } = await request.json();
 
     if (typeof email !== "string") {
       return NextResponse.json(
@@ -42,30 +42,28 @@ export async function POST(request: Request) {
     const normalizedUsername =
       typeof username === "string" ? username.trim().toLowerCase() : "";
     const prisma = getPrisma();
-    const inviteTokenHash =
-      typeof inviteToken === "string" ? hashSignupRequestToken(inviteToken) : "";
-    const signupRequest = inviteTokenHash
-      ? await prisma.signupRequest.findUnique({
-          where: { inviteTokenHash },
+    const accessTokenHash =
+      typeof accessToken === "string" ? hashAccessRequestToken(accessToken) : "";
+    const accessRequest = accessTokenHash
+      ? await prisma.accessRequest.findUnique({
+          where: { approvalToken: accessTokenHash },
           select: {
-            approvedAt: true,
             email: true,
-            expiresAt: true,
             id: true,
+            status: true,
             usedAt: true,
           },
         })
       : null;
 
     if (
-      !signupRequest ||
-      signupRequest.email !== normalizedEmail ||
-      !signupRequest.approvedAt ||
-      signupRequest.usedAt ||
-      signupRequest.expiresAt <= new Date()
+      !accessRequest ||
+      accessRequest.email !== normalizedEmail ||
+      accessRequest.status !== "approved" ||
+      accessRequest.usedAt
     ) {
       return NextResponse.json(
-        { error: "Use the signup link from your approved request email." },
+        { error: "Use the signup link from your approved access email." },
         { status: 403 },
       );
     }

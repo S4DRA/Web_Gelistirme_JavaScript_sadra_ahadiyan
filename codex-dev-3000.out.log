@@ -1,0 +1,19 @@
+
+> dampener@0.1.0 dev
+> next dev -p 3000
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.60.30.131:3000
+- Environments: .env
+✓ Ready in 546ms
+Creating turbopack project { dir: 'D:\\Exairon Github\\Dampener', testMode: true }
+
+ GET / 200 in 2.2s (next.js: 1561ms, application-code: 685ms)
+ GET / 200 in 2.2s (next.js: 1683ms, application-code: 555ms)
+ GET /request-access 200 in 89ms (next.js: 52ms, application-code: 37ms)
+ GET / 200 in 65ms (next.js: 5ms, application-code: 59ms)
+ POST /api/access-request 200 in 2.8s (next.js: 301ms, application-code: 2.5s)
+ GET /request-access 200 in 39ms (next.js: 5ms, application-code: 34ms)
+ POST /api/access-request 200 in 1974ms (next.js: 3ms, application-code: 1972ms)
+ GET / 200 in 90ms (next.js: 24ms, application-code: 67ms)

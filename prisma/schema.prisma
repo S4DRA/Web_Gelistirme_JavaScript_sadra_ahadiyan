@@ -39,6 +39,12 @@ enum BudgetPeriod {
   yearly
 }
 
+enum AccessRequestStatus {
+  pending
+  approved
+  rejected
+}
+
 model User {
   id               String                    @id @default(cuid())
   email            String                    @unique
@@ -53,6 +59,25 @@ model User {
   trackingFolders  FinancialTrackingFolder[]
   ownedWorkspaces  Workspace[]               @relation("WorkspaceOwner")
   workspaceMembers WorkspaceMember[]
+}
+
+model AccessRequest {
+  id            String              @id @default(cuid())
+  fullName      String
+  email         String
+  companyName   String
+  role          String
+  useCase       String
+  message       String?
+  status        AccessRequestStatus @default(pending)
+  approvalToken String              @unique
+  usedAt        DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([email])
+  @@index([email, status])
+  @@index([status, createdAt])
 }
 
 model SignupVerificationCode {

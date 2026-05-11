@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AppIcon } from "@/components/app-icon";
 import { LeadFormTrigger } from "@/components/lead-form-trigger";
 
@@ -111,6 +112,8 @@ const contactChannels = [
 ];
 
 export default function Home() {
+  redirect("/dashboard");
+
   return (
     <main className="landing-page flex flex-1 flex-col overflow-x-hidden bg-[#06110f] text-white">
       <section className="landing-hero relative isolate overflow-hidden">

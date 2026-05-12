@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { RecurrenceFrequency, TransactionType } from "@prisma/client";
 import { normalizeCurrency } from "@/lib/currency";
+import {
+  cleanShortText,
+  isValidShortText,
+  parsePositiveMoney,
+} from "@/lib/financial-validation";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -64,22 +69,22 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const name = typeof body.name === "string" ? body.name.trim() : "";
-    const category = typeof body.category === "string" ? body.category.trim() : "";
-    const amount = Number(body.amount);
+    const name = cleanShortText(body.name);
+    const category = cleanShortText(body.category);
+    const amount = parsePositiveMoney(body.amount);
     const nextDate = new Date(body.nextDate);
     const currency = normalizeCurrency(body.currency, context.workspace.currency);
 
-    if (!name || !category) {
+    if (!isValidShortText(name) || !isValidShortText(category)) {
       return NextResponse.json(
-        { error: "Name and category are required." },
+        { error: "Name and category are required and must be 80 characters or fewer." },
         { status: 400 },
       );
     }
 
-    if (!Number.isFinite(amount) || amount <= 0) {
+    if (amount === null) {
       return NextResponse.json(
-        { error: "Amount must be greater than 0." },
+        { error: "Amount must be between 0.01 and 999,999,999.99." },
         { status: 400 },
       );
     }

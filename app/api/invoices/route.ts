@@ -1,6 +1,11 @@
 import { InvoiceStatus } from "@prisma/client";
 import { connection, NextResponse } from "next/server";
 import { convertCurrencyAmount, normalizeCurrency } from "@/lib/currency";
+import {
+  cleanShortText,
+  isValidShortText,
+  parsePositiveMoney,
+} from "@/lib/financial-validation";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -76,20 +81,21 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { clientName, amount, dueDate, reminderDate, status } = body;
+    const cleanClientName = cleanShortText(clientName);
     const originalCurrency = normalizeCurrency(body.currency, context.workspace.currency);
 
-    if (typeof clientName !== "string" || clientName.trim().length === 0) {
+    if (!isValidShortText(cleanClientName)) {
       return NextResponse.json(
-        { error: "Client name is required." },
+        { error: "Client name is required and must be 80 characters or fewer." },
         { status: 400 },
       );
     }
 
-    const parsedAmount = Number(amount);
+    const parsedAmount = parsePositiveMoney(amount);
 
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+    if (parsedAmount === null) {
       return NextResponse.json(
-        { error: "Amount must be a number greater than 0." },
+        { error: "Amount must be between 0.01 and 999,999,999.99." },
         { status: 400 },
       );
     }
@@ -105,7 +111,9 @@ export async function POST(request: Request) {
 
     const allowedStatuses = Object.values(InvoiceStatus);
 
-    if (!allowedStatuses.includes(status)) {
+    const invoiceStatus = status ?? InvoiceStatus.unpaid;
+
+    if (!allowedStatuses.includes(invoiceStatus)) {
       return NextResponse.json(
         { error: "Status is not valid." },
         { status: 400 },
@@ -132,7 +140,7 @@ export async function POST(request: Request) {
         userId: context.user.id,
         workspaceId: context.workspace.id,
         financeType: context.financeType,
-        clientName: clientName.trim(),
+        clientName: cleanClientName,
         amount: conversion.amount,
         currency: context.workspace.currency,
         dueDate: parsedDueDate,
@@ -140,7 +148,7 @@ export async function POST(request: Request) {
         originalAmount: parsedAmount,
         originalCurrency,
         reminderDate: parsedReminderDate,
-        status,
+        status: invoiceStatus,
       },
     });
 

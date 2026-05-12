@@ -598,7 +598,7 @@ export default function SettingsPage() {
               Appearance
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Choose your theme and switch between light and dark mode.
+              Choose your palette, light or dark mode, and Modern 3D or High Contrast rendering.
             </p>
           </div>
 

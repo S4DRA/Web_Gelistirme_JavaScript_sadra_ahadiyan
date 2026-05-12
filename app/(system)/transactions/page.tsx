@@ -321,6 +321,7 @@ export default function TransactionsPage() {
             Amount
             <input
               required
+              max="999999999.99"
               min="0.01"
               step="0.01"
               type="number"
@@ -371,6 +372,7 @@ export default function TransactionsPage() {
             Category
             <input
               required
+              maxLength={80}
               type="text"
               value={form.category}
               onChange={(event) =>
@@ -429,6 +431,7 @@ export default function TransactionsPage() {
           <label className="grid gap-2 text-sm font-medium text-slate-700">
             Note
             <input
+              maxLength={500}
               type="text"
               value={form.note}
               onChange={(event) =>

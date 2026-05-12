@@ -224,14 +224,21 @@ function getHistoricalDailyNet(
 function getInvoiceIncomeWindows(
   invoices: { amount: { toString(): string }; dueDate: Date }[],
 ) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   return invoices.reduce(
     (totals, invoice) => {
       const dueDate = new Date(invoice.dueDate);
-      const today = new Date();
+      dueDate.setHours(0, 0, 0, 0);
       const daysAway = Math.ceil(
         (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
       );
       const amount = Number(invoice.amount.toString());
+
+      if (daysAway < 0) {
+        return totals;
+      }
 
       if (daysAway <= 7) {
         totals.upcomingSevenDayInvoiceIncome += amount;

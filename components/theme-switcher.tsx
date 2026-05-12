@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 type ThemeName = "default" | "boys" | "men" | "girls" | "women" | "hampoiel";
 type ThemeMode = "light" | "dark";
+type ThemeContrast = "modern" | "high";
 
 const themes: { value: ThemeName; label: string }[] = [
   { value: "default", label: "Default" },
@@ -14,24 +15,30 @@ const themes: { value: ThemeName; label: string }[] = [
   { value: "hampoiel", label: "Hampoiel" },
 ];
 
-function applyTheme(theme: ThemeName, mode: ThemeMode) {
+function applyTheme(theme: ThemeName, mode: ThemeMode, contrast: ThemeContrast) {
   document.documentElement.dataset.theme = theme;
   document.documentElement.dataset.mode = mode;
+  document.documentElement.dataset.contrast = contrast;
 }
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeName>("default");
   const [mode, setMode] = useState<ThemeMode>("light");
+  const [contrast, setContrast] = useState<ThemeContrast>("modern");
   const [loadedPreferences, setLoadedPreferences] = useState(false);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("dampener-theme") as ThemeName | null;
     const savedMode = window.localStorage.getItem("dampener-mode") as ThemeMode | null;
+    const savedContrast = window.localStorage.getItem(
+      "dampener-contrast",
+    ) as ThemeContrast | null;
 
     const frame = requestAnimationFrame(() => {
       setTheme(savedTheme ?? "default");
       setMode(savedMode ?? "light");
+      setContrast(savedContrast ?? "modern");
       setLoadedPreferences(true);
     });
 
@@ -43,15 +50,15 @@ export function ThemeSwitcher() {
       return;
     }
 
-    applyTheme(theme, mode);
-  }, [loadedPreferences, theme, mode]);
+    applyTheme(theme, mode, contrast);
+  }, [loadedPreferences, theme, mode, contrast]);
 
   function handleThemeChange(value: ThemeName) {
     const nextMode = mode;
     setTheme(value);
     setMode(nextMode);
     setOpen(false);
-    applyTheme(value, nextMode);
+    applyTheme(value, nextMode, contrast);
     window.localStorage.setItem("dampener-theme", value);
     window.localStorage.setItem("dampener-mode", nextMode);
   }
@@ -60,14 +67,26 @@ export function ThemeSwitcher() {
     const nextMode = mode === "dark" ? "light" : "dark";
 
     setMode(nextMode);
-    applyTheme(theme, nextMode);
+    applyTheme(theme, nextMode, contrast);
     window.localStorage.setItem("dampener-mode", nextMode);
+  }
+
+  function handleContrastChange() {
+    const nextContrast = contrast === "high" ? "modern" : "high";
+
+    setContrast(nextContrast);
+    applyTheme(theme, mode, nextContrast);
+    window.localStorage.setItem("dampener-contrast", nextContrast);
   }
 
   const currentTheme = themes.find((item) => item.value === theme) ?? themes[0];
 
   return (
-    <div className="theme-switcher relative flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+    <div
+      className={`theme-switcher relative flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm ${
+        compact ? "is-compact" : ""
+      }`}
+    >
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
@@ -114,6 +133,15 @@ export function ThemeSwitcher() {
         aria-pressed={mode === "dark"}
       >
         {mode === "dark" ? "Light" : "Dark"}
+      </button>
+
+      <button
+        type="button"
+        onClick={handleContrastChange}
+        className="theme-contrast-button h-9 rounded-full border border-slate-200 px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+        aria-pressed={contrast === "high"}
+      >
+        {contrast === "high" ? "High Contrast" : "Modern 3D"}
       </button>
     </div>
   );

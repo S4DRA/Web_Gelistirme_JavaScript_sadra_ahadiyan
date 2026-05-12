@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cleanShortText, isValidShortText } from "@/lib/financial-validation";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -45,18 +46,38 @@ export async function POST(request: Request) {
     }
 
     const { name } = await request.json();
+    const cleanName = cleanShortText(name);
 
-    if (typeof name !== "string" || name.trim().length === 0) {
-      return NextResponse.json({ error: "Folder name is required." }, { status: 400 });
+    if (!isValidShortText(cleanName)) {
+      return NextResponse.json(
+        { error: "Folder name is required and must be 80 characters or fewer." },
+        { status: 400 },
+      );
     }
 
     const prisma = getPrisma();
+    const existingFolder = await prisma.financialTrackingFolder.findFirst({
+      where: {
+        financeType: context.financeType,
+        name: cleanName,
+        workspaceId: context.workspace.id,
+      },
+      select: { id: true },
+    });
+
+    if (existingFolder) {
+      return NextResponse.json(
+        { error: "A folder with this name already exists." },
+        { status: 409 },
+      );
+    }
+
     const folder = await prisma.financialTrackingFolder.create({
       data: {
         userId: context.user.id,
         workspaceId: context.workspace.id,
         financeType: context.financeType,
-        name: name.trim(),
+        name: cleanName,
       },
     });
 

@@ -47,6 +47,8 @@ export function buildAnalytics({
   transactions: AnalyticsTransaction[];
 }) {
   const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
   const currentMonth = startOfMonth(now);
   const previousMonth = new Date(currentMonth);
   previousMonth.setMonth(previousMonth.getMonth() - 1);
@@ -121,12 +123,15 @@ export function buildAnalytics({
     const dueDate = new Date(invoice.dueDate);
     dueDate.setHours(0, 0, 0, 0);
 
-    return dueDate < now;
+    return dueDate < todayStart;
   });
   const dueSoonInvoices = openInvoices.filter((invoice) => {
-    const dueTime = new Date(invoice.dueDate).getTime();
+    const dueDate = new Date(invoice.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    const sevenDaysFromToday = new Date(todayStart);
+    sevenDaysFromToday.setDate(todayStart.getDate() + 7);
 
-    return dueTime >= now.getTime() && dueTime <= now.getTime() + 7 * 24 * 60 * 60 * 1000;
+    return dueDate >= todayStart && dueDate <= sevenDaysFromToday;
   });
   const invoiceAging = {
     dueSoon: dueSoonInvoices.reduce((total, invoice) => total + Number(invoice.amount.toString()), 0),

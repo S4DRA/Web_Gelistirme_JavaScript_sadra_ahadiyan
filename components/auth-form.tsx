@@ -103,24 +103,24 @@ export function AuthForm({ initialAccessToken = "", initialEmail = "", mode }: A
   return (
     <main className="flex flex-1 bg-slate-50 px-4 py-5 sm:px-6 sm:py-10 lg:py-14">
       <section className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid-cols-[1fr_28rem]">
-        <div className="relative hidden bg-slate-950 p-8 text-white sm:p-10 lg:block lg:p-12">
+        <div className="auth-visual-panel relative hidden bg-slate-950 p-8 text-white sm:p-10 lg:block lg:p-12">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.28),transparent_26rem)]" />
           <div className="relative flex h-full flex-col justify-between gap-12">
             <div>
               <Link href="/" className="inline-flex items-center gap-3 text-lg font-semibold">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400 text-slate-950">
+                <span className="auth-brand-icon inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400 text-slate-950">
                   <AppIcon name="chart-histogram" />
                 </span>
                 Dampener
               </Link>
               <div className="mt-14 max-w-xl">
-                <span className="inline-flex rounded-full border border-emerald-300/30 bg-white/10 px-3 py-1 text-sm font-medium text-emerald-200">
+                <span className="auth-eyebrow inline-flex rounded-full border border-emerald-300/30 bg-white/10 px-3 py-1 text-sm font-medium text-emerald-200">
                   {content.eyebrow}
                 </span>
                 <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">
                   Your financial workspace, ready when you are.
                 </h1>
-                <p className="mt-5 text-lg leading-8 text-slate-300">
+                <p className="auth-lead mt-5 text-lg leading-8 text-slate-300">
                   Keep every cash flow workspace tied to the right person, with the
                   context needed to understand what changed and what needs attention.
                 </p>
@@ -128,25 +128,25 @@ export function AuthForm({ initialAccessToken = "", initialEmail = "", mode }: A
             </div>
 
             <div className="grid gap-4">
-              <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
+              <div className="auth-preview-card grid gap-3 rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-300">Net balance</span>
-                  <span className="rounded-full bg-emerald-400/20 px-2.5 py-1 text-xs font-semibold text-emerald-200">
+                  <span className="auth-preview-muted text-sm font-medium text-slate-300">Net balance</span>
+                  <span className="auth-status-pill rounded-full bg-emerald-400/20 px-2.5 py-1 text-xs font-semibold text-emerald-200">
                     Healthy
                   </span>
                 </div>
                 <p className="text-3xl font-semibold">$4,630</p>
                 <div className="flex h-20 items-end gap-2">
                   {["h-8", "h-10", "h-7", "h-12", "h-14", "h-16", "h-11"].map((height) => (
-                    <span key={height} className={`flex-1 rounded-t bg-emerald-400 ${height}`} />
+                    <span key={height} className={`auth-bar flex-1 rounded-t bg-emerald-400 ${height}`} />
                   ))}
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 {authHighlights.map((highlight) => (
-                  <div key={highlight} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <div key={highlight} className="auth-highlight-card rounded-xl border border-white/10 bg-white/5 p-3">
                     <AppIcon name="check" className="text-emerald-300" />
-                    <p className="mt-2 text-sm font-medium text-slate-200">{highlight}</p>
+                    <p className="auth-preview-muted mt-2 text-sm font-medium text-slate-200">{highlight}</p>
                   </div>
                 ))}
               </div>
@@ -268,7 +268,7 @@ export function AuthForm({ initialAccessToken = "", initialEmail = "", mode }: A
           <button
             type="submit"
             disabled={submitting}
-            className="mt-2 w-full rounded-full bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="auth-submit-button mt-2 w-full rounded-full bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
             {submitting ? content.pending : content.button}
           </button>

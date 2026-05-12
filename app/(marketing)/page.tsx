@@ -115,7 +115,7 @@ export default function Home() {
     <main className="landing-page flex flex-1 flex-col overflow-x-hidden bg-[#06110f] text-white">
       <section className="landing-hero relative isolate overflow-hidden">
         <div className="mx-auto grid min-h-[calc(100vh-4.25rem)] w-full max-w-7xl items-center gap-10 px-5 py-10 sm:px-6 lg:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] lg:gap-10 lg:py-20">
-          <div className="relative z-10 max-w-4xl">
+          <div className="relative z-30 max-w-4xl">
             <div className="mb-6 inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-300/30 bg-white/8 px-3 py-2 text-xs font-semibold text-cyan-100 shadow-2xl shadow-cyan-950/30 backdrop-blur sm:text-sm">
               <span className="h-2 w-2 rounded-full bg-lime-300 shadow-[0_0_20px_rgba(190,242,100,0.75)]" />
               Finance operations without spreadsheet drift
@@ -145,13 +145,13 @@ export default function Home() {
                 <AppIcon name="dashboard-monitor" />
                 Try Demo
               </Link>
-              <Link
+              <a
                 href="/login"
-                className="landing-cta-button inline-flex items-center justify-center gap-2 rounded-full border border-white/18 bg-white/8 px-6 py-3 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
+                className="landing-cta-button landing-login-cta inline-flex min-h-13 min-w-36 items-center justify-center gap-2 rounded-full border border-white/18 bg-white/8 px-8 py-4 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
               >
                 <AppIcon name="sign-in-alt" />
                 Login
-              </Link>
+              </a>
             </div>
 
             <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3 sm:mt-10">
@@ -171,7 +171,7 @@ export default function Home() {
               <div className="landing-dashboard">
                 <div className="mb-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <Image src="/img/1.svg" alt="" width={34} height={34} className="h-8 w-8 invert" />
+                    <Image src="/img/1.svg" alt="" width={34} height={34} className="landing-brand-logo h-8 w-8" />
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-100/60">
                         Dampener

@@ -46,6 +46,7 @@ export default function RecurringPage() {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -97,6 +98,7 @@ export default function RecurringPage() {
     event.preventDefault();
     setSaving(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await fetch("/api/recurring-transactions", {
@@ -112,6 +114,7 @@ export default function RecurringPage() {
 
       setItems((current) => [data, ...current]);
       setForm((current) => ({ ...initialForm, currency: current.currency }));
+      setSuccessMessage("Recurring item added.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save recurring item.");
     } finally {
@@ -145,73 +148,100 @@ export default function RecurringPage() {
         </div>
 
         <form className="grid gap-4 md:grid-cols-3" onSubmit={handleSubmit}>
-          <input
-            required
-            value={form.name}
-            onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-            className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-            placeholder={isPersonalMode ? "Netflix" : "Office rent"}
-          />
-          <input
-            required
-            min="0.01"
-            step="0.01"
-            type="number"
-            value={form.amount}
-            onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))}
-            className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-            placeholder="1200.00"
-          />
-          <select
-            value={form.currency}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, currency: event.target.value }))
-            }
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-          >
-            {currencies.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-          <input
-            required
-            value={form.category}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, category: event.target.value }))
-            }
-            className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-            placeholder="Rent"
-          />
-          <select
-            value={form.type}
-            onChange={(event) => setForm((current) => ({ ...current, type: event.target.value }))}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-          >
-            <option value="income">{isPersonalMode ? "Money In" : "Income"}</option>
-            <option value="expense">{isPersonalMode ? "Money Out" : "Expense"}</option>
-          </select>
-          <select
-            value={form.frequency}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, frequency: event.target.value }))
-            }
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-          >
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
-          </select>
-          <input
-            required
-            type="date"
-            value={form.nextDate}
-            onChange={(event) => setForm((current) => ({ ...current, nextDate: event.target.value }))}
-            className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-          />
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Name
+            <input
+              required
+              maxLength={80}
+              value={form.name}
+              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+              className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+              placeholder={isPersonalMode ? "Netflix" : "Office rent"}
+            />
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Amount
+            <input
+              required
+              min="0.01"
+              max="999999999.99"
+              step="0.01"
+              type="number"
+              value={form.amount}
+              onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))}
+              className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+              placeholder="1200.00"
+            />
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Currency
+            <select
+              value={form.currency}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, currency: event.target.value }))
+              }
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+            >
+              {currencies.map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Category
+            <input
+              required
+              maxLength={80}
+              value={form.category}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, category: event.target.value }))
+              }
+              className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+              placeholder="Rent"
+            />
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Type
+            <select
+              value={form.type}
+              onChange={(event) => setForm((current) => ({ ...current, type: event.target.value }))}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+            >
+              <option value="income">{isPersonalMode ? "Money In" : "Income"}</option>
+              <option value="expense">{isPersonalMode ? "Money Out" : "Expense"}</option>
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Frequency
+            <select
+              value={form.frequency}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, frequency: event.target.value }))
+              }
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+            >
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Next date
+            <input
+              required
+              type="date"
+              value={form.nextDate}
+              onChange={(event) => setForm((current) => ({ ...current, nextDate: event.target.value }))}
+              className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+            />
+          </label>
           <div className="md:col-span-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-h-6 text-sm text-rose-600">{error}</div>
+            <div className="min-h-6 text-sm font-medium">
+              <span className="text-emerald-700">{successMessage}</span>
+              <span className="text-rose-600">{error}</span>
+            </div>
             <button
               type="submit"
               disabled={saving}

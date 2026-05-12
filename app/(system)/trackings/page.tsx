@@ -15,6 +15,7 @@ export default function TrackingsPage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function TrackingsPage() {
     event.preventDefault();
     setCreating(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await fetch("/api/trackings", {
@@ -73,6 +75,7 @@ export default function TrackingsPage() {
 
       setFolders((current) => [data, ...current]);
       setName("");
+      setSuccessMessage("Folder created.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create folder.");
     } finally {
@@ -102,14 +105,18 @@ export default function TrackingsPage() {
         </div>
 
         <form className="flex flex-col gap-3 sm:flex-row" onSubmit={handleCreateFolder}>
-          <input
-            required
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            className="min-w-0 flex-1 rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-            placeholder="Personal cash flow"
-          />
+          <label className="grid min-w-0 flex-1 gap-2 text-sm font-medium text-slate-700">
+            Folder name
+            <input
+              required
+              maxLength={80}
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="min-w-0 rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+              placeholder="Personal cash flow"
+            />
+          </label>
           <button
             type="submit"
             disabled={creating}
@@ -119,7 +126,10 @@ export default function TrackingsPage() {
           </button>
         </form>
 
-        {error ? <div className="mt-4 text-sm text-rose-600">{error}</div> : null}
+        {successMessage ? (
+          <div className="mt-4 text-sm font-medium text-emerald-700">{successMessage}</div>
+        ) : null}
+        {error ? <div className="mt-4 text-sm font-medium text-rose-600">{error}</div> : null}
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">

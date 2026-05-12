@@ -33,6 +33,7 @@ export default function InvoicesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [workspaceCurrency, setWorkspaceCurrency] = useState("USD");
+  const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -87,6 +88,7 @@ export default function InvoicesPage() {
     event.preventDefault();
     setSubmitting(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await fetch("/api/invoices", {
@@ -122,6 +124,7 @@ export default function InvoicesPage() {
         ),
       );
       setForm((current) => ({ ...initialForm, currency: current.currency }));
+      setSuccessMessage("Invoice added.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create invoice.");
     } finally {
@@ -132,6 +135,7 @@ export default function InvoicesPage() {
   async function markAsPaid(id: string) {
     setUpdatingId(id);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await fetch(`/api/invoices/${id}`, {
@@ -158,6 +162,7 @@ export default function InvoicesPage() {
       setInvoices((current) =>
         current.map((invoice) => (invoice.id === id ? data : invoice)),
       );
+      setSuccessMessage("Invoice marked as paid.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update invoice.");
     } finally {
@@ -240,6 +245,7 @@ export default function InvoicesPage() {
             Client name
             <input
               required
+              maxLength={80}
               type="text"
               value={form.clientName}
               onChange={(event) =>
@@ -254,6 +260,7 @@ export default function InvoicesPage() {
             Amount
             <input
               required
+              max="999999999.99"
               min="0.01"
               step="0.01"
               type="number"
@@ -326,7 +333,10 @@ export default function InvoicesPage() {
           </label>
 
           <div className="md:col-span-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-h-6 text-sm text-rose-600">{error}</div>
+            <div className="min-h-6 text-sm font-medium">
+              <span className="text-emerald-700">{successMessage}</span>
+              <span className="text-rose-600">{error}</span>
+            </div>
             <button
               type="submit"
               disabled={submitting}

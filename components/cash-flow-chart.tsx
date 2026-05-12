@@ -75,7 +75,7 @@ function useChartColors() {
 
     updateColors();
     observer.observe(document.documentElement, {
-      attributeFilter: ["data-theme", "data-mode", "data-finance-type"],
+      attributeFilter: ["data-theme", "data-mode", "data-contrast", "data-finance-type"],
       attributes: true,
     });
 

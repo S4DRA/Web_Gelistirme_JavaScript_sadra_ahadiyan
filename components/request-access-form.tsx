@@ -57,34 +57,34 @@ export function RequestAccessForm() {
   return (
     <main className="flex flex-1 bg-slate-50 px-4 py-6 sm:px-6 sm:py-10 lg:py-14">
       <section className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="relative bg-slate-950 p-6 text-white sm:p-8 lg:p-12">
+        <div className="auth-visual-panel relative bg-slate-950 p-6 text-white sm:p-8 lg:p-12">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.28),transparent_24rem)]" />
           <div className="relative flex h-full min-h-[24rem] flex-col justify-between gap-10">
             <div>
               <Link href="/" className="inline-flex items-center gap-3 text-lg font-semibold">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400 text-slate-950">
+                <span className="auth-brand-icon inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400 text-slate-950">
                   <AppIcon name="chart-histogram" />
                 </span>
                 Dampener
               </Link>
               <div className="mt-12 max-w-xl">
-                <span className="inline-flex rounded-full border border-emerald-300/30 bg-white/10 px-3 py-1 text-sm font-medium text-emerald-200">
+                <span className="auth-eyebrow inline-flex rounded-full border border-emerald-300/30 bg-white/10 px-3 py-1 text-sm font-medium text-emerald-200">
                   Request access
                 </span>
                 <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">
                   Get approved before creating your workspace.
                 </h1>
-                <p className="mt-5 text-lg leading-8 text-slate-300">
+                <p className="auth-lead mt-5 text-lg leading-8 text-slate-300">
                   Tell us who you are and how you plan to use Dampener. If approved,
                   you will receive a private signup link by email.
                 </p>
               </div>
             </div>
 
-            <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
+            <div className="auth-preview-card grid gap-3 rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
               {["Private signup links", "Admin-reviewed requests", "Login stays open"].map(
                 (item) => (
-                  <div key={item} className="flex items-center gap-3 text-sm font-medium text-slate-200">
+                  <div key={item} className="auth-preview-muted flex items-center gap-3 text-sm font-medium text-slate-200">
                     <AppIcon name="check" className="text-emerald-300" />
                     {item}
                   </div>
@@ -103,12 +103,12 @@ export function RequestAccessForm() {
               <AppIcon name="arrow-left" />
               Return
             </Link>
-            <Link
+            <a
               href="/login"
               className="inline-flex w-fit items-center justify-center rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               Login
-            </Link>
+            </a>
           </div>
 
           {submitted ? (
@@ -206,7 +206,7 @@ export function RequestAccessForm() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="mt-2 inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="auth-submit-button mt-2 inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
                 {submitting ? "Sending..." : "Request Access"}
               </button>

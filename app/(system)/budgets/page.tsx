@@ -38,14 +38,21 @@ export default function BudgetsPage() {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [workspaceCurrency, setWorkspaceCurrency] = useState("USD");
+  const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     async function loadBudgets() {
       try {
-        const response = await fetch("/api/budgets");
+        setError("");
 
-        if (response.status === 401) {
+        const [response, currencyResponse] = await Promise.all([
+          fetch("/api/budgets"),
+          fetch("/api/currency"),
+        ]);
+
+        if (response.status === 401 || currencyResponse.status === 401) {
           window.location.assign("/login");
           return;
         }
@@ -57,6 +64,11 @@ export default function BudgetsPage() {
         }
 
         setBudgets(data);
+
+        if (currencyResponse.ok) {
+          const currencyData = await currencyResponse.json();
+          setWorkspaceCurrency(currencyData.baseCurrency);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load budgets.");
       } finally {
@@ -81,6 +93,7 @@ export default function BudgetsPage() {
     event.preventDefault();
     setSaving(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await fetch("/api/budgets", {
@@ -104,6 +117,7 @@ export default function BudgetsPage() {
         );
       });
       setForm(initialForm);
+      setSuccessMessage("Budget saved.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save budget.");
     } finally {
@@ -112,7 +126,10 @@ export default function BudgetsPage() {
   }
 
   function formatCurrency(amount: number) {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: workspaceCurrency,
+    }).format(amount);
   }
 
   return (
@@ -137,38 +154,49 @@ export default function BudgetsPage() {
         </div>
 
         <form className="grid gap-4 md:grid-cols-[1fr_12rem_12rem_auto]" onSubmit={handleSubmit}>
-          <input
-            required
-            value={form.category}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, category: event.target.value }))
-            }
-            className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-            placeholder={isPersonalMode ? "Groceries" : "Software"}
-          />
-          <input
-            required
-            min="0.01"
-            step="0.01"
-            type="number"
-            value={form.amount}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, amount: event.target.value }))
-            }
-            className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-            placeholder="400.00"
-          />
-          <select
-            value={form.period}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, period: event.target.value }))
-            }
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-          >
-            <option value="monthly">Monthly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="yearly">Yearly</option>
-          </select>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Category
+            <input
+              required
+              maxLength={80}
+              value={form.category}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, category: event.target.value }))
+              }
+              className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+              placeholder={isPersonalMode ? "Groceries" : "Software"}
+            />
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Amount
+            <input
+              required
+              min="0.01"
+              max="999999999.99"
+              step="0.01"
+              type="number"
+              value={form.amount}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, amount: event.target.value }))
+              }
+              className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+              placeholder="400.00"
+            />
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Period
+            <select
+              value={form.period}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, period: event.target.value }))
+              }
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+            >
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </label>
           <button
             type="submit"
             disabled={saving}
@@ -191,7 +219,10 @@ export default function BudgetsPage() {
             ))}
           </div>
         ) : null}
-        {error ? <div className="mt-4 text-sm text-rose-600">{error}</div> : null}
+        {successMessage ? (
+          <div className="mt-4 text-sm font-medium text-emerald-700">{successMessage}</div>
+        ) : null}
+        {error ? <div className="mt-4 text-sm font-medium text-rose-600">{error}</div> : null}
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">

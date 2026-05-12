@@ -1,5 +1,10 @@
 import { BudgetPeriod } from "@prisma/client";
 import { NextResponse } from "next/server";
+import {
+  cleanShortText,
+  isValidShortText,
+  parsePositiveMoney,
+} from "@/lib/financial-validation";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -48,17 +53,20 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const category = typeof body.category === "string" ? body.category.trim() : "";
-    const amount = Number(body.amount);
+    const category = cleanShortText(body.category);
+    const amount = parsePositiveMoney(body.amount);
     const period = body.period || "monthly";
 
-    if (!category) {
-      return NextResponse.json({ error: "Category is required." }, { status: 400 });
+    if (!isValidShortText(category)) {
+      return NextResponse.json(
+        { error: "Category is required and must be 80 characters or fewer." },
+        { status: 400 },
+      );
     }
 
-    if (!Number.isFinite(amount) || amount <= 0) {
+    if (amount === null) {
       return NextResponse.json(
-        { error: "Budget amount must be greater than 0." },
+        { error: "Budget amount must be between 0.01 and 999,999,999.99." },
         { status: 400 },
       );
     }

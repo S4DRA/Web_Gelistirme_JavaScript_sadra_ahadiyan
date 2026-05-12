@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { isSupportedCurrency, normalizeCurrency } from "@/lib/currency";
+import { cleanShortText, isValidShortText } from "@/lib/financial-validation";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -62,14 +64,36 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const name = typeof body.name === "string" ? body.name.trim() : "";
-    const currency = typeof body.currency === "string" ? body.currency : "USD";
+    const name = cleanShortText(body.name);
+    const currency = normalizeCurrency(body.currency);
 
-    if (!name) {
-      return NextResponse.json({ error: "Workspace name is required." }, { status: 400 });
+    if (!isValidShortText(name)) {
+      return NextResponse.json(
+        { error: "Workspace name is required and must be 80 characters or fewer." },
+        { status: 400 },
+      );
+    }
+
+    if (!isSupportedCurrency(body.currency)) {
+      return NextResponse.json({ error: "Choose a supported currency." }, { status: 400 });
     }
 
     const prisma = getPrisma();
+    const existingMembership = await prisma.workspaceMember.findFirst({
+      where: {
+        userId: context.user.id,
+        workspace: { name },
+      },
+      select: { id: true },
+    });
+
+    if (existingMembership) {
+      return NextResponse.json(
+        { error: "You already have access to a workspace with this name." },
+        { status: 409 },
+      );
+    }
+
     const workspace = await prisma.workspace.create({
       data: {
         ownerId: context.user.id,

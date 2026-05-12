@@ -1,6 +1,12 @@
 import { connection, NextResponse } from "next/server";
 import { TransactionType } from "@prisma/client";
 import { convertCurrencyAmount, normalizeCurrency } from "@/lib/currency";
+import {
+  cleanOptionalNote,
+  cleanShortText,
+  isValidShortText,
+  parsePositiveMoney,
+} from "@/lib/financial-validation";
 import { createTransactionFingerprint } from "@/lib/transaction-import";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
@@ -79,7 +85,8 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { type, amount, category, date } = body;
-    const note = typeof body.note === "string" ? body.note.trim() : null;
+    const cleanCategory = cleanShortText(category);
+    const note = cleanOptionalNote(body.note);
     const originalCurrency = normalizeCurrency(body.currency, context.workspace.currency);
 
     if (type !== TransactionType.income && type !== TransactionType.expense) {
@@ -89,18 +96,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const parsedAmount = Number(amount);
+    const parsedAmount = parsePositiveMoney(amount);
 
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+    if (parsedAmount === null) {
       return NextResponse.json(
-        { error: "Amount must be a number greater than 0." },
+        { error: "Amount must be between 0.01 and 999,999,999.99." },
         { status: 400 },
       );
     }
 
-    if (typeof category !== "string" || category.trim().length === 0) {
+    if (!isValidShortText(cleanCategory)) {
       return NextResponse.json(
-        { error: "Category is required." },
+        { error: "Category is required and must be 80 characters or fewer." },
         { status: 400 },
       );
     }
@@ -121,7 +128,7 @@ export async function POST(request: Request) {
     );
     const fingerprint = createTransactionFingerprint({
       amount: conversion.amount,
-      category: category.trim(),
+      category: cleanCategory,
       date: parsedDate.toISOString().slice(0, 10),
       note,
       type,
@@ -149,7 +156,7 @@ export async function POST(request: Request) {
         financeType: context.financeType,
         type,
         amount: conversion.amount,
-        category: category.trim(),
+        category: cleanCategory,
         currency: context.workspace.currency,
         date: parsedDate,
         exchangeRate: conversion.exchangeRate,

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -28,14 +29,39 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const themeInitScript = `
+(() => {
+  try {
+    const theme = localStorage.getItem("dampener-theme") || "default";
+    const mode = localStorage.getItem("dampener-mode") || "light";
+    const contrast = localStorage.getItem("dampener-contrast") || "modern";
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.mode = mode;
+    document.documentElement.dataset.contrast = contrast;
+  } catch {}
+})();
+`;
+
 export default function AuthLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      data-theme="default"
+      data-mode="light"
+      data-contrast="modern"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
       <body className="min-h-full bg-slate-50 text-slate-900">
+        <Script
+          id="dampener-theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
         <div className="flex min-h-screen flex-col">{children}</div>
       </body>
     </html>

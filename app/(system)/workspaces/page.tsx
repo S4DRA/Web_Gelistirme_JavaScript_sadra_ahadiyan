@@ -12,6 +12,8 @@ type Workspace = {
   role: string;
 };
 
+const currencies = ["USD", "EUR", "TRY", "GBP", "IRR", "AED", "CAD", "AUD", "JPY", "CHF", "SAR", "CNY", "INR"];
+
 export default function WorkspacesPage() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState("");
@@ -19,6 +21,7 @@ export default function WorkspacesPage() {
   const [currency, setCurrency] = useState("USD");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -53,6 +56,7 @@ export default function WorkspacesPage() {
     event.preventDefault();
     setSaving(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await fetch("/api/workspaces", {
@@ -69,6 +73,7 @@ export default function WorkspacesPage() {
       setWorkspaces((current) => [...current, data]);
       setActiveWorkspaceId(data.id);
       setName("");
+      setSuccessMessage("Workspace created and selected.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create workspace.");
     } finally {
@@ -108,23 +113,31 @@ export default function WorkspacesPage() {
         </div>
 
         <form className="grid gap-4 md:grid-cols-[1fr_10rem_auto]" onSubmit={createWorkspace}>
-          <input
-            required
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-            placeholder="Acme Studio"
-          />
-          <select
-            value={currency}
-            onChange={(event) => setCurrency(event.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-          >
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="GBP">GBP</option>
-            <option value="TRY">TRY</option>
-          </select>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Workspace name
+            <input
+              required
+              maxLength={80}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+              placeholder="Acme Studio"
+            />
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Currency
+            <select
+              value={currency}
+              onChange={(event) => setCurrency(event.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
+            >
+              {currencies.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             type="submit"
             disabled={saving}
@@ -134,7 +147,10 @@ export default function WorkspacesPage() {
           </button>
         </form>
 
-        {error ? <div className="mt-4 text-sm text-rose-600">{error}</div> : null}
+        {successMessage ? (
+          <div className="mt-4 text-sm font-medium text-emerald-700">{successMessage}</div>
+        ) : null}
+        {error ? <div className="mt-4 text-sm font-medium text-rose-600">{error}</div> : null}
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -144,6 +160,10 @@ export default function WorkspacesPage() {
 
         {loading ? (
           <div className="px-6 py-10 text-sm text-slate-500">Loading workspaces...</div>
+        ) : workspaces.length === 0 ? (
+          <div className="px-6 py-10 text-sm text-slate-500">
+            No workspaces yet. Create your first workspace above.
+          </div>
         ) : (
           <div className="grid gap-4 p-6 md:grid-cols-2">
             {workspaces.map((workspace) => (

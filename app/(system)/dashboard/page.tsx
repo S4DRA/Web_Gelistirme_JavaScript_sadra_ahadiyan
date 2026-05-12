@@ -714,7 +714,9 @@ export default function DashboardPage() {
       unifiedSurface
       actions={
         <div className="flex flex-wrap items-center gap-3">
-          <FinanceModeSwitcher />
+          <div className="dashboard-actions-finance-switcher hidden sm:block">
+            <FinanceModeSwitcher />
+          </div>
           <button
             type="button"
             onClick={() => setCustomizing((current) => !current)}

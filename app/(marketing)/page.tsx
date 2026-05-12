@@ -137,12 +137,12 @@ export default function Home() {
               >
                 Request Access
               </Link>
-              <LeadFormTrigger
-                source="demo"
+              <Link
+                href="/demo"
                 className="inline-flex items-center justify-center rounded-full border border-lime-200/40 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
               >
                 Try Demo
-              </LeadFormTrigger>
+              </Link>
               <Link
                 href="/login"
                 className="inline-flex items-center justify-center rounded-full border border-white/18 bg-white/8 px-6 py-3 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
@@ -392,12 +392,12 @@ export default function Home() {
               >
                 Request Access
               </Link>
-              <LeadFormTrigger
-                source="demo"
+              <Link
+                href="/demo"
                 className="inline-flex items-center justify-center rounded-full border border-teal-900/15 bg-white px-6 py-3 text-sm font-bold text-teal-950 transition hover:border-teal-700 hover:text-teal-700"
               >
                 Try Demo
-              </LeadFormTrigger>
+              </Link>
               <LeadFormTrigger
                 source="contact"
                 className="inline-flex items-center justify-center rounded-full border border-teal-900/15 bg-white px-6 py-3 text-sm font-bold text-teal-950 transition hover:border-teal-700 hover:text-teal-700"

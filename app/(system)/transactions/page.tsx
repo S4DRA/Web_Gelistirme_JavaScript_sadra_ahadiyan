@@ -19,10 +19,12 @@ type Transaction = {
 
 type ImportPreviewRow = {
   amount: number;
+  balance: number | null;
   category: string;
   convertedAmount: number;
   currency: string;
   date: string;
+  description: string;
   duplicate: boolean;
   errors: string[];
   fingerprint: string;
@@ -516,7 +518,7 @@ export default function TransactionsPage() {
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50">
                 <tr>
-                  {["Row", "Status", "Type", "Category", "Date", "Original", "Stored", "Notes"].map(
+                  {["Row", "Status", "Date", "Description", "Amount", "Type", "Balance"].map(
                     (heading) => (
                       <th
                         key={heading}
@@ -545,17 +547,20 @@ export default function TransactionsPage() {
                         {row.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm capitalize text-slate-700">{row.type}</td>
-                    <td className="px-4 py-3 text-sm text-slate-700">{row.category}</td>
                     <td className="px-4 py-3 text-sm text-slate-700">{row.date || "-"}</td>
+                    <td className="max-w-xs px-4 py-3 text-sm text-slate-700">
+                      <span className="line-clamp-2">
+                        {row.errors.length
+                          ? row.errors.join(" ")
+                          : row.description || row.note || "-"}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-sm text-slate-700">
                       {formatCurrency(row.amount, row.currency)}
                     </td>
+                    <td className="px-4 py-3 text-sm capitalize text-slate-700">{row.type}</td>
                     <td className="px-4 py-3 text-sm text-slate-700">
-                      {formatCurrency(row.convertedAmount, workspaceCurrency)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-500">
-                      {row.errors.length ? row.errors.join(" ") : row.note || "-"}
+                      {row.balance === null ? "-" : formatCurrency(row.balance, row.currency)}
                     </td>
                   </tr>
                 ))}

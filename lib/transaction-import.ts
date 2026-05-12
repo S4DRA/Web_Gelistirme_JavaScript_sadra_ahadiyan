@@ -8,10 +8,12 @@ export type ImportRowStatus = "ready" | "duplicate" | "invalid";
 
 export type ImportPreviewRow = {
   amount: number;
+  balance: number | null;
   category: string;
   convertedAmount: number;
   currency: string;
   date: string;
+  description: string;
   duplicate: boolean;
   errors: string[];
   fingerprint: string;
@@ -24,6 +26,7 @@ export type ImportPreviewRow = {
 type RawImportRow = Record<string, unknown>;
 
 const MAX_IMPORT_ROWS = 500;
+const RAW_BALANCE = "balance";
 const RAW_CURRENCY = "__currency";
 const RAW_ROW_NUMBER = "__rowNumber";
 
@@ -143,10 +146,10 @@ function normalizeImportRow(
   const rawType = readField(row, ["type", "transaction type", "tip", "islem tipi"])
     .toLowerCase()
     .trim();
-  const description = readField(row, ["description", "aciklama"]);
+  const description = readField(row, ["description", "explanation", "aciklama"]);
   const category = readField(row, ["category", "kategori"]) || inferCategory(description);
   const voucherNo = readField(row, ["fis no", "receipt no", "reference"]);
-  const note = readField(row, ["note", "notes", "description", "aciklama"]) || null;
+  const note = readField(row, ["note", "notes", "description", "explanation", "aciklama"]) || null;
   const currency = normalizeCurrency(
     readField(row, ["currency", "para birimi", "doviz"]) ||
       detectCurrencyInText(Object.values(row).join(" ")) ||
@@ -156,11 +159,19 @@ function normalizeImportRow(
     baseCurrency,
   );
   const signedAmount = parseLocalizedAmount(
-    readField(row, ["amount", "income", "expense", "islem tutari", "tutar"]),
+    readField(row, [
+      "amount",
+      "income",
+      "expense",
+      "transaction amount",
+      "islem tutari",
+      "tutar",
+    ]),
   );
   const amount = Math.abs(signedAmount);
   const rawDate = readField(row, ["date", "transaction date", "tarih"]);
   const parsedDate = parseImportDate(rawDate);
+  const balance = parseLocalizedAmount(readField(row, [RAW_BALANCE, "bakiye"]));
   const errors: string[] = [];
   const type =
     rawType === TransactionType.income || rawType === "gelir"
@@ -189,10 +200,12 @@ function normalizeImportRow(
 
   return {
     amount: Number.isFinite(amount) ? amount : 0,
+    balance: Number.isFinite(balance) ? balance : null,
     category,
     convertedAmount: 0,
     currency,
     date: parsedDate ?? "",
+    description,
     duplicate: false,
     errors,
     fingerprint: "",
@@ -209,19 +222,13 @@ function rowsFromWorksheet(worksheet: XLSX.WorkSheet) {
     header: 1,
     raw: false,
   });
-  const headerIndex = matrix.findIndex((row) => {
-    const normalizedCells = row.map((cell) => normalizeText(String(cell)));
+  const detectedHeader = findBankStatementHeader(matrix);
 
-    return (
-      hasAny(normalizedCells, ["date", "transaction date", "tarih"]) &&
-      hasAny(normalizedCells, ["amount", "islem tutari", "tutar"])
-    );
-  });
-
-  if (headerIndex < 0) {
+  if (!detectedHeader) {
     return XLSX.utils.sheet_to_json<RawImportRow>(worksheet, { defval: "" });
   }
 
+  const { columns, headerIndex } = detectedHeader;
   const headers = matrix[headerIndex].map((cell) => String(cell).trim());
   const sheetCurrency = detectCurrencyInText(
     matrix
@@ -229,38 +236,77 @@ function rowsFromWorksheet(worksheet: XLSX.WorkSheet) {
       .flat()
       .join(" "),
   );
-  const dateColumnIndex = headers.findIndex((header) =>
-    ["date", "transaction date", "tarih"].includes(normalizeText(header)),
-  );
-  const amountColumnIndex = headers.findIndex((header) =>
-    ["amount", "income", "expense", "islem tutari", "tutar"].includes(
-      normalizeText(header),
-    ),
-  );
+  const rows: RawImportRow[] = [];
 
-  return matrix
-    .slice(headerIndex + 1)
-    .map((row, offset) => ({ offset, row }))
-    .filter(({ row }) => {
-      const rawDate = String(row[dateColumnIndex] ?? "").trim();
-      const rawAmount = String(row[amountColumnIndex] ?? "").trim();
+  for (let rowIndex = headerIndex + 1; rowIndex < matrix.length; rowIndex += 1) {
+    const row = matrix[rowIndex];
 
-      return Boolean(parseImportDate(rawDate)) && Number.isFinite(parseLocalizedAmount(rawAmount));
-    })
-    .map(({ offset, row }) => {
-      const result: RawImportRow = {
-        [RAW_CURRENCY]: sheetCurrency,
-        [RAW_ROW_NUMBER]: headerIndex + offset + 2,
-      };
+    if (isEmptySheetRow(row)) {
+      break;
+    }
 
-      headers.forEach((header, columnIndex) => {
-        if (header) {
-          result[header] = row[columnIndex] ?? "";
-        }
-      });
+    const rawDate = String(row[columns.date] ?? "").trim();
+    const rawAmount = String(row[columns.amount] ?? "").trim();
 
-      return result;
+    if (!parseImportDate(rawDate) || !Number.isFinite(parseLocalizedAmount(rawAmount))) {
+      if (isFooterRow(row)) {
+        break;
+      }
+
+      if (isSummaryRow(row)) {
+        continue;
+      }
+
+      break;
+    }
+
+    const result: RawImportRow = {
+      [RAW_BALANCE]: row[columns.balance] ?? "",
+      [RAW_CURRENCY]: sheetCurrency,
+      [RAW_ROW_NUMBER]: rowIndex + 1,
+      amount: row[columns.amount] ?? "",
+      date: rawDate,
+      description: row[columns.description] ?? "",
+    };
+
+    headers.forEach((header, columnIndex) => {
+      if (header && result[header] === undefined) {
+        result[header] = row[columnIndex] ?? "";
+      }
     });
+
+    rows.push(result);
+  }
+
+  return rows;
+}
+
+function findBankStatementHeader(matrix: unknown[][]) {
+  for (let headerIndex = 0; headerIndex < matrix.length; headerIndex += 1) {
+    const normalizedCells = matrix[headerIndex].map((cell) => normalizeText(String(cell)));
+    const columns = {
+      amount: findHeaderColumn(normalizedCells, ["transaction amount", "islem tutari"]),
+      balance: findHeaderColumn(normalizedCells, ["balance", "bakiye"]),
+      date: findHeaderColumn(normalizedCells, ["date", "transaction date", "tarih"]),
+      description: findHeaderColumn(normalizedCells, ["explanation", "description", "aciklama"]),
+    };
+
+    if (
+      columns.amount >= 0 &&
+      columns.balance >= 0 &&
+      columns.date >= 0 &&
+      columns.description >= 0
+    ) {
+      return { columns, headerIndex };
+    }
+  }
+
+  return null;
+}
+
+function findHeaderColumn(values: string[], aliases: string[]) {
+  const normalizedAliases = aliases.map(normalizeText);
+  return values.findIndex((value) => normalizedAliases.includes(value));
 }
 
 function readField(row: RawImportRow, aliases: string[]) {
@@ -311,9 +357,33 @@ function normalizeText(value: string) {
     .replace(/\s+/g, " ");
 }
 
-function hasAny(values: string[], aliases: string[]) {
-  const normalizedAliases = aliases.map(normalizeText);
-  return values.some((value) => normalizedAliases.includes(value));
+function isEmptySheetRow(row: unknown[]) {
+  return row.every((cell) => String(cell ?? "").trim() === "");
+}
+
+function isFooterRow(row: unknown[]) {
+  const text = normalizeText(row.join(" "));
+
+  return [
+    "amount owed",
+    "recipient",
+    "iban",
+    "account no",
+    "customer name",
+    "legal",
+    "terms",
+    "this statement",
+    "bu dokuman",
+    "musteri",
+  ].some((footerText) => text.includes(footerText));
+}
+
+function isSummaryRow(row: unknown[]) {
+  const text = normalizeText(row.join(" "));
+
+  return ["amount owed", "recipient", "total", "summary", "toplam"].some((summaryText) =>
+    text.includes(summaryText),
+  );
 }
 
 function parseLocalizedAmount(value: string) {

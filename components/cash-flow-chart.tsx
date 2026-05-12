@@ -11,6 +11,7 @@ import {
   Tooltip,
   type ChartOptions,
 } from "chart.js";
+import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 
 ChartJS.register(
@@ -34,6 +35,56 @@ type CashFlowChartProps = {
   transactions: CashFlowTransaction[];
 };
 
+const fallbackChartColors = {
+  accent: "#0f766e",
+  background: "rgba(15, 118, 110, 0.16)",
+  border: "#0f172a",
+  muted: "#334155",
+  surface: "#ffffff",
+  text: "#020617",
+};
+
+function readChartColors() {
+  if (typeof window === "undefined") {
+    return fallbackChartColors;
+  }
+
+  const styles = window.getComputedStyle(document.documentElement);
+  const read = (name: string, fallback: string) => styles.getPropertyValue(name).trim() || fallback;
+  const accent = read("--accent", fallbackChartColors.accent);
+  const accentFill = /^#[0-9a-f]{6}$/i.test(accent)
+    ? `${accent}33`
+    : fallbackChartColors.background;
+
+  return {
+    accent,
+    background: accentFill,
+    border: read("--border", fallbackChartColors.border),
+    muted: read("--muted", fallbackChartColors.muted),
+    surface: read("--surface", fallbackChartColors.surface),
+    text: read("--text", fallbackChartColors.text),
+  };
+}
+
+function useChartColors() {
+  const [colors, setColors] = useState(fallbackChartColors);
+
+  useEffect(() => {
+    const updateColors = () => setColors(readChartColors());
+    const observer = new MutationObserver(updateColors);
+
+    updateColors();
+    observer.observe(document.documentElement, {
+      attributeFilter: ["data-theme", "data-mode", "data-finance-type"],
+      attributes: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return colors;
+}
+
 function getLastThirtyDays() {
   const days: string[] = [];
   const today = new Date();
@@ -55,6 +106,7 @@ function formatLabel(date: string) {
 }
 
 export function CashFlowChart({ currency = "USD", transactions }: CashFlowChartProps) {
+  const colors = useChartColors();
   const lastThirtyDays = getLastThirtyDays();
   const groupedAmounts = new Map<string, number>();
 
@@ -84,8 +136,11 @@ export function CashFlowChart({ currency = "USD", transactions }: CashFlowChartP
       {
         label: "Cash flow",
         data: values,
-        borderColor: "#0f766e",
-        backgroundColor: "rgba(15, 118, 110, 0.12)",
+        borderColor: colors.accent,
+        backgroundColor: colors.background,
+        pointBackgroundColor: colors.surface,
+        pointBorderColor: colors.border,
+        pointBorderWidth: 2,
         fill: true,
         tension: 0.35,
         pointRadius: 3,
@@ -103,6 +158,7 @@ export function CashFlowChart({ currency = "USD", transactions }: CashFlowChartP
     plugins: {
       legend: {
         display: false,
+        labels: { color: colors.text },
       },
     },
     scales: {
@@ -110,9 +166,12 @@ export function CashFlowChart({ currency = "USD", transactions }: CashFlowChartP
         grid: {
           display: false,
         },
+        ticks: { color: colors.muted },
       },
       y: {
+        grid: { color: colors.border },
         ticks: {
+          color: colors.muted,
           callback(value) {
             return new Intl.NumberFormat("en-US", {
               currency,

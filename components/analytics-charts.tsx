@@ -10,6 +10,7 @@ import {
   Tooltip,
   type ChartOptions,
 } from "chart.js";
+import { useEffect, useState } from "react";
 import { Bar, Doughnut } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
@@ -34,7 +35,55 @@ type InvoiceAging = {
   dueSoon: number;
 };
 
-const palette = ["#0f766e", "#be123c", "#7c3aed", "#ca8a04", "#2563eb", "#475569"];
+const fallbackChartColors = {
+  accent: "#0f766e",
+  background: "#ffffff",
+  border: "#0f172a",
+  danger: "#be123c",
+  muted: "#334155",
+  primary: "#0f172a",
+  text: "#020617",
+  warning: "#78350f",
+};
+
+function readChartColors() {
+  if (typeof window === "undefined") {
+    return fallbackChartColors;
+  }
+
+  const styles = window.getComputedStyle(document.documentElement);
+  const read = (name: string, fallback: string) => styles.getPropertyValue(name).trim() || fallback;
+
+  return {
+    accent: read("--accent", fallbackChartColors.accent),
+    background: read("--surface", fallbackChartColors.background),
+    border: read("--border", fallbackChartColors.border),
+    danger: read("--danger", fallbackChartColors.danger),
+    muted: read("--muted", fallbackChartColors.muted),
+    primary: read("--primary", fallbackChartColors.primary),
+    text: read("--text", fallbackChartColors.text),
+    warning: read("--warning-text", fallbackChartColors.warning),
+  };
+}
+
+function useChartColors() {
+  const [colors, setColors] = useState(fallbackChartColors);
+
+  useEffect(() => {
+    const updateColors = () => setColors(readChartColors());
+    const observer = new MutationObserver(updateColors);
+
+    updateColors();
+    observer.observe(document.documentElement, {
+      attributeFilter: ["data-theme", "data-mode", "data-finance-type"],
+      attributes: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return colors;
+}
 
 function moneyTick(value: string | number, currency = "USD") {
   return new Intl.NumberFormat("en-US", {
@@ -51,6 +100,7 @@ export function MonthlyTrendChart({
   currency?: string;
   data: MonthlyTrendItem[];
 }) {
+  const colors = useChartColors();
   const options: ChartOptions<"bar"> = {
     maintainAspectRatio: false,
     responsive: true,
@@ -58,12 +108,14 @@ export function MonthlyTrendChart({
       duration: 280,
     },
     plugins: {
-      legend: { position: "bottom" },
+      legend: { labels: { color: colors.text }, position: "bottom" },
     },
     scales: {
-      x: { grid: { display: false } },
+      x: { grid: { display: false }, ticks: { color: colors.muted } },
       y: {
+        grid: { color: colors.border },
         ticks: {
+          color: colors.muted,
           callback(value) {
             return moneyTick(value, currency);
           },
@@ -84,13 +136,17 @@ export function MonthlyTrendChart({
             labels: data.map((item) => item.label),
             datasets: [
               {
-                backgroundColor: "#0f766e",
+                backgroundColor: colors.accent,
+                borderColor: colors.border,
+                borderWidth: 1,
                 borderRadius: 6,
                 data: data.map((item) => item.income),
                 label: "Income",
               },
               {
-                backgroundColor: "#be123c",
+                backgroundColor: colors.danger,
+                borderColor: colors.border,
+                borderWidth: 1,
                 borderRadius: 6,
                 data: data.map((item) => item.expenses),
                 label: "Expenses",
@@ -110,7 +166,16 @@ export function CategoryBreakdownChart({
   currency?: string;
   data: CategoryItem[];
 }) {
+  const colors = useChartColors();
   const visibleData = data.slice(0, 6);
+  const palette = [
+    colors.accent,
+    colors.danger,
+    colors.warning,
+    colors.primary,
+    colors.text,
+    colors.muted,
+  ];
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -130,7 +195,7 @@ export function CategoryBreakdownChart({
               datasets: [
                 {
                   backgroundColor: palette,
-                  borderColor: "#ffffff",
+                  borderColor: colors.background,
                   borderWidth: 3,
                   data: visibleData.map((item) => item.amount),
                 },
@@ -142,7 +207,7 @@ export function CategoryBreakdownChart({
               },
               maintainAspectRatio: false,
               plugins: {
-                legend: { position: "bottom" },
+                legend: { labels: { color: colors.text }, position: "bottom" },
               },
               responsive: true,
             }}
@@ -160,6 +225,7 @@ export function InvoiceAgingChart({
   currency?: string;
   data: InvoiceAging;
 }) {
+  const colors = useChartColors();
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="mb-6">
@@ -172,7 +238,9 @@ export function InvoiceAgingChart({
             labels: ["Paid", "Open", "Overdue", "Due soon"],
             datasets: [
               {
-                backgroundColor: ["#0f766e", "#2563eb", "#be123c", "#ca8a04"],
+                backgroundColor: [colors.accent, colors.primary, colors.danger, colors.warning],
+                borderColor: colors.border,
+                borderWidth: 1,
                 borderRadius: 6,
                 data: [data.paid, data.unpaid, data.overdue, data.dueSoon],
                 label: "Amount",
@@ -189,9 +257,11 @@ export function InvoiceAgingChart({
             },
             responsive: true,
             scales: {
-              x: { grid: { display: false } },
+              x: { grid: { display: false }, ticks: { color: colors.muted } },
               y: {
+                grid: { color: colors.border },
                 ticks: {
+                  color: colors.muted,
                   callback(value) {
                     return moneyTick(value, currency);
                   },

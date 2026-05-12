@@ -46,9 +46,8 @@ export function ThemeSwitcher() {
     applyTheme(theme, mode);
   }, [loadedPreferences, theme, mode]);
 
-function handleThemeChange(value: ThemeName) {
-    const nextMode = value === "hampoiel" ? "dark" : mode;
-
+  function handleThemeChange(value: ThemeName) {
+    const nextMode = mode;
     setTheme(value);
     setMode(nextMode);
     setOpen(false);
@@ -108,16 +107,14 @@ function handleThemeChange(value: ThemeName) {
         </div>
       ) : null}
 
-      {theme !== "hampoiel" ? (
-        <button
-          type="button"
-          onClick={handleModeChange}
-          className="theme-mode-button h-9 rounded-full bg-slate-900 px-3 text-sm font-medium text-white transition hover:bg-slate-700"
-          aria-pressed={mode === "dark"}
-        >
-          {mode === "dark" ? "Light" : "Dark"}
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onClick={handleModeChange}
+        className="theme-mode-button h-9 rounded-full bg-slate-900 px-3 text-sm font-medium text-white transition hover:bg-slate-700"
+        aria-pressed={mode === "dark"}
+      >
+        {mode === "dark" ? "Light" : "Dark"}
+      </button>
     </div>
   );
 }

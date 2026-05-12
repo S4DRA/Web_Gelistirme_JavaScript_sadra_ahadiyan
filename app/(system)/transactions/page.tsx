@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AppIcon } from "@/components/app-icon";
+import { useFinanceMode } from "@/components/finance-mode-switcher";
 import { PageShell } from "@/components/page-shell";
 
 type Transaction = {
@@ -32,6 +33,41 @@ type ImportPreviewRow = {
 };
 
 const currencies = ["USD", "EUR", "TRY", "GBP", "IRR", "AED", "CAD", "AUD", "JPY", "CHF"];
+const personalEssentialCategories = [
+  "Groceries",
+  "Rent",
+  "Utilities",
+  "Internet",
+  "Phone Bills",
+  "Transportation",
+  "Fuel",
+  "Healthcare",
+  "Insurance",
+  "Education",
+  "Subscriptions",
+];
+const personalLifestyleCategories = [
+  "Restaurants",
+  "Coffee",
+  "Shopping",
+  "Entertainment",
+  "Gaming",
+  "Travel",
+  "Gym",
+  "Hobbies",
+  "Gifts",
+  "Beauty / Skincare",
+  "Clothing",
+];
+const personalIncomeCategories = [
+  "Salary",
+  "Freelance",
+  "Side Hustle",
+  "Investments",
+  "Bonuses",
+  "Family Support",
+  "Passive Income",
+];
 
 const initialForm = {
   amount: "",
@@ -43,6 +79,8 @@ const initialForm = {
 };
 
 export default function TransactionsPage() {
+  const financeMode = useFinanceMode();
+  const isPersonalMode = financeMode === "personal";
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [form, setForm] = useState(initialForm);
   const [workspaceCurrency, setWorkspaceCurrency] = useState("USD");
@@ -91,7 +129,18 @@ export default function TransactionsPage() {
       }
     }
 
+    function handleFinanceModeChange() {
+      setLoading(true);
+      setPreviewRows([]);
+      void loadTransactions();
+    }
+
+    window.addEventListener("dampener-finance-mode-changed", handleFinanceModeChange);
     void loadTransactions();
+
+    return () => {
+      window.removeEventListener("dampener-finance-mode-changed", handleFinanceModeChange);
+    };
   }, []);
 
   async function reloadTransactions() {
@@ -247,17 +296,23 @@ export default function TransactionsPage() {
 
   return (
     <PageShell
-      title="Transactions"
-      description="Add new income or expenses and review your latest transaction activity."
+      title={isPersonalMode ? "Money In & Out" : "Transactions"}
+      description={
+        isPersonalMode
+          ? "Add everyday spending, income, bills, and savings notes in one calm place."
+          : "Add new income or expenses and review your latest transaction activity."
+      }
     >
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-6">
           <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
             <AppIcon name="add" />
-            Add transaction
+            {isPersonalMode ? "Add money move" : "Add transaction"}
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Amounts are stored in {workspaceCurrency}; original currency is preserved.
+            {isPersonalMode
+              ? `Amounts are saved in ${workspaceCurrency}; use simple categories that match your life.`
+              : `Amounts are stored in ${workspaceCurrency}; original currency is preserved.`}
           </p>
         </div>
 
@@ -307,12 +362,12 @@ export default function TransactionsPage() {
               }
               className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
             >
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
+              <option value="income">{isPersonalMode ? "Money In" : "Income"}</option>
+              <option value="expense">{isPersonalMode ? "Money Out" : "Expense"}</option>
             </select>
           </label>
 
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
+          <label className="grid gap-2 text-sm font-medium text-slate-700 md:col-span-3">
             Category
             <input
               required
@@ -322,8 +377,40 @@ export default function TransactionsPage() {
                 setForm((current) => ({ ...current, category: event.target.value }))
               }
               className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-              placeholder="Consulting"
+              placeholder={isPersonalMode ? "Groceries" : "Consulting"}
             />
+            {isPersonalMode ? (
+              <div className="grid gap-3">
+                <div className="flex flex-wrap gap-2">
+                  {(form.type === "income" ? personalIncomeCategories : personalEssentialCategories).map(
+                    (category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => setForm((current) => ({ ...current, category }))}
+                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-white"
+                      >
+                        {category}
+                      </button>
+                    ),
+                  )}
+                </div>
+                {form.type === "expense" ? (
+                  <div className="flex flex-wrap gap-2">
+                    {personalLifestyleCategories.map((category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => setForm((current) => ({ ...current, category }))}
+                        className="rounded-full border border-rose-100 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:border-rose-200 hover:bg-white"
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </label>
 
           <label className="grid gap-2 text-sm font-medium text-slate-700">
@@ -359,7 +446,7 @@ export default function TransactionsPage() {
               disabled={submitting}
               className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
-              {submitting ? "Saving..." : "Add transaction"}
+              {submitting ? "Saving..." : isPersonalMode ? "Add" : "Add transaction"}
             </button>
           </div>
         </form>
@@ -369,10 +456,12 @@ export default function TransactionsPage() {
         <div className="mb-6">
           <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
             <AppIcon name="upload" />
-            Import transactions
+            {isPersonalMode ? "Import money history" : "Import transactions"}
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Upload .xlsx or .csv, preview validation, then confirm the import.
+            {isPersonalMode
+              ? "Upload .xlsx or .csv, preview it first, then bring it into your personal view."
+              : "Upload .xlsx or .csv, preview validation, then confirm the import."}
           </p>
         </div>
 
@@ -477,7 +566,7 @@ export default function TransactionsPage() {
         <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
             <AppIcon name="list" />
-            Transaction list
+            {isPersonalMode ? "Money history" : "Transaction list"}
           </h2>
         </div>
 
@@ -485,7 +574,9 @@ export default function TransactionsPage() {
           <div className="px-6 py-10 text-sm text-slate-500">Loading transactions...</div>
         ) : transactions.length === 0 ? (
           <div className="px-6 py-10 text-sm text-slate-500">
-            No transactions yet. Add your first one above.
+            {isPersonalMode
+              ? "No money moves yet. Add your first one above."
+              : "No transactions yet. Add your first one above."}
           </div>
         ) : (
           <div className="divide-y divide-slate-200">
@@ -512,7 +603,12 @@ export default function TransactionsPage() {
                       {transaction.category}
                     </p>
                     <p className="text-sm text-slate-500">
-                      {transaction.type} | {formatDate(transaction.date)}
+                      {isPersonalMode
+                        ? transaction.type === "income"
+                          ? "Money In"
+                          : "Money Out"
+                        : transaction.type}{" "}
+                      | {formatDate(transaction.date)}
                       {transaction.note ? ` | ${transaction.note}` : ""}
                     </p>
                     {original ? <p className="mt-1 text-xs text-slate-500">{original}</p> : null}

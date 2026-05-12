@@ -23,14 +23,20 @@ export async function DELETE(request: Request) {
     }
 
     await prisma.$transaction([
-      prisma.transaction.deleteMany({ where: { workspaceId: context.workspace.id } }),
-      prisma.invoice.deleteMany({ where: { workspaceId: context.workspace.id } }),
-      prisma.recurringTransaction.deleteMany({
-        where: { workspaceId: context.workspace.id },
+      prisma.transaction.deleteMany({
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
       }),
-      prisma.categoryBudget.deleteMany({ where: { workspaceId: context.workspace.id } }),
+      prisma.invoice.deleteMany({
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
+      }),
+      prisma.recurringTransaction.deleteMany({
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
+      }),
+      prisma.categoryBudget.deleteMany({
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
+      }),
       prisma.financialTrackingFolder.deleteMany({
-        where: { workspaceId: context.workspace.id },
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
       }),
       prisma.workspace.update({
         where: { id: context.workspace.id },

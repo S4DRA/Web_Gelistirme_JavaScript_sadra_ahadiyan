@@ -26,6 +26,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
     }
 
+    if (context.financeType === "personal") {
+      return NextResponse.json([]);
+    }
+
     const prisma = getPrisma();
     const members = await prisma.workspaceMember.findMany({
       where: { workspaceId: context.workspace.id },
@@ -47,6 +51,13 @@ export async function POST(request: Request) {
 
     if (!context) {
       return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    }
+
+    if (context.financeType === "personal") {
+      return NextResponse.json(
+        { error: "Team access is only available in Business mode." },
+        { status: 403 },
+      );
     }
 
     if (context.role !== "owner" && context.role !== "admin") {

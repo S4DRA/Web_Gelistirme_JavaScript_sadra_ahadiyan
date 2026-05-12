@@ -34,10 +34,14 @@ export async function PATCH(request: Request) {
 
     await prisma.userPreference.upsert({
       where: { userId: context.user.id },
-      update: { activeWorkspaceId: workspaceId },
+      update: {
+        activeFinanceType: context.financeType,
+        activeWorkspaceId: workspaceId,
+      },
       create: {
         userId: context.user.id,
         activeWorkspaceId: workspaceId,
+        activeFinanceType: context.financeType,
         currency: membership.workspace.currency,
         onboardingComplete: true,
       },

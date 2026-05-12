@@ -14,15 +14,19 @@ export async function GET(request: Request) {
     const prisma = getPrisma();
     const [transactions, invoices, budgets] = await Promise.all([
       prisma.transaction.findMany({
-        where: { workspaceId: context.workspace.id },
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
         select: { amount: true, category: true, date: true, type: true },
       }),
       prisma.invoice.findMany({
-        where: { workspaceId: context.workspace.id },
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
         select: { amount: true, dueDate: true, status: true },
       }),
       prisma.categoryBudget.findMany({
-        where: { workspaceId: context.workspace.id, period: "monthly" },
+        where: {
+          financeType: context.financeType,
+          period: "monthly",
+          workspaceId: context.workspace.id,
+        },
         select: { amount: true, category: true },
       }),
     ]);
@@ -53,6 +57,7 @@ export async function GET(request: Request) {
       },
       workspace: {
         currency: context.workspace.currency,
+        financeType: context.financeType,
         name: context.workspace.name,
       },
     });

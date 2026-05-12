@@ -119,19 +119,19 @@ export default function DemoPage() {
   }
 
   return (
-    <main className="flex-1 bg-slate-50 text-slate-900">
-      <section className="sticky top-0 z-30 border-b border-emerald-200 bg-emerald-50/95 px-5 py-3 text-sm font-medium text-emerald-900 backdrop-blur sm:px-6">
+    <main className="demo-preview-page flex-1 bg-slate-50 text-slate-900">
+      <section className="demo-banner sticky top-0 z-30 border-b border-emerald-200 bg-emerald-50/95 px-5 py-3 text-sm font-medium text-emerald-900 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <AppIcon name="shield-check" className="text-emerald-700" />
-          <p>
+          <p className="min-w-0 break-words">
             You are currently viewing the Dampener demo preview. Editing and financial
             actions are disabled.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-6 px-5 py-6 sm:px-6 lg:grid-cols-[16rem_1fr]">
-        <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)]">
+      <section className="demo-preview-shell mx-auto grid w-full max-w-7xl gap-6 px-5 py-6 sm:px-6 lg:grid-cols-[16rem_1fr]">
+        <aside className="demo-sidebar rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)]">
           <div className="flex items-center gap-3 px-2 py-2">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">
               <AppIcon name="chart-histogram" />
@@ -142,13 +142,16 @@ export default function DemoPage() {
             </div>
           </div>
 
-          <nav aria-label="Demo navigation" className="mt-5 grid gap-1">
+          <nav
+            aria-label="Demo navigation"
+            className="demo-nav mt-5 flex gap-2 overflow-x-auto pb-1 lg:grid lg:gap-1 lg:overflow-visible lg:pb-0"
+          >
             {navItems.map((item, index) => (
               <button
                 key={item.label}
                 type="button"
                 onClick={() => showDisabledState(`${item.label} navigation`)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition hover:bg-slate-100 ${
+                className={`flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition hover:bg-slate-100 lg:shrink ${
                   index === 0 ? "bg-slate-100 text-slate-900" : "text-slate-600"
                 }`}
               >
@@ -158,7 +161,7 @@ export default function DemoPage() {
             ))}
           </nav>
 
-          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="mt-6 hidden rounded-xl border border-slate-200 bg-slate-50 p-4 lg:block">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               Access
             </p>
@@ -169,8 +172,8 @@ export default function DemoPage() {
           </div>
         </aside>
 
-        <div className="grid min-w-0 gap-6">
-          <header className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+        <div className="demo-main grid min-w-0 gap-6">
+          <header className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm font-semibold text-emerald-700">Dampener finance platform</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
@@ -181,7 +184,7 @@ export default function DemoPage() {
                 safe product exploration.
               </p>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="demo-header-actions flex w-full flex-col gap-2 lg:w-auto lg:flex-row">
               {demoButton("Import file", "file-upload")}
               {demoButton("Add transaction", "add", "dark")}
             </div>
@@ -193,7 +196,7 @@ export default function DemoPage() {
             </section>
           ) : null}
 
-          <section className="metric-grid grid gap-4 md:grid-cols-3">
+          <section className="metric-grid grid grid-cols-1 gap-4 xl:grid-cols-3">
             {metrics.map((metric) => (
               <article
                 key={metric.label}

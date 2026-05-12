@@ -22,6 +22,7 @@ function formatInvoice(invoice: {
   status: string;
   originalAmount: { toString(): string } | null;
   originalCurrency: string | null;
+  financeType?: string;
 }) {
   return {
     id: invoice.id,
@@ -38,6 +39,7 @@ function formatInvoice(invoice: {
       ? Number(invoice.originalAmount.toString())
       : null,
     originalCurrency: invoice.originalCurrency,
+    financeType: invoice.financeType,
   };
 }
 
@@ -66,6 +68,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const existingInvoice = await prisma.invoice.findFirst({
       where: {
         id,
+        financeType: contextData.financeType,
         workspaceId: contextData.workspace.id,
       },
     });

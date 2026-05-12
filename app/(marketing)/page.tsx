@@ -130,23 +130,26 @@ export default function Home() {
               workspaces into one readable financial command center.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="landing-cta-group mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/request-access"
-                className="inline-flex items-center justify-center rounded-full bg-lime-300 px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200"
+                className="landing-cta-button inline-flex items-center justify-center gap-2 rounded-full bg-lime-300 px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200"
               >
+                <AppIcon name="sparkles" />
                 Request Access
               </Link>
               <Link
                 href="/demo"
-                className="inline-flex items-center justify-center rounded-full border border-lime-200/40 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
+                className="landing-cta-button inline-flex items-center justify-center gap-2 rounded-full border border-lime-200/40 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
               >
+                <AppIcon name="dashboard-monitor" />
                 Try Demo
               </Link>
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-full border border-white/18 bg-white/8 px-6 py-3 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
+                className="landing-cta-button inline-flex items-center justify-center gap-2 rounded-full border border-white/18 bg-white/8 px-6 py-3 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
               >
+                <AppIcon name="sign-in-alt" />
                 Login
               </Link>
             </div>

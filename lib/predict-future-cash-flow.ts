@@ -1,4 +1,5 @@
 import { getPrisma } from "@/lib/prisma";
+import type { FinanceType } from "@/lib/workspace";
 
 export type PredictionMode = "conservative" | "balanced" | "optimistic";
 export type PredictionPeriod = 7 | 30 | 90 | 180 | 365;
@@ -76,13 +77,14 @@ export function normalizePredictionOptions(value: unknown): PredictionOptions {
 export async function predictFutureCashFlow(
   workspaceId: string,
   options: PredictionOptions = DEFAULT_PREDICTION_OPTIONS,
+  financeType: FinanceType = "business",
 ): Promise<PredictionResult> {
   const prisma = getPrisma();
 
   const [transactions, workspace, recurringTransactions, unpaidInvoices, budgets] =
     await Promise.all([
       prisma.transaction.findMany({
-        where: { workspaceId },
+        where: { financeType, workspaceId },
         select: {
           amount: true,
           date: true,
@@ -98,7 +100,7 @@ export async function predictFutureCashFlow(
         },
       }),
       prisma.recurringTransaction.findMany({
-        where: { workspaceId, active: true },
+        where: { active: true, financeType, workspaceId },
         select: {
           amount: true,
           frequency: true,
@@ -108,6 +110,7 @@ export async function predictFutureCashFlow(
       prisma.invoice.findMany({
         where: {
           status: { in: ["unpaid", "sent", "overdue"] },
+          financeType,
           workspaceId,
         },
         select: {
@@ -116,7 +119,7 @@ export async function predictFutureCashFlow(
         },
       }),
       prisma.categoryBudget.findMany({
-        where: { period: "monthly", workspaceId },
+        where: { financeType, period: "monthly", workspaceId },
         select: { amount: true },
       }),
     ]);

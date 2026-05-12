@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { CashFlowChart } from "@/components/cash-flow-chart";
 import { CategoryBreakdownChart, InvoiceAgingChart } from "@/components/analytics-charts";
 import { AppIcon } from "@/components/app-icon";
+import { FinanceModeSwitcher, useFinanceMode } from "@/components/finance-mode-switcher";
 import { PageShell } from "@/components/page-shell";
 
 type MetricId =
@@ -57,6 +58,9 @@ type DashboardData = {
   totalIncome: number;
   totalExpenses: number;
   netBalance: number;
+  prediction?: PredictionData;
+  transactions?: Transaction[];
+  invoices?: Invoice[];
 };
 
 type PredictionData = {
@@ -138,7 +142,45 @@ const sectionLabels: Record<SectionId, string> = {
   recommendations: "Next actions",
 };
 
+const personalMetricLabels: Record<MetricId, string> = {
+  dueSoon: "Bills & Subscriptions",
+  netBalance: "Personal Balance",
+  overdueInvoices: "Savings Progress",
+  runway: "Daily Burn Rate",
+  totalExpenses: "Monthly Spending",
+  totalIncome: "Money In",
+};
+
+const personalSections = {
+  gentleNotes: "Gentle money notes",
+  healthScore: "Financial Health Score",
+  monthlySurvival: "Monthly Survival Cost",
+  savingsProgress: "Savings Progress",
+};
+
+const essentialCategories = new Set([
+  "groceries",
+  "rent",
+  "utilities",
+  "internet",
+  "phone bills",
+  "transportation",
+  "fuel",
+  "healthcare",
+  "insurance",
+  "education",
+  "subscriptions",
+]);
+
+function isSameMonth(date: string, now: Date) {
+  const value = new Date(date);
+
+  return value.getFullYear() === now.getFullYear() && value.getMonth() === now.getMonth();
+}
+
 export default function DashboardPage() {
+  const financeMode = useFinanceMode();
+  const isPersonalMode = financeMode === "personal";
   const [dashboard, setDashboard] = useState<DashboardData>({
     currency: "USD",
     dashboardLayout: defaultLayout,
@@ -198,43 +240,29 @@ export default function DashboardPage() {
       try {
         setError("");
 
-        const [dashboardResponse, transactionsResponse, invoicesResponse] =
-          await Promise.all([
-            fetch("/api/dashboard"),
-            fetch("/api/transactions"),
-            fetch("/api/invoices"),
-          ]);
+        const dashboardResponse = await fetch("/api/dashboard");
 
-        if (
-          dashboardResponse.status === 401 ||
-          transactionsResponse.status === 401 ||
-          invoicesResponse.status === 401
-        ) {
+        if (dashboardResponse.status === 401) {
           window.location.assign("/login");
           return;
         }
 
         const dashboardData = await dashboardResponse.json();
-        const transactionData = await transactionsResponse.json();
-        const invoiceData = await invoicesResponse.json();
 
         if (!dashboardResponse.ok) {
           throw new Error(dashboardData.error || "Failed to load dashboard.");
         }
 
-        if (!transactionsResponse.ok) {
-          throw new Error(transactionData.error || "Failed to load transactions.");
-        }
-
-        if (!invoicesResponse.ok) {
-          throw new Error(invoiceData.error || "Failed to load invoices.");
-        }
-
         setDashboard(dashboardData);
         setLayout(dashboardData.dashboardLayout ?? defaultLayout);
-        setTransactions(transactionData);
-        setInvoices(invoiceData);
-        await loadPrediction(dashboardData.predictionSettings ?? defaultPredictionSettings);
+        setTransactions(dashboardData.transactions ?? []);
+        setInvoices(dashboardData.invoices ?? []);
+
+        if (dashboardData.prediction) {
+          setPrediction(dashboardData.prediction);
+        } else {
+          await loadPrediction(dashboardData.predictionSettings ?? defaultPredictionSettings);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load dashboard.");
       } finally {
@@ -242,7 +270,17 @@ export default function DashboardPage() {
       }
     }
 
+    function handleFinanceModeChange() {
+      setLoading(true);
+      void loadDashboard();
+    }
+
+    window.addEventListener("dampener-finance-mode-changed", handleFinanceModeChange);
     void loadDashboard();
+
+    return () => {
+      window.removeEventListener("dampener-finance-mode-changed", handleFinanceModeChange);
+    };
   }, []);
 
   async function saveLayout(nextLayout = layout) {
@@ -315,50 +353,110 @@ export default function DashboardPage() {
     return nextItems;
   }
 
+  const personalSummary = useMemo(() => {
+    const now = new Date();
+    const monthlyTransactions = transactions.filter((transaction) =>
+      isSameMonth(transaction.date, now),
+    );
+    const monthlyIncome = monthlyTransactions
+      .filter((transaction) => transaction.type === "income")
+      .reduce((total, transaction) => total + transaction.amount, 0);
+    const monthlySpending = monthlyTransactions
+      .filter((transaction) => transaction.type === "expense")
+      .reduce((total, transaction) => total + transaction.amount, 0);
+    const monthlySurvivalCost = monthlyTransactions
+      .filter(
+        (transaction) =>
+          transaction.type === "expense" &&
+          essentialCategories.has(transaction.category.trim().toLowerCase()),
+      )
+      .reduce((total, transaction) => total + transaction.amount, 0);
+    const subscriptionSpend = monthlyTransactions
+      .filter(
+        (transaction) =>
+          transaction.type === "expense" &&
+          transaction.category.trim().toLowerCase() === "subscriptions",
+      )
+      .reduce((total, transaction) => total + transaction.amount, 0);
+    const dailyBurnRate = monthlySpending / Math.max(1, now.getDate());
+    const savingsTarget = Math.max(5000, monthlySurvivalCost * 3);
+    const savingsProgress = Math.min(
+      100,
+      Math.max(0, (dashboard.netBalance / savingsTarget) * 100),
+    );
+    const savingsRate =
+      monthlyIncome > 0 ? Math.max(0, (monthlyIncome - monthlySpending) / monthlyIncome) : 0;
+    const spendBalance = monthlyIncome > 0 ? Math.max(0, 1 - monthlySpending / monthlyIncome) : 0;
+    const healthScore = Math.round(
+      Math.min(100, Math.max(0, savingsRate * 45 + spendBalance * 35 + savingsProgress * 0.2)),
+    );
+
+    return {
+      dailyBurnRate,
+      healthScore,
+      monthlyIncome,
+      monthlySpending,
+      monthlySurvivalCost,
+      savingsProgress,
+      subscriptionSpend,
+    };
+  }, [dashboard.netBalance, transactions]);
+
+  const activeMetricLabels = isPersonalMode ? personalMetricLabels : metricLabels;
+
   const cards = useMemo(
     () => ({
       dueSoon: {
         icon: "bell",
-        label: metricLabels.dueSoon,
+        label: activeMetricLabels.dueSoon,
         tone: "text-amber-700",
-        value: formatCurrency(dashboard.analytics?.invoiceAging.dueSoon ?? 0),
+        value: isPersonalMode
+          ? formatCurrency(personalSummary.subscriptionSpend)
+          : formatCurrency(dashboard.analytics?.invoiceAging.dueSoon ?? 0),
       },
       netBalance: {
         icon: "wallet",
-        label: metricLabels.netBalance,
+        label: activeMetricLabels.netBalance,
         tone: "text-slate-900",
         value: formatCurrency(dashboard.netBalance),
       },
       overdueInvoices: {
-        icon: "receipt",
-        label: metricLabels.overdueInvoices,
-        tone: "text-rose-600",
-        value: formatCurrency(dashboard.analytics?.invoiceAging.overdue ?? 0),
+        icon: isPersonalMode ? "bullseye-arrow" : "receipt",
+        label: activeMetricLabels.overdueInvoices,
+        tone: isPersonalMode ? "text-emerald-700" : "text-rose-600",
+        value: isPersonalMode
+          ? `${Math.round(personalSummary.savingsProgress)}%`
+          : formatCurrency(dashboard.analytics?.invoiceAging.overdue ?? 0),
       },
       runway: {
         icon: "calendar-clock",
-        label: metricLabels.runway,
+        label: activeMetricLabels.runway,
         tone: "text-blue-700",
-        value:
-          dashboard.analytics?.runwayMonths === null ||
-          dashboard.analytics?.runwayMonths === undefined
+        value: isPersonalMode
+          ? formatCurrency(personalSummary.dailyBurnRate)
+          : dashboard.analytics?.runwayMonths === null ||
+              dashboard.analytics?.runwayMonths === undefined
             ? "Not set"
             : `${dashboard.analytics.runwayMonths} months`,
       },
       totalExpenses: {
         icon: "arrow-trend-down",
-        label: metricLabels.totalExpenses,
+        label: activeMetricLabels.totalExpenses,
         tone: "text-rose-600",
-        value: formatCurrency(dashboard.totalExpenses),
+        value: formatCurrency(
+          isPersonalMode ? personalSummary.monthlySpending : dashboard.totalExpenses,
+        ),
       },
       totalIncome: {
         icon: "arrow-trend-up",
-        label: metricLabels.totalIncome,
+        label: activeMetricLabels.totalIncome,
         tone: "text-emerald-600",
-        value: formatCurrency(dashboard.totalIncome),
+        value: formatCurrency(
+          isPersonalMode ? personalSummary.monthlyIncome : dashboard.totalIncome,
+        ),
       },
     }),
-    [dashboard, formatCurrency],
+    [activeMetricLabels, dashboard, formatCurrency, isPersonalMode, personalSummary],
   );
 
   const unpaidInvoices = invoices.filter((invoice) =>
@@ -368,10 +466,12 @@ export default function DashboardPage() {
     dashboard.totalExpenses > dashboard.totalIncome
       ? {
           classes: "border-amber-200 bg-amber-50 text-amber-800",
-          message: "Your expenses are higher than your income",
+          message: isPersonalMode
+            ? "Your spending is higher than your money in this month"
+            : "Your expenses are higher than your income",
         }
       : null,
-    unpaidInvoices > 3
+    !isPersonalMode && unpaidInvoices > 3
       ? {
           classes: "border-amber-200 bg-amber-50 text-amber-800",
           message: "You have multiple unpaid invoices",
@@ -380,28 +480,34 @@ export default function DashboardPage() {
     prediction.risk
       ? {
           classes: "border-rose-200 bg-rose-50 text-rose-800",
-          message: "Cash may run out soon",
+          message: isPersonalMode ? "Your money may get tight soon" : "Cash may run out soon",
         }
       : null,
   ].filter((alert): alert is AlertItem => alert !== null);
   const predictionDelta = prediction.futureBalance - prediction.currentBalance;
   const predictionTone = prediction.risk
-    ? {
-        icon: "triangle-warning",
-        label: "Needs attention",
-        text: "Projected cash falls below zero in this horizon.",
-      }
-    : predictionDelta < 0
       ? {
-          icon: "arrow-trend-down",
-          label: "Cash tightening",
-          text: "Cash is projected to decrease, but remain above zero.",
+          icon: "triangle-warning",
+          label: "Needs attention",
+          text: isPersonalMode
+            ? "Your money may drop below zero in this view."
+            : "Projected cash falls below zero in this horizon.",
         }
-      : {
-          icon: "shield-check",
-          label: "Stable outlook",
-          text: "Cash is projected to stay steady for the selected horizon.",
-        };
+      : predictionDelta < 0
+        ? {
+            icon: "arrow-trend-down",
+            label: isPersonalMode ? "Spending faster" : "Cash tightening",
+            text: isPersonalMode
+              ? "Your balance is likely to go down, but stay above zero."
+              : "Cash is projected to decrease, but remain above zero.",
+          }
+        : {
+            icon: "shield-check",
+            label: isPersonalMode ? "Looking steady" : "Stable outlook",
+            text: isPersonalMode
+              ? "Your balance looks steady for this time window."
+              : "Cash is projected to stay steady for the selected horizon.",
+          };
 
   const sectionRenderers: Record<SectionId, ReactNode> = {
     alerts:
@@ -418,16 +524,60 @@ export default function DashboardPage() {
         </section>
       ) : null,
     analytics: dashboard.analytics ? (
-      <section className="grid gap-4 xl:grid-cols-2">
-        <CategoryBreakdownChart
-          currency={dashboard.currency}
-          data={dashboard.analytics.categoryBreakdown}
-        />
-        <InvoiceAgingChart
-          currency={dashboard.currency}
-          data={dashboard.analytics.invoiceAging}
-        />
-      </section>
+      isPersonalMode ? (
+        <section className="grid gap-4 xl:grid-cols-[1fr_1.15fr]">
+          <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-medium text-slate-900">
+                  {personalSections.healthScore}
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  A calm read on savings, spending, and stability.
+                </p>
+              </div>
+              <span className="rounded-full bg-emerald-50 px-4 py-2 text-2xl font-semibold text-emerald-700">
+                {personalSummary.healthScore}
+              </span>
+            </div>
+            <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-emerald-500 transition-all"
+                style={{ width: `${personalSummary.healthScore}%` }}
+              />
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">{personalSections.monthlySurvival}</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">
+                  {formatCurrency(personalSummary.monthlySurvivalCost)}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">{personalSections.savingsProgress}</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">
+                  {Math.round(personalSummary.savingsProgress)}%
+                </p>
+              </div>
+            </div>
+          </article>
+          <CategoryBreakdownChart
+            currency={dashboard.currency}
+            data={dashboard.analytics.categoryBreakdown}
+          />
+        </section>
+      ) : (
+        <section className="grid gap-4 xl:grid-cols-2">
+          <CategoryBreakdownChart
+            currency={dashboard.currency}
+            data={dashboard.analytics.categoryBreakdown}
+          />
+          <InvoiceAgingChart
+            currency={dashboard.currency}
+            data={dashboard.analytics.invoiceAging}
+          />
+        </section>
+      )
     ) : null,
     cashFlow: <CashFlowChart currency={dashboard.currency} transactions={transactions} />,
     metrics: (
@@ -474,14 +624,16 @@ export default function DashboardPage() {
                   <AppIcon name={predictionTone.icon} className="text-lg" />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-slate-700">Cash outlook</p>
+                  <p className="text-sm font-semibold text-slate-700">
+                    {isPersonalMode ? "Money outlook" : "Cash outlook"}
+                  </p>
                   <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
                     {loading ? "..." : formatCurrency(prediction.futureBalance)}
                   </p>
                   <p className="mt-2 text-sm font-medium text-slate-600">
                     {loading
                       ? "Loading forecast..."
-                      : `${predictionTone.label} · ${prediction.periodDays} days · ${prediction.mode}`}
+                      : `${predictionTone.label} - ${prediction.periodDays} days - ${prediction.mode}`}
                   </p>
                 </div>
               </div>
@@ -491,7 +643,7 @@ export default function DashboardPage() {
                   {predictionTone.text}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Expected change from today:{" "}
+                  {isPersonalMode ? "Expected balance change: " : "Expected change from today: "}
                   <span
                     className={
                       predictionDelta < 0
@@ -527,9 +679,13 @@ export default function DashboardPage() {
     recommendations: dashboard.analytics?.recommendations.length ? (
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-4">
-          <h2 className="text-lg font-medium text-slate-900">Next best actions</h2>
+          <h2 className="text-lg font-medium text-slate-900">
+            {isPersonalMode ? personalSections.gentleNotes : "Next best actions"}
+          </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Signals worth checking before you add more data.
+            {isPersonalMode
+              ? "Simple notes about spending, bills, and small savings chances."
+              : "Signals worth checking before you add more data."}
           </p>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
@@ -549,18 +705,25 @@ export default function DashboardPage() {
 
   return (
     <PageShell
-      title="Dashboard"
-      description="See a quick snapshot of your income, expenses, and recent cash flow."
+      title={isPersonalMode ? "Personal Money" : "Dashboard"}
+      description={
+        isPersonalMode
+          ? "A simple view of balance, spending, bills, savings, and daily money habits."
+          : "See a quick snapshot of your income, expenses, and recent cash flow."
+      }
       unifiedSurface
       actions={
-        <button
-          type="button"
-          onClick={() => setCustomizing((current) => !current)}
-          className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300"
-        >
-          <AppIcon name="settings-sliders" />
-          Customize
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <FinanceModeSwitcher />
+          <button
+            type="button"
+            onClick={() => setCustomizing((current) => !current)}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300"
+          >
+            <AppIcon name="settings-sliders" />
+            Customize
+          </button>
+        </div>
       }
     >
       {error ? (
@@ -602,7 +765,7 @@ export default function DashboardPage() {
                       }
                       className="h-4 w-4"
                     />
-                    {metricLabels[cardId]}
+                    {activeMetricLabels[cardId]}
                   </label>
                   <div className="flex gap-2">
                     <button

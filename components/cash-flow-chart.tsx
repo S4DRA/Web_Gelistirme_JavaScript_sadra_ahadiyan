@@ -97,6 +97,9 @@ export function CashFlowChart({ currency = "USD", transactions }: CashFlowChartP
   const options: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: {
+      duration: 280,
+    },
     plugins: {
       legend: {
         display: false,

@@ -24,7 +24,11 @@ export async function GET(request: Request) {
       mode: url.searchParams.get("mode") ?? undefined,
       periodDays: Number(url.searchParams.get("periodDays") ?? 30),
     });
-    const prediction = await predictFutureCashFlow(context.workspace.id, queryOptions);
+    const prediction = await predictFutureCashFlow(
+      context.workspace.id,
+      queryOptions,
+      context.financeType,
+    );
 
     return NextResponse.json(prediction);
   } catch (error) {

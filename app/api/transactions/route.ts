@@ -18,6 +18,7 @@ function formatTransaction(transaction: {
   exchangeRate: { toString(): string } | null;
   userId: string;
   workspaceId: string | null;
+  financeType?: string;
 }) {
   return {
     id: transaction.id,
@@ -36,6 +37,7 @@ function formatTransaction(transaction: {
       : null,
     originalCurrency: transaction.originalCurrency,
     workspaceId: transaction.workspaceId,
+    financeType: transaction.financeType,
   };
 }
 
@@ -51,7 +53,7 @@ export async function GET(request: Request) {
     }
 
     const transactions = await prisma.transaction.findMany({
-      where: { workspaceId: context.workspace.id },
+      where: { financeType: context.financeType, workspaceId: context.workspace.id },
       orderBy: { date: "desc" },
     });
 
@@ -127,6 +129,7 @@ export async function POST(request: Request) {
     const existingTransaction = await prisma.transaction.findFirst({
       where: {
         importFingerprint: fingerprint,
+        financeType: context.financeType,
         workspaceId: context.workspace.id,
       },
       select: { id: true },
@@ -143,6 +146,7 @@ export async function POST(request: Request) {
       data: {
         userId: context.user.id,
         workspaceId: context.workspace.id,
+        financeType: context.financeType,
         type,
         amount: conversion.amount,
         category: category.trim(),

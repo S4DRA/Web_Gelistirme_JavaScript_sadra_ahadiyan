@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFinanceMode } from "@/components/finance-mode-switcher";
 import { PageShell } from "@/components/page-shell";
 
 type RecurringItem = {
@@ -25,8 +26,22 @@ const initialForm = {
   nextDate: "",
 };
 const currencies = ["USD", "EUR", "TRY", "GBP", "IRR", "AED", "CAD", "AUD", "JPY", "CHF"];
+const personalRecurringCategories = [
+  "Rent",
+  "Utilities",
+  "Internet",
+  "Phone Bills",
+  "Insurance",
+  "Subscriptions",
+  "Gym",
+  "Healthcare",
+  "Salary",
+  "Freelance",
+];
 
 export default function RecurringPage() {
+  const financeMode = useFinanceMode();
+  const isPersonalMode = financeMode === "personal";
   const [items, setItems] = useState<RecurringItem[]>([]);
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(true);
@@ -65,7 +80,17 @@ export default function RecurringPage() {
       }
     }
 
+    function handleFinanceModeChange() {
+      setLoading(true);
+      void loadItems();
+    }
+
+    window.addEventListener("dampener-finance-mode-changed", handleFinanceModeChange);
     void loadItems();
+
+    return () => {
+      window.removeEventListener("dampener-finance-mode-changed", handleFinanceModeChange);
+    };
   }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -100,14 +125,22 @@ export default function RecurringPage() {
 
   return (
     <PageShell
-      title="Recurring"
-      description="Model predictable income and costs so forecasts become useful before money moves."
+      title={isPersonalMode ? "Bills" : "Recurring"}
+      description={
+        isPersonalMode
+          ? "Track rent, subscriptions, salary, and other money that repeats."
+          : "Model predictable income and costs so forecasts become useful before money moves."
+      }
     >
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-6">
-          <h2 className="text-lg font-medium text-slate-900">Add recurring item</h2>
+          <h2 className="text-lg font-medium text-slate-900">
+            {isPersonalMode ? "Add bill or recurring money" : "Add recurring item"}
+          </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Salaries, rent, subscriptions, retainers, and other expected movements.
+            {isPersonalMode
+              ? "Add anything predictable so your daily money view feels more honest."
+              : "Salaries, rent, subscriptions, retainers, and other expected movements."}
           </p>
         </div>
 
@@ -117,7 +150,7 @@ export default function RecurringPage() {
             value={form.name}
             onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
             className="rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-            placeholder="Office rent"
+            placeholder={isPersonalMode ? "Netflix" : "Office rent"}
           />
           <input
             required
@@ -156,8 +189,8 @@ export default function RecurringPage() {
             onChange={(event) => setForm((current) => ({ ...current, type: event.target.value }))}
             className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
           >
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
+            <option value="income">{isPersonalMode ? "Money In" : "Income"}</option>
+            <option value="expense">{isPersonalMode ? "Money Out" : "Expense"}</option>
           </select>
           <select
             value={form.frequency}
@@ -188,16 +221,36 @@ export default function RecurringPage() {
             </button>
           </div>
         </form>
+        {isPersonalMode ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {personalRecurringCategories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => setForm((current) => ({ ...current, category }))}
+                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-white"
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-lg font-medium text-slate-900">Recurring list</h2>
+          <h2 className="text-lg font-medium text-slate-900">
+            {isPersonalMode ? "Bills and repeats" : "Recurring list"}
+          </h2>
         </div>
         {loading ? (
-          <div className="px-6 py-10 text-sm text-slate-500">Loading recurring items...</div>
+          <div className="px-6 py-10 text-sm text-slate-500">
+            {isPersonalMode ? "Loading bills..." : "Loading recurring items..."}
+          </div>
         ) : items.length === 0 ? (
-          <div className="px-6 py-10 text-sm text-slate-500">No recurring items yet.</div>
+          <div className="px-6 py-10 text-sm text-slate-500">
+            {isPersonalMode ? "No bills or repeating money yet." : "No recurring items yet."}
+          </div>
         ) : (
           <div className="divide-y divide-slate-200">
             {items.map((item) => (

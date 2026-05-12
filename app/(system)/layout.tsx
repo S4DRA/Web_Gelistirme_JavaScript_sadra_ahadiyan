@@ -35,8 +35,10 @@ const themeInitScript = `
   try {
     const theme = localStorage.getItem("dampener-theme") || "default";
     const mode = localStorage.getItem("dampener-mode") || "light";
+    const financeType = localStorage.getItem("dampener-finance-type") || "business";
     document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.mode = mode;
+    document.documentElement.dataset.financeType = financeType;
   } catch {}
 })();
 `;
@@ -51,6 +53,7 @@ export default function SystemLayout({
       lang="en"
       data-theme="default"
       data-mode="light"
+      data-finance-type="business"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >

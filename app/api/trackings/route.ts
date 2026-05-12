@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
-function formatFolder(folder: { id: string; name: string; createdAt: Date }) {
+function formatFolder(folder: { id: string; name: string; createdAt: Date; financeType?: string }) {
   return {
     id: folder.id,
     name: folder.name,
     createdAt: folder.createdAt.toISOString(),
+    financeType: folder.financeType,
   };
 }
 
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
 
     const prisma = getPrisma();
     const folders = await prisma.financialTrackingFolder.findMany({
-      where: { workspaceId: context.workspace.id },
+      where: { financeType: context.financeType, workspaceId: context.workspace.id },
       orderBy: { createdAt: "desc" },
     });
 
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
       data: {
         userId: context.user.id,
         workspaceId: context.workspace.id,
+        financeType: context.financeType,
         name: name.trim(),
       },
     });

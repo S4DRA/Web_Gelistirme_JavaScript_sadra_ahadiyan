@@ -54,6 +54,9 @@ export function MonthlyTrendChart({
   const options: ChartOptions<"bar"> = {
     maintainAspectRatio: false,
     responsive: true,
+    animation: {
+      duration: 280,
+    },
     plugins: {
       legend: { position: "bottom" },
     },
@@ -134,6 +137,9 @@ export function CategoryBreakdownChart({
               ],
             }}
             options={{
+              animation: {
+                duration: 280,
+              },
               maintainAspectRatio: false,
               plugins: {
                 legend: { position: "bottom" },
@@ -174,6 +180,9 @@ export function InvoiceAgingChart({
             ],
           }}
           options={{
+            animation: {
+              duration: 280,
+            },
             maintainAspectRatio: false,
             plugins: {
               legend: { display: false },

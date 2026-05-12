@@ -61,6 +61,7 @@ export async function POST(request: Request) {
         where: { userId: user.id },
         update: {
           activeWorkspaceId: context.workspace.id,
+          activeFinanceType: context.financeType,
           currency,
           startingBalance,
           monthlyFixedExpenses,
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
         create: {
           userId: user.id,
           activeWorkspaceId: context.workspace.id,
+          activeFinanceType: context.financeType,
           currency,
           startingBalance,
           monthlyFixedExpenses,
@@ -80,6 +82,7 @@ export async function POST(request: Request) {
             data: {
               userId: user.id,
               workspaceId: context.workspace.id,
+              financeType: context.financeType,
               name: folderName,
             },
           })

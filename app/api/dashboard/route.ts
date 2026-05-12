@@ -1,7 +1,10 @@
 import { connection, NextResponse } from "next/server";
 import { buildAnalytics } from "@/lib/analytics";
 import { normalizeDashboardLayout } from "@/lib/dashboard-layout";
-import { normalizePredictionOptions } from "@/lib/predict-future-cash-flow";
+import {
+  normalizePredictionOptions,
+  predictFutureCashFlow,
+} from "@/lib/predict-future-cash-flow";
 import { getPrisma } from "@/lib/prisma";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
 
@@ -11,8 +14,11 @@ type TransactionTotals = {
 };
 
 type TransactionSummary = {
+  id: string;
   type: "income" | "expense";
   amount: { toString(): string };
+  category: string;
+  date: Date;
 };
 
 export async function GET(request: Request) {
@@ -28,8 +34,9 @@ export async function GET(request: Request) {
 
     const [transactions, invoices, budgets] = await Promise.all([
       prisma.transaction.findMany({
-        where: { workspaceId: context.workspace.id },
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
         select: {
+          id: true,
           amount: true,
           category: true,
           date: true,
@@ -37,15 +44,20 @@ export async function GET(request: Request) {
         },
       }),
       prisma.invoice.findMany({
-        where: { workspaceId: context.workspace.id },
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
         select: {
+          id: true,
           amount: true,
           dueDate: true,
           status: true,
         },
       }),
       prisma.categoryBudget.findMany({
-        where: { workspaceId: context.workspace.id, period: "monthly" },
+        where: {
+          financeType: context.financeType,
+          period: "monthly",
+          workspaceId: context.workspace.id,
+        },
         select: {
           amount: true,
           category: true,
@@ -57,6 +69,12 @@ export async function GET(request: Request) {
       select: { dashboardLayout: true, currency: true, predictionSettings: true },
     });
 
+    const predictionSettings = normalizePredictionOptions(preference?.predictionSettings);
+    const prediction = await predictFutureCashFlow(
+      context.workspace.id,
+      predictionSettings,
+      context.financeType,
+    );
     const totals = transactions.reduce<TransactionTotals>(
       (result: TransactionTotals, transaction: TransactionSummary) => {
         const amount = Number(transaction.amount.toString());
@@ -96,8 +114,21 @@ export async function GET(request: Request) {
       netBalance,
       currency: context.workspace.currency,
       dashboardLayout: normalizeDashboardLayout(preference?.dashboardLayout),
-      predictionSettings: normalizePredictionOptions(preference?.predictionSettings),
+      invoices: invoices.map((invoice) => ({
+        id: invoice.id,
+        status: invoice.status,
+      })),
+      prediction,
+      predictionSettings,
+      transactions: transactions.map((transaction) => ({
+        id: transaction.id,
+        amount: Number(transaction.amount.toString()),
+        category: transaction.category,
+        date: transaction.date.toISOString(),
+        type: transaction.type,
+      })),
       workspace: context.workspace,
+      financeType: context.financeType,
     });
   } catch (error) {
     console.error("Failed to load dashboard data:", error);

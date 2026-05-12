@@ -50,7 +50,17 @@ export default function ReportsPage() {
       }
     }
 
+    function handleFinanceModeChange() {
+      setLoading(true);
+      void loadSummary();
+    }
+
+    window.addEventListener("dampener-finance-mode-changed", handleFinanceModeChange);
     void loadSummary();
+
+    return () => {
+      window.removeEventListener("dampener-finance-mode-changed", handleFinanceModeChange);
+    };
   }, []);
 
   function formatCurrency(amount: number) {

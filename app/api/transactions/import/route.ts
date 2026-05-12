@@ -20,10 +20,21 @@ export async function POST(request: Request) {
     const contentType = request.headers.get("content-type") ?? "";
 
     if (contentType.includes("multipart/form-data")) {
-      return previewImport(request, context.workspace.id, context.workspace.currency);
+      return previewImport(
+        request,
+        context.workspace.id,
+        context.workspace.currency,
+        context.financeType,
+      );
     }
 
-    return confirmImport(request, context.user.id, context.workspace.id, context.workspace.currency);
+    return confirmImport(
+      request,
+      context.user.id,
+      context.workspace.id,
+      context.workspace.currency,
+      context.financeType,
+    );
   } catch (error) {
     console.error("Failed to import transactions:", error);
 
@@ -41,6 +52,7 @@ async function previewImport(
   request: Request,
   workspaceId: string,
   baseCurrency: string,
+  financeType: "personal" | "business",
 ) {
   const formData = await request.formData();
   const file = formData.get("file");
@@ -54,7 +66,7 @@ async function previewImport(
     file.name,
     file.type,
   );
-  const duplicateFingerprints = await getDuplicateFingerprints(workspaceId);
+  const duplicateFingerprints = await getDuplicateFingerprints(workspaceId, financeType);
   const previewRows = await buildImportPreview({
     baseCurrency,
     convertAmount: (amount, currency) =>
@@ -75,6 +87,7 @@ async function confirmImport(
   userId: string,
   workspaceId: string,
   baseCurrency: string,
+  financeType: "personal" | "business",
 ) {
   const body = await request.json();
   const rows = Array.isArray(body.rows) ? (body.rows as ImportPreviewRow[]) : [];
@@ -87,7 +100,7 @@ async function confirmImport(
     );
   }
 
-  const duplicateFingerprints = await getDuplicateFingerprints(workspaceId);
+  const duplicateFingerprints = await getDuplicateFingerprints(workspaceId, financeType);
   const data = readyRows
     .map((row) => {
       const fingerprint =
@@ -119,6 +132,7 @@ async function confirmImport(
         type: row.type,
         userId,
         workspaceId,
+        financeType,
       };
     })
     .filter((row): row is NonNullable<typeof row> => row !== null);
@@ -136,10 +150,13 @@ async function confirmImport(
   });
 }
 
-async function getDuplicateFingerprints(workspaceId: string) {
+async function getDuplicateFingerprints(
+  workspaceId: string,
+  financeType: "personal" | "business",
+) {
   const prisma = getPrisma();
   const transactions = await prisma.transaction.findMany({
-    where: { workspaceId, importFingerprint: { not: null } },
+    where: { financeType, importFingerprint: { not: null }, workspaceId },
     select: { importFingerprint: true },
   });
 

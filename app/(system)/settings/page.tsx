@@ -63,6 +63,7 @@ export default function SettingsPage() {
   const [savingPrediction, setSavingPrediction] = useState(false);
   const [predictionMessage, setPredictionMessage] = useState("");
   const [predictionError, setPredictionError] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     async function loadSettings() {
@@ -376,6 +377,16 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleLogout() {
+    setLoggingOut(true);
+
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      window.location.assign("/login");
+    }
+  }
+
   return (
     <PageShell
       title="Settings"
@@ -604,6 +615,29 @@ export default function SettingsPage() {
             height={2048}
             className="h-40 w-full object-contain"
           />
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
+              <AppIcon name="sign-out-alt" />
+              Log out
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              End this session and return to the login screen.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={loggingOut}
+            onClick={() => void handleLogout()}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700 transition hover:border-rose-300 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <AppIcon name="sign-out-alt" />
+            {loggingOut ? "Logging out..." : "Log out"}
+          </button>
         </div>
       </section>
 

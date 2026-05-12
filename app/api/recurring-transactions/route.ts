@@ -14,6 +14,7 @@ function formatRecurring(item: {
   frequency: string;
   nextDate: Date;
   active: boolean;
+  financeType?: string;
 }) {
   return {
     id: item.id,
@@ -25,6 +26,7 @@ function formatRecurring(item: {
     frequency: item.frequency,
     nextDate: item.nextDate.toISOString(),
     active: item.active,
+    financeType: item.financeType,
   };
 }
 
@@ -38,7 +40,7 @@ export async function GET(request: Request) {
 
     const prisma = getPrisma();
     const items = await prisma.recurringTransaction.findMany({
-      where: { workspaceId: context.workspace.id },
+      where: { financeType: context.financeType, workspaceId: context.workspace.id },
       orderBy: { nextDate: "asc" },
     });
 
@@ -101,6 +103,7 @@ export async function POST(request: Request) {
     const item = await prisma.recurringTransaction.create({
       data: {
         workspaceId: context.workspace.id,
+        financeType: context.financeType,
         name,
         type: body.type,
         amount,

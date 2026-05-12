@@ -86,10 +86,14 @@ export async function POST(request: Request) {
 
     await prisma.userPreference.upsert({
       where: { userId: context.user.id },
-      update: { activeWorkspaceId: workspace.id },
+      update: {
+        activeFinanceType: context.financeType,
+        activeWorkspaceId: workspace.id,
+      },
       create: {
         userId: context.user.id,
         activeWorkspaceId: workspace.id,
+        activeFinanceType: context.financeType,
         currency,
         onboardingComplete: true,
       },

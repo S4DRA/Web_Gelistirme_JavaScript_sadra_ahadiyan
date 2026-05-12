@@ -16,18 +16,23 @@ export async function GET(request: Request) {
     const [transactions, invoices, budgets, prediction] = await Promise.all([
       prisma.transaction.findMany({
         where: {
+          financeType: context.financeType,
           workspaceId: context.workspace.id,
         },
         select: { type: true, amount: true, category: true, date: true },
       }),
       prisma.invoice.findMany({
-        where: { workspaceId: context.workspace.id },
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
         select: { status: true, amount: true, dueDate: true },
       }),
       prisma.categoryBudget.findMany({
-        where: { workspaceId: context.workspace.id, period: "monthly" },
+        where: {
+          financeType: context.financeType,
+          period: "monthly",
+          workspaceId: context.workspace.id,
+        },
       }),
-      predictFutureCashFlow(context.workspace.id),
+      predictFutureCashFlow(context.workspace.id, undefined, context.financeType),
     ]);
     const totalIncome = transactions
       .filter((item) => item.type === "income")
@@ -49,6 +54,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       workspace: context.workspace,
+      financeType: context.financeType,
       ...analytics,
       prediction,
     });

@@ -70,7 +70,17 @@ export default function InvoicesPage() {
       }
     }
 
-    loadInvoices();
+    function handleFinanceModeChange() {
+      setLoading(true);
+      void loadInvoices();
+    }
+
+    window.addEventListener("dampener-finance-mode-changed", handleFinanceModeChange);
+    void loadInvoices();
+
+    return () => {
+      window.removeEventListener("dampener-finance-mode-changed", handleFinanceModeChange);
+    };
   }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {

@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
     if (type === "invoices") {
       const invoices = await prisma.invoice.findMany({
-        where: { workspaceId: context.workspace.id },
+        where: { financeType: context.financeType, workspaceId: context.workspace.id },
         orderBy: { dueDate: "asc" },
       });
       const rows = [
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
     }
 
     const transactions = await prisma.transaction.findMany({
-      where: { workspaceId: context.workspace.id },
+      where: { financeType: context.financeType, workspaceId: context.workspace.id },
       orderBy: { date: "desc" },
     });
     const rows = [

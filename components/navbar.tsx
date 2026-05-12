@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AppIcon } from "@/components/app-icon";
+import { FinanceModeSwitcher, useFinanceMode } from "@/components/finance-mode-switcher";
 
 const navItems = [
   { href: "/dashboard", icon: "apps", label: "Dashboard" },
@@ -29,6 +30,7 @@ const mobileQuickItems = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const financeMode = useFinanceMode();
   const [email, setEmail] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
@@ -111,6 +113,21 @@ export function Navbar() {
     return `${baseClassName} ${isActiveRoute(href) ? "is-active" : ""}`;
   }
 
+  const visibleNavItems = navItems.filter((item) => {
+    if (financeMode === "personal") {
+      return !["/workspaces", "/invoices", "/team"].includes(item.href);
+    }
+
+    return true;
+  });
+  const visibleMobileQuickItems = mobileQuickItems.filter((item) => {
+    if (financeMode === "personal") {
+      return item.href !== "/invoices";
+    }
+
+    return true;
+  });
+
   return (
     <>
       {email ? (
@@ -136,7 +153,7 @@ export function Navbar() {
           </Link>
 
           <nav aria-label="Sidebar" className="sidebar-nav mt-8 grid gap-2">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const active = isActiveRoute(item.href);
 
               return (
@@ -217,8 +234,9 @@ export function Navbar() {
         <nav aria-label="Primary" className="app-nav flex flex-wrap items-center gap-2">
           {email ? (
             <>
+              <FinanceModeSwitcher compact />
               <div className="desktop-nav-links flex items-center gap-2">
-                {mobileQuickItems.map((item) => (
+                {visibleMobileQuickItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -265,7 +283,7 @@ export function Navbar() {
                     className="dashboard-menu-list flex flex-wrap items-center gap-2"
                     aria-hidden={!menuOpen}
                   >
-                    {navItems.map((item) => {
+                    {visibleNavItems.map((item) => {
                       const active = isActiveRoute(item.href);
 
                       return (
@@ -348,8 +366,11 @@ export function Navbar() {
       </header>
 
       {email ? (
-        <nav aria-label="Mobile quick navigation" className="mobile-bottom-nav">
-          {mobileQuickItems.map((item) => {
+        <nav
+          aria-label="Mobile quick navigation"
+          className={`mobile-bottom-nav ${financeMode === "personal" ? "is-personal" : ""}`}
+        >
+          {visibleMobileQuickItems.map((item) => {
             const active = pathname === item.href;
 
             return (
@@ -365,14 +386,12 @@ export function Navbar() {
             );
           })}
 
-          <button
-            type="button"
-            onClick={() => setProfileOpen((current) => !current)}
+          <Link
+            href="/settings"
+            onClick={() => setProfileOpen(false)}
             className={`mobile-bottom-link mobile-profile-trigger ${
               pathname === "/settings" ? "is-active" : ""
             }`}
-            aria-expanded={profileOpen}
-            aria-haspopup="menu"
           >
             {profileImage ? (
               <Image
@@ -391,34 +410,8 @@ export function Navbar() {
               />
             )}
             Profile
-          </button>
-        </nav>
-      ) : null}
-
-      {email && profileOpen ? (
-        <div
-          role="menu"
-          className="mobile-profile-menu fixed grid gap-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"
-        >
-          <Link
-            href="/settings"
-            role="menuitem"
-            onClick={() => setProfileOpen(false)}
-            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
-          >
-            <AppIcon name="settings" />
-            Settings
           </Link>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => void handleLogout()}
-            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
-          >
-            <AppIcon name="sign-out-alt" />
-            Log out
-          </button>
-        </div>
+        </nav>
       ) : null}
 
     </>

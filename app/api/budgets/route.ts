@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
     const prisma = getPrisma();
     const budgets = await prisma.categoryBudget.findMany({
-      where: { workspaceId: context.workspace.id },
+      where: { financeType: context.financeType, workspaceId: context.workspace.id },
       orderBy: { category: "asc" },
     });
 
@@ -70,8 +70,9 @@ export async function POST(request: Request) {
     const prisma = getPrisma();
     const budget = await prisma.categoryBudget.upsert({
       where: {
-        workspaceId_category_period: {
+        workspaceId_financeType_category_period: {
           workspaceId: context.workspace.id,
+          financeType: context.financeType,
           category,
           period,
         },
@@ -79,6 +80,7 @@ export async function POST(request: Request) {
       update: { amount },
       create: {
         workspaceId: context.workspace.id,
+        financeType: context.financeType,
         category,
         amount,
         period,

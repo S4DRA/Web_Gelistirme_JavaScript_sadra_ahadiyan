@@ -17,6 +17,7 @@ function formatInvoice(invoice: {
   status: string;
   originalAmount: { toString(): string } | null;
   originalCurrency: string | null;
+  financeType?: string;
 }) {
   return {
     id: invoice.id,
@@ -33,6 +34,7 @@ function formatInvoice(invoice: {
       ? Number(invoice.originalAmount.toString())
       : null,
     originalCurrency: invoice.originalCurrency,
+    financeType: invoice.financeType,
   };
 }
 
@@ -48,7 +50,7 @@ export async function GET(request: Request) {
     }
 
     const invoices = await prisma.invoice.findMany({
-      where: { workspaceId: context.workspace.id },
+      where: { financeType: context.financeType, workspaceId: context.workspace.id },
       orderBy: { dueDate: "asc" },
     });
 
@@ -129,6 +131,7 @@ export async function POST(request: Request) {
       data: {
         userId: context.user.id,
         workspaceId: context.workspace.id,
+        financeType: context.financeType,
         clientName: clientName.trim(),
         amount: conversion.amount,
         currency: context.workspace.currency,

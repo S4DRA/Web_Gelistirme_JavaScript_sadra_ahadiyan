@@ -171,7 +171,7 @@ export function ConnectedJourney() {
     stiffness: 155,
   });
   const pathLength = useTransform(smoothProgress, [0.04, 0.94], [0, 1]);
-  const pathOpacity = useTransform(smoothProgress, [0, 0.08, 0.88, 1], [0, 0.62, 0.56, 0.08]);
+  const pathOpacity = useTransform(smoothProgress, [0, 0.08, 0.9, 1], [0.28, 0.96, 0.86, 0.42]);
   const fieldY = useTransform(smoothProgress, [0, 1], ["4%", "-18%"]);
   const fieldScale = useTransform(smoothProgress, [0, 0.5, 1], [1.08, 0.94, 1.12]);
 

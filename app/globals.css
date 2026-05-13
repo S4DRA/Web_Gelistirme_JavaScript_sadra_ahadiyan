@@ -4792,7 +4792,7 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
   pointer-events: none;
   position: fixed;
   transform: translateZ(0);
-  z-index: 6;
+  z-index: 8500;
 }
 
 .studio-journey-field {
@@ -4810,26 +4810,25 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 }
 
 .studio-journey-map {
-  height: 122vh;
-  left: 82%;
-  opacity: 0.84;
+  height: 100svh;
+  opacity: 1;
   position: absolute;
-  top: -8vh;
-  translate: -50% 0;
-  width: min(36rem, 42vw);
+  right: clamp(1.25rem, 2.5vw, 2.75rem);
+  top: 0;
+  width: clamp(7.25rem, 10vw, 11.5rem);
 }
 
 .studio-journey-path {
   fill: none;
   stroke: url("#studioJourneyGradient");
   stroke-linecap: round;
-  stroke-width: 0.24;
+  stroke-width: 0.52;
   vector-effect: non-scaling-stroke;
 }
 
 .studio-journey-path-soft {
-  stroke: rgb(34 197 94 / 0.24);
-  stroke-width: 1.15;
+  stroke: rgb(34 197 94 / 0.42);
+  stroke-width: 2.4;
 }
 
 .studio-hero {
@@ -6916,8 +6915,8 @@ html[data-landing-theme="light"] .studio-opening-logo {
   }
 
   .studio-journey-map {
-    left: 84%;
-    width: min(28rem, 48vw);
+    right: clamp(0.85rem, 2vw, 1.5rem);
+    width: clamp(5.75rem, 13vw, 8rem);
   }
 
   .studio-hero-grid,
@@ -7074,7 +7073,7 @@ html[data-landing-theme="light"] .studio-opening-logo {
   }
 
   .studio-journey-canvas {
-    opacity: 0.5;
+    opacity: 0.82;
   }
 
   .studio-journey-field,
@@ -7083,9 +7082,9 @@ html[data-landing-theme="light"] .studio-opening-logo {
   }
 
   .studio-journey-map {
-    left: 88%;
-    opacity: 0.58;
-    width: 18rem;
+    opacity: 0.9;
+    right: 0.35rem;
+    width: 4.75rem;
   }
 
   .studio-metric-card::after,

@@ -26,25 +26,44 @@ function formatTransaction(transaction: {
   workspaceId: string | null;
   financeType?: string;
 }) {
+  const date = transaction.date instanceof Date && !Number.isNaN(transaction.date.getTime())
+    ? transaction.date.toISOString()
+    : new Date(0).toISOString();
+
   return {
     id: transaction.id,
     userId: transaction.userId,
     type: transaction.type,
-    amount: Number(transaction.amount.toString()),
-    category: transaction.category,
+    amount: safeDecimalNumber(transaction.amount),
+    category: transaction.category || "Uncategorized",
     currency: transaction.currency,
-    date: transaction.date.toISOString(),
+    date,
     exchangeRate: transaction.exchangeRate
-      ? Number(transaction.exchangeRate.toString())
+      ? safeDecimalNumber(transaction.exchangeRate)
       : null,
     note: transaction.note,
     originalAmount: transaction.originalAmount
-      ? Number(transaction.originalAmount.toString())
+      ? safeDecimalNumber(transaction.originalAmount)
       : null,
     originalCurrency: transaction.originalCurrency,
     workspaceId: transaction.workspaceId,
     financeType: transaction.financeType,
   };
+}
+
+function safeDecimalNumber(value: { toString(): string }) {
+  const amount = Number(value.toString());
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+function apiError(message: string, error: unknown) {
+  return NextResponse.json(
+    {
+      error: message,
+      details: error instanceof Error ? error.message : "Unknown server error.",
+    },
+    { status: 500 },
+  );
 }
 
 export async function GET(request: Request) {
@@ -67,10 +86,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Failed to fetch transactions:", error);
 
-    return NextResponse.json(
-      { error: "Failed to fetch transactions." },
-      { status: 500 },
-    );
+    return apiError("Failed to fetch transactions.", error);
   }
 }
 
@@ -171,9 +187,6 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Failed to create transaction:", error);
 
-    return NextResponse.json(
-      { error: "Failed to create transaction." },
-      { status: 500 },
-    );
+    return apiError("Failed to create transaction.", error);
   }
 }

@@ -55,6 +55,19 @@ export const DEFAULT_PREDICTION_OPTIONS: PredictionOptions = {
 const allowedPeriods = new Set([7, 30, 90, 180, 365]);
 const allowedModes = new Set(["conservative", "balanced", "optimistic"]);
 
+function safeDecimalNumber(value: { toString(): string } | null | undefined) {
+  const amount = value ? Number(value.toString()) : 0;
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+function safeNumber(value: number) {
+  return Number.isFinite(value) ? value : 0;
+}
+
+function isValidDate(value: Date) {
+  return value instanceof Date && !Number.isNaN(value.getTime());
+}
+
 export function normalizePredictionOptions(value: unknown): PredictionOptions {
   const options = value && typeof value === "object" ? (value as Partial<PredictionOptions>) : {};
   const periodDays = Number(options.periodDays);
@@ -131,18 +144,23 @@ export async function predictFutureCashFlow(
       }),
     ]);
 
-  const startingBalance = workspace
-    ? Number(workspace.startingBalance.toString())
-    : 0;
+  const safeTransactions = transactions.filter(
+    (transaction) =>
+      isValidDate(transaction.date) &&
+      (transaction.type === "income" || transaction.type === "expense") &&
+      safeDecimalNumber(transaction.amount) >= 0,
+  );
+  const safeUnpaidInvoices = unpaidInvoices.filter((invoice) => isValidDate(invoice.dueDate));
+  const startingBalance = workspace ? safeDecimalNumber(workspace.startingBalance) : 0;
   const monthlyFixedDailyExpense = workspace
-    ? Number(workspace.monthlyFixedExpenses.toString()) / 30
+    ? safeDecimalNumber(workspace.monthlyFixedExpenses) / 30
     : 0;
   const plannedDailyExpense = options.includePlannedExpenses
-    ? budgets.reduce((total, budget) => total + Number(budget.amount.toString()) / 30, 0)
+    ? budgets.reduce((total, budget) => total + safeDecimalNumber(budget.amount) / 30, 0)
     : 0;
   const recurringDailyNet = options.includeRecurring
     ? recurringTransactions.reduce((total, item) => {
-        const amount = Number(item.amount.toString());
+        const amount = safeDecimalNumber(item.amount);
         const dailyAmount =
           item.frequency === "weekly"
             ? amount / 7
@@ -154,7 +172,7 @@ export async function predictFutureCashFlow(
       }, 0)
     : 0;
   const invoiceIncome = options.includeUnpaidInvoices
-    ? getInvoiceIncomeWindows(unpaidInvoices)
+    ? getInvoiceIncomeWindows(safeUnpaidInvoices)
     : {
         upcomingSevenDayInvoiceIncome: 0,
         upcomingThirtyDayInvoiceIncome: 0,
@@ -162,9 +180,9 @@ export async function predictFutureCashFlow(
         upcomingSelectedPeriodInvoiceIncome: 0,
       };
 
-  const totals = transactions.reduce<TransactionTotals>(
+  const totals = safeTransactions.reduce<TransactionTotals>(
     (result: TransactionTotals, transaction: TransactionForPrediction) => {
-      const amount = Number(transaction.amount.toString());
+      const amount = safeDecimalNumber(transaction.amount);
 
       if (transaction.type === "income") {
         result.totalIncome += amount;
@@ -183,7 +201,7 @@ export async function predictFutureCashFlow(
   );
 
   const currentBalance = startingBalance + totals.totalIncome - totals.totalExpenses;
-  const historicalDailyNet = getHistoricalDailyNet(transactions, totals);
+  const historicalDailyNet = getHistoricalDailyNet(safeTransactions, totals);
   const scenarioAdjustment = getScenarioAdjustment(options.mode);
   const dailyNetCashFlow =
     historicalDailyNet * scenarioAdjustment +
@@ -201,9 +219,9 @@ export async function predictFutureCashFlow(
     plannedDailyExpense,
     recurringDailyNet,
     scenarioAdjustment,
-    transactions: transactions.map((transaction) => ({
-      amount: Number(transaction.amount.toString()),
-      category: transaction.category,
+    transactions: safeTransactions.map((transaction) => ({
+      amount: safeDecimalNumber(transaction.amount),
+      category: transaction.category || "Uncategorized",
       date: transaction.date,
       type: transaction.type,
     })),
@@ -249,7 +267,7 @@ function getInvoiceIncomeWindows(
       const daysAway = Math.ceil(
         (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
       );
-      const amount = Number(invoice.amount.toString());
+      const amount = safeDecimalNumber(invoice.amount);
 
       if (daysAway < 0) {
         return totals;
@@ -323,11 +341,11 @@ function buildPrediction({
   }[];
 }): PredictionResult {
   const sevenDayBalance =
-    currentBalance + dailyNetCashFlow * 7 + invoiceIncome.upcomingSevenDayInvoiceIncome;
+    safeNumber(currentBalance + dailyNetCashFlow * 7 + invoiceIncome.upcomingSevenDayInvoiceIncome);
   const thirtyDayBalance =
-    currentBalance + dailyNetCashFlow * 30 + invoiceIncome.upcomingThirtyDayInvoiceIncome;
+    safeNumber(currentBalance + dailyNetCashFlow * 30 + invoiceIncome.upcomingThirtyDayInvoiceIncome);
   const ninetyDayBalance =
-    currentBalance + dailyNetCashFlow * 90 + invoiceIncome.upcomingInvoiceIncome;
+    safeNumber(currentBalance + dailyNetCashFlow * 90 + invoiceIncome.upcomingInvoiceIncome);
   const selectedInvoiceIncome =
     options.periodDays <= 7
       ? invoiceIncome.upcomingSevenDayInvoiceIncome
@@ -336,8 +354,9 @@ function buildPrediction({
         : options.periodDays <= 90
           ? invoiceIncome.upcomingInvoiceIncome
           : invoiceIncome.upcomingSelectedPeriodInvoiceIncome;
-  const futureBalance =
-    currentBalance + dailyNetCashFlow * options.periodDays + selectedInvoiceIncome;
+  const futureBalance = safeNumber(
+    currentBalance + dailyNetCashFlow * options.periodDays + selectedInvoiceIncome,
+  );
   const intelligence = buildForecastIntelligence({
     currentBalance,
     dailyNetCashFlow,

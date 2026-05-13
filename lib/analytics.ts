@@ -33,6 +33,31 @@ function monthLabel(key: string) {
   });
 }
 
+function safeAmount(value: { toString(): string } | null | undefined) {
+  const amount = value ? Number(value.toString()) : 0;
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+function safeNumber(value: number) {
+  return Number.isFinite(value) ? value : 0;
+}
+
+function isValidDate(value: Date) {
+  return value instanceof Date && !Number.isNaN(value.getTime());
+}
+
+function normalizeCategoryKey(category: string) {
+  return category.trim().toLowerCase().replace(/[_-]/g, " ").replace(/\s+/g, " ");
+}
+
+function displayCategory(category: string) {
+  const normalized = normalizeCategoryKey(category);
+
+  return normalized
+    ? normalized.replace(/\b\w/g, (letter) => letter.toUpperCase())
+    : "Uncategorized";
+}
+
 export function buildAnalytics({
   budgets,
   invoices,
@@ -46,6 +71,22 @@ export function buildAnalytics({
   netBalance: number;
   transactions: AnalyticsTransaction[];
 }) {
+  const safeTransactions = transactions
+    .filter(
+      (transaction) =>
+        isValidDate(transaction.date) &&
+        (transaction.type === "income" || transaction.type === "expense"),
+    )
+    .map((transaction) => ({
+      ...transaction,
+      category: transaction.category || "Uncategorized",
+    }));
+  const safeInvoices = invoices.filter((invoice) => isValidDate(invoice.dueDate));
+  const safeBudgets = budgets.filter(
+    (budget) => budget.category && safeAmount(budget.amount) > 0,
+  );
+  const safeMonthlyFixedExpenses = Math.max(0, safeNumber(monthlyFixedExpenses));
+  const safeNetBalance = safeNumber(netBalance);
   const now = new Date();
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
@@ -53,34 +94,35 @@ export function buildAnalytics({
   const previousMonth = new Date(currentMonth);
   previousMonth.setMonth(previousMonth.getMonth() - 1);
 
-  const currentMonthTransactions = transactions.filter((item) => item.date >= currentMonth);
-  const previousMonthTransactions = transactions.filter(
+  const currentMonthTransactions = safeTransactions.filter((item) => item.date >= currentMonth);
+  const previousMonthTransactions = safeTransactions.filter(
     (item) => item.date >= previousMonth && item.date < currentMonth,
   );
   const expenses = currentMonthTransactions.filter((item) => item.type === "expense");
   const income = currentMonthTransactions.filter((item) => item.type === "income");
   const currentExpenses = expenses.reduce(
-    (total, item) => total + Number(item.amount.toString()),
+    (total, item) => total + safeAmount(item.amount),
     0,
   );
   const currentIncome = income.reduce(
-    (total, item) => total + Number(item.amount.toString()),
+    (total, item) => total + safeAmount(item.amount),
     0,
   );
   const previousExpenses = previousMonthTransactions
     .filter((item) => item.type === "expense")
-    .reduce((total, item) => total + Number(item.amount.toString()), 0);
+    .reduce((total, item) => total + safeAmount(item.amount), 0);
   const previousIncome = previousMonthTransactions
     .filter((item) => item.type === "income")
-    .reduce((total, item) => total + Number(item.amount.toString()), 0);
+    .reduce((total, item) => total + safeAmount(item.amount), 0);
   const categorySpend = expenses.reduce<Record<string, number>>((totals, item) => {
-    totals[item.category] = (totals[item.category] ?? 0) + Number(item.amount.toString());
+    const category = normalizeCategoryKey(item.category || "Uncategorized");
+    totals[category] = (totals[category] ?? 0) + safeAmount(item.amount);
     return totals;
   }, {});
   const categoryBreakdown = Object.entries(categorySpend)
     .map(([category, amount]) => ({
       amount,
-      category,
+      category: displayCategory(category),
       percent: currentExpenses > 0 ? Math.round((amount / currentExpenses) * 100) : 0,
     }))
     .sort((left, right) => right.amount - left.amount);
@@ -99,15 +141,15 @@ export function buildAnalytics({
     return monthKey(date);
   });
   const monthlyTrend = lastSixMonths.map((key) => {
-    const monthTransactions = transactions.filter(
+    const monthTransactions = safeTransactions.filter(
       (transaction) => monthKey(transaction.date) === key,
     );
     const monthIncome = monthTransactions
       .filter((item) => item.type === "income")
-      .reduce((total, item) => total + Number(item.amount.toString()), 0);
+      .reduce((total, item) => total + safeAmount(item.amount), 0);
     const monthExpenses = monthTransactions
       .filter((item) => item.type === "expense")
-      .reduce((total, item) => total + Number(item.amount.toString()), 0);
+      .reduce((total, item) => total + safeAmount(item.amount), 0);
 
     return {
       expenses: monthExpenses,
@@ -116,7 +158,7 @@ export function buildAnalytics({
       net: monthIncome - monthExpenses,
     };
   });
-  const openInvoices = invoices.filter(
+  const openInvoices = safeInvoices.filter(
     (invoice) => invoice.status !== "paid" && invoice.status !== "cancelled",
   );
   const overdueInvoices = openInvoices.filter((invoice) => {
@@ -134,29 +176,33 @@ export function buildAnalytics({
     return dueDate >= todayStart && dueDate <= sevenDaysFromToday;
   });
   const invoiceAging = {
-    dueSoon: dueSoonInvoices.reduce((total, invoice) => total + Number(invoice.amount.toString()), 0),
-    overdue: overdueInvoices.reduce((total, invoice) => total + Number(invoice.amount.toString()), 0),
-    paid: invoices
+    dueSoon: dueSoonInvoices.reduce((total, invoice) => total + safeAmount(invoice.amount), 0),
+    overdue: overdueInvoices.reduce((total, invoice) => total + safeAmount(invoice.amount), 0),
+    paid: safeInvoices
       .filter((invoice) => invoice.status === "paid")
-      .reduce((total, invoice) => total + Number(invoice.amount.toString()), 0),
-    unpaid: openInvoices.reduce((total, invoice) => total + Number(invoice.amount.toString()), 0),
+      .reduce((total, invoice) => total + safeAmount(invoice.amount), 0),
+    unpaid: openInvoices.reduce((total, invoice) => total + safeAmount(invoice.amount), 0),
   };
-  const budgetWarnings = budgets
+  const budgetWarnings = safeBudgets
     .map((budget) => {
       const spent = categorySpend[budget.category] ?? 0;
-      const limit = Number(budget.amount.toString());
+      const categoryKey = normalizeCategoryKey(budget.category);
+      const normalizedSpent = categorySpend[categoryKey] ?? spent;
+      const limit = safeAmount(budget.amount);
 
       return {
         category: budget.category,
         limit,
-        percent: limit > 0 ? Math.round((spent / limit) * 100) : 0,
-        spent,
+        percent: limit > 0 ? Math.round((normalizedSpent / limit) * 100) : 0,
+        spent: normalizedSpent,
       };
     })
     .filter((budget) => budget.percent >= 80)
     .sort((left, right) => right.percent - left.percent);
   const runwayMonths =
-    monthlyFixedExpenses > 0 ? Math.floor(netBalance / monthlyFixedExpenses) : null;
+    safeMonthlyFixedExpenses > 0
+      ? Math.max(0, Math.floor(safeNetBalance / safeMonthlyFixedExpenses))
+      : null;
   const recommendations = [
     overdueInvoices.length > 0
       ? `Follow up on ${overdueInvoices.length} overdue invoice${overdueInvoices.length === 1 ? "" : "s"} today.`

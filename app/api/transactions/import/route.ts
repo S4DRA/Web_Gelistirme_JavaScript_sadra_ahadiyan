@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
-import { convertCurrencyAmount } from "@/lib/currency";
+import { TransactionType } from "@prisma/client";
+import { convertCurrencyAmount, normalizeCurrency } from "@/lib/currency";
+import {
+  cleanOptionalNote,
+  cleanShortText,
+  isValidShortText,
+  parsePositiveMoney,
+} from "@/lib/financial-validation";
 import {
   buildImportPreview,
   createTransactionFingerprint,
+  normalizeImportDateValue,
   type ImportPreviewRow,
   parseImportFile,
 } from "@/lib/transaction-import";
@@ -91,7 +99,12 @@ async function confirmImport(
 ) {
   const body = await request.json();
   const rows = Array.isArray(body.rows) ? (body.rows as ImportPreviewRow[]) : [];
-  const readyRows = rows.filter((row) => row.status === "ready" && row.errors.length === 0);
+  const readyRows = rows.filter(
+    (row) =>
+      row &&
+      row.status === "ready" &&
+      (!Array.isArray(row.errors) || row.errors.length === 0),
+  );
 
   if (readyRows.length === 0 || readyRows.length > 500) {
     return NextResponse.json(
@@ -101,17 +114,37 @@ async function confirmImport(
   }
 
   const duplicateFingerprints = await getDuplicateFingerprints(workspaceId, financeType);
-  const data = readyRows
+  const normalizedRows = readyRows.map((row) =>
+    normalizeConfirmedImportRow(row, baseCurrency),
+  );
+  const invalidRows = normalizedRows.filter((row) => row.errors.length > 0);
+
+  if (invalidRows.length > 0) {
+    return NextResponse.json(
+      {
+        error: "Some confirmed transactions are no longer valid.",
+        invalidRows: invalidRows.map((row) => ({
+          errors: row.errors,
+          rowNumber: row.rowNumber,
+        })),
+      },
+      { status: 400 },
+    );
+  }
+
+  const data = normalizedRows
     .map((row) => {
-      const fingerprint =
-        row.fingerprint ||
-        createTransactionFingerprint({
-          amount: row.convertedAmount,
-          category: row.category,
-          date: row.date,
-          note: row.note,
-          type: row.type,
-        });
+      if (!row.data) {
+        return null;
+      }
+
+      const fingerprint = createTransactionFingerprint({
+        amount: row.data.convertedAmount,
+        category: row.data.category,
+        date: row.data.date,
+        note: row.data.note,
+        type: row.data.type,
+      });
 
       if (duplicateFingerprints.has(fingerprint)) {
         return null;
@@ -120,16 +153,19 @@ async function confirmImport(
       duplicateFingerprints.add(fingerprint);
 
       return {
-        amount: row.convertedAmount,
-        category: row.category.trim(),
+        amount: row.data.convertedAmount,
+        category: row.data.category,
         currency: baseCurrency,
-        date: new Date(row.date),
-        exchangeRate: row.amount > 0 ? row.convertedAmount / row.amount : 1,
+        date: new Date(`${row.data.date}T00:00:00.000Z`),
+        exchangeRate:
+          row.data.originalAmount > 0
+            ? row.data.convertedAmount / row.data.originalAmount
+            : 1,
         importFingerprint: fingerprint,
-        note: row.note?.trim() || null,
-        originalAmount: row.amount,
-        originalCurrency: row.currency,
-        type: row.type,
+        note: row.data.note,
+        originalAmount: row.data.originalAmount,
+        originalCurrency: row.data.originalCurrency,
+        type: row.data.type,
         userId,
         workspaceId,
         financeType,
@@ -148,6 +184,58 @@ async function confirmImport(
     imported: created.count,
     skipped: readyRows.length - created.count,
   });
+}
+
+function normalizeConfirmedImportRow(row: ImportPreviewRow, baseCurrency: string) {
+  const errors: string[] = [];
+  const rowNumber = Number.isFinite(Number(row.rowNumber)) ? Number(row.rowNumber) : null;
+  const originalAmount = parsePositiveMoney(row.amount);
+  const convertedAmount = parsePositiveMoney(row.convertedAmount);
+  const category = cleanShortText(row.category);
+  const date = normalizeImportDateValue(row.date);
+  const note = cleanOptionalNote(row.note);
+  const originalCurrency = normalizeCurrency(row.currency, baseCurrency);
+  const type =
+    row.type === TransactionType.income || row.type === TransactionType.expense
+      ? row.type
+      : null;
+
+  if (originalAmount === null) {
+    errors.push("Amount must be between 0.01 and 999,999,999.99.");
+  }
+
+  if (convertedAmount === null) {
+    errors.push("Converted amount must be between 0.01 and 999,999,999.99.");
+  }
+
+  if (!isValidShortText(category)) {
+    errors.push("Category is required and must be 80 characters or fewer.");
+  }
+
+  if (!date) {
+    errors.push("Date must be valid.");
+  }
+
+  if (!type) {
+    errors.push("Type must be income or expense.");
+  }
+
+  return {
+    data:
+      errors.length === 0 && originalAmount !== null && convertedAmount !== null && date && type
+        ? {
+            category,
+            convertedAmount,
+            date,
+            note,
+            originalAmount,
+            originalCurrency,
+            type,
+          }
+        : null,
+    errors,
+    rowNumber,
+  };
 }
 
 async function getDuplicateFingerprints(

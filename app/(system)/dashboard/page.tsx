@@ -59,8 +59,20 @@ type DashboardData = {
   totalExpenses: number;
   netBalance: number;
   prediction?: PredictionData;
+  personalSummary?: PersonalSummary;
   transactions?: Transaction[];
   invoices?: Invoice[];
+};
+
+type PersonalSummary = {
+  billSubscriptionSpend: number;
+  dailyBurnRate: number;
+  healthScore: number;
+  monthlyIncome: number;
+  monthlySpending: number;
+  monthlySurvivalCost: number;
+  monthlySurvivalMonths: number | null;
+  savingsProgress: number;
 };
 
 type PredictionData = {
@@ -140,6 +152,17 @@ const defaultPredictionSettings: PredictionSettings = {
   periodDays: 30,
 };
 
+const defaultPersonalSummary: PersonalSummary = {
+  billSubscriptionSpend: 0,
+  dailyBurnRate: 0,
+  healthScore: 0,
+  monthlyIncome: 0,
+  monthlySpending: 0,
+  monthlySurvivalCost: 0,
+  monthlySurvivalMonths: null,
+  savingsProgress: 0,
+};
+
 const metricLabels: Record<MetricId, string> = {
   dueSoon: "Due soon",
   netBalance: "Net Balance",
@@ -164,7 +187,7 @@ const personalMetricLabels: Record<MetricId, string> = {
   overdueInvoices: "Savings Progress",
   runway: "Daily Burn Rate",
   totalExpenses: "Monthly Spending",
-  totalIncome: "Money In",
+  totalIncome: "This Month Income",
 };
 
 const personalSections = {
@@ -173,26 +196,6 @@ const personalSections = {
   monthlySurvival: "Monthly Survival Cost",
   savingsProgress: "Savings Progress",
 };
-
-const essentialCategories = new Set([
-  "groceries",
-  "rent",
-  "utilities",
-  "internet",
-  "phone bills",
-  "transportation",
-  "fuel",
-  "healthcare",
-  "insurance",
-  "education",
-  "subscriptions",
-]);
-
-function isSameMonth(date: string, now: Date) {
-  const value = new Date(date);
-
-  return value.getFullYear() === now.getFullYear() && value.getMonth() === now.getMonth();
-}
 
 export default function DashboardPage() {
   const financeMode = useFinanceMode();
@@ -369,54 +372,7 @@ export default function DashboardPage() {
     return nextItems;
   }
 
-  const personalSummary = useMemo(() => {
-    const now = new Date();
-    const monthlyTransactions = transactions.filter((transaction) =>
-      isSameMonth(transaction.date, now),
-    );
-    const monthlyIncome = monthlyTransactions
-      .filter((transaction) => transaction.type === "income")
-      .reduce((total, transaction) => total + transaction.amount, 0);
-    const monthlySpending = monthlyTransactions
-      .filter((transaction) => transaction.type === "expense")
-      .reduce((total, transaction) => total + transaction.amount, 0);
-    const monthlySurvivalCost = monthlyTransactions
-      .filter(
-        (transaction) =>
-          transaction.type === "expense" &&
-          essentialCategories.has(transaction.category.trim().toLowerCase()),
-      )
-      .reduce((total, transaction) => total + transaction.amount, 0);
-    const subscriptionSpend = monthlyTransactions
-      .filter(
-        (transaction) =>
-          transaction.type === "expense" &&
-          transaction.category.trim().toLowerCase() === "subscriptions",
-      )
-      .reduce((total, transaction) => total + transaction.amount, 0);
-    const dailyBurnRate = monthlySpending / Math.max(1, now.getDate());
-    const savingsTarget = Math.max(5000, monthlySurvivalCost * 3);
-    const savingsProgress = Math.min(
-      100,
-      Math.max(0, (dashboard.netBalance / savingsTarget) * 100),
-    );
-    const savingsRate =
-      monthlyIncome > 0 ? Math.max(0, (monthlyIncome - monthlySpending) / monthlyIncome) : 0;
-    const spendBalance = monthlyIncome > 0 ? Math.max(0, 1 - monthlySpending / monthlyIncome) : 0;
-    const healthScore = Math.round(
-      Math.min(100, Math.max(0, savingsRate * 45 + spendBalance * 35 + savingsProgress * 0.2)),
-    );
-
-    return {
-      dailyBurnRate,
-      healthScore,
-      monthlyIncome,
-      monthlySpending,
-      monthlySurvivalCost,
-      savingsProgress,
-      subscriptionSpend,
-    };
-  }, [dashboard.netBalance, transactions]);
+  const personalSummary = dashboard.personalSummary ?? defaultPersonalSummary;
 
   const activeMetricLabels = isPersonalMode ? personalMetricLabels : metricLabels;
 
@@ -427,7 +383,7 @@ export default function DashboardPage() {
         label: activeMetricLabels.dueSoon,
         tone: "text-amber-700",
         value: isPersonalMode
-          ? formatCurrency(personalSummary.subscriptionSpend)
+          ? formatCurrency(personalSummary.billSubscriptionSpend)
           : formatCurrency(dashboard.analytics?.invoiceAging.dueSoon ?? 0),
       },
       netBalance: {
@@ -479,7 +435,9 @@ export default function DashboardPage() {
     ["unpaid", "sent", "overdue"].includes(invoice.status),
   ).length;
   const alerts: AlertItem[] = [
-    dashboard.totalExpenses > dashboard.totalIncome
+    (isPersonalMode
+      ? personalSummary.monthlySpending > personalSummary.monthlyIncome
+      : dashboard.totalExpenses > dashboard.totalIncome)
       ? {
           classes: "border-amber-200 bg-amber-50 text-amber-800",
           message: isPersonalMode

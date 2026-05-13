@@ -1,8 +1,28 @@
 import { NextResponse } from "next/server";
 import { buildAnalytics } from "@/lib/analytics";
 import { getPrisma } from "@/lib/prisma";
+import { buildPersonalFinanceSummary } from "@/lib/personal-finance";
 import { predictFutureCashFlow } from "@/lib/predict-future-cash-flow";
 import { getActiveWorkspaceForRequest } from "@/lib/workspace";
+
+function safeDecimalNumber(value: { toString(): string } | null | undefined) {
+  const amount = value ? Number(value.toString()) : 0;
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+function isValidDate(value: Date) {
+  return value instanceof Date && !Number.isNaN(value.getTime());
+}
+
+function apiError(message: string, error: unknown) {
+  return NextResponse.json(
+    {
+      error: message,
+      details: error instanceof Error ? error.message : "Unknown server error.",
+    },
+    { status: 500 },
+  );
+}
 
 export async function GET(request: Request) {
   try {
@@ -34,33 +54,50 @@ export async function GET(request: Request) {
       }),
       predictFutureCashFlow(context.workspace.id, undefined, context.financeType),
     ]);
-    const totalIncome = transactions
+    const safeTransactions = transactions.filter(
+      (transaction) =>
+        isValidDate(transaction.date) &&
+        (transaction.type === "income" || transaction.type === "expense") &&
+        safeDecimalNumber(transaction.amount) >= 0,
+    );
+    const totalIncome = safeTransactions
       .filter((item) => item.type === "income")
-      .reduce((total, item) => total + Number(item.amount.toString()), 0);
-    const totalExpenses = transactions
+      .reduce((total, item) => total + safeDecimalNumber(item.amount), 0);
+    const totalExpenses = safeTransactions
       .filter((item) => item.type === "expense")
-      .reduce((total, item) => total + Number(item.amount.toString()), 0);
+      .reduce((total, item) => total + safeDecimalNumber(item.amount), 0);
     const netBalance =
-      Number(context.workspace.startingBalance.toString()) +
+      safeDecimalNumber(context.workspace.startingBalance) +
       totalIncome -
       totalExpenses;
     const analytics = buildAnalytics({
       budgets,
       invoices,
-      monthlyFixedExpenses: Number(context.workspace.monthlyFixedExpenses.toString()),
+      monthlyFixedExpenses: safeDecimalNumber(context.workspace.monthlyFixedExpenses),
       netBalance,
-      transactions,
+      transactions: safeTransactions,
+    });
+    const personalSummary = buildPersonalFinanceSummary({
+      netBalance,
+      transactions: safeTransactions.map((transaction) => ({
+        amount: safeDecimalNumber(transaction.amount),
+        category: transaction.category || "Uncategorized",
+        date: transaction.date,
+        type: transaction.type,
+      })),
     });
 
     return NextResponse.json({
       workspace: context.workspace,
       financeType: context.financeType,
+      currency: context.workspace.currency,
+      personalSummary,
       ...analytics,
       prediction,
     });
   } catch (error) {
     console.error("Failed to load insights:", error);
 
-    return NextResponse.json({ error: "Failed to load insights." }, { status: 500 });
+    return apiError("Failed to load insights.", error);
   }
 }

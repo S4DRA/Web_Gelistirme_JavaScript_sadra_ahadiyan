@@ -114,7 +114,25 @@ const GOVERNANCE_METRICS: ForecastMetricName[] = [
 ];
 
 function clampProbability(value: number) {
-  return Math.min(0.99, Math.max(0.01, value));
+  return Math.min(0.99, Math.max(0.01, Number.isFinite(value) ? value : 0.01));
+}
+
+function safeNumber(value: number) {
+  return Number.isFinite(value) ? value : 0;
+}
+
+function isValidDate(value: Date) {
+  return value instanceof Date && !Number.isNaN(value.getTime());
+}
+
+function getSafeForecastTransactions(transactions: ForecastTransaction[]) {
+  return transactions.filter(
+    (transaction) =>
+      isValidDate(transaction.date) &&
+      (transaction.type === "income" || transaction.type === "expense") &&
+      Number.isFinite(transaction.amount) &&
+      transaction.amount >= 0,
+  );
 }
 
 function standardDeviation(values: number[]) {
@@ -158,7 +176,7 @@ function erf(value: number) {
 export function buildDailyNetSeries(transactions: ForecastTransaction[]) {
   const byDay = new Map<string, number>();
 
-  for (const transaction of transactions) {
+  for (const transaction of getSafeForecastTransactions(transactions)) {
     const key = transaction.date.toISOString().slice(0, 10);
     const signedAmount = transaction.type === "income" ? transaction.amount : -transaction.amount;
     byDay.set(key, (byDay.get(key) ?? 0) + signedAmount);
@@ -176,6 +194,7 @@ export function buildFeatureCatalog({
   financeType: FinanceType;
   transactions: ForecastTransaction[];
 }): ForecastFeatureCatalog {
+  const safeTransactions = getSafeForecastTransactions(transactions);
   const active = new Set<ForecastFeatureName>([
     "lag_features",
     "rolling_averages",
@@ -186,7 +205,7 @@ export function buildFeatureCatalog({
     "category_level_trends",
   ]);
 
-  if (transactions.length >= 60) {
+  if (safeTransactions.length >= 60) {
     active.add("seasonality_features");
   }
 
@@ -261,24 +280,42 @@ export function buildForecastRiskProfile({
   periodDays: number;
   transactions: ForecastTransaction[];
 }): ForecastRiskProfile {
+  const safeCurrentBalance = safeNumber(currentBalance);
+  const safeDailyNetCashFlow = safeNumber(dailyNetCashFlow);
+  const safeFixedDailyObligation = Math.max(0, safeNumber(fixedDailyObligation));
+  const safeFutureBalance = safeNumber(futureBalance);
+  const safePeriodDays = Math.max(1, safeNumber(periodDays));
   const netSeries = buildDailyNetSeries(transactions).map((item) => item.net);
   const observedVolatility = standardDeviation(netSeries);
-  const fallbackVolatility = Math.max(25, Math.abs(dailyNetCashFlow) * 0.35, fixedDailyObligation * 0.5);
-  const dailyVolatility = observedVolatility > 0 ? observedVolatility : fallbackVolatility;
-  const horizonVolatility = dailyVolatility * Math.sqrt(Math.max(1, periodDays));
-  const lower = futureBalance - 1.96 * horizonVolatility;
-  const upper = futureBalance + 1.96 * horizonVolatility;
-  const downsideProbability = clampProbability(normalCdf((currentBalance - futureBalance) / Math.max(1, horizonVolatility)));
-  const cashShortageProbability = clampProbability(normalCdf((0 - futureBalance) / Math.max(1, horizonVolatility)));
-  const debtPressureProbability = clampProbability(
-    sigmoid((fixedDailyObligation * periodDays - currentBalance) / Math.max(1, Math.abs(currentBalance) + 1)),
+  const fallbackVolatility = Math.max(
+    25,
+    Math.abs(safeDailyNetCashFlow) * 0.35,
+    safeFixedDailyObligation * 0.5,
   );
-  const valueAtRisk = Math.max(0, currentBalance - lower);
+  const dailyVolatility = observedVolatility > 0 ? observedVolatility : fallbackVolatility;
+  const horizonVolatility = dailyVolatility * Math.sqrt(safePeriodDays);
+  const lower = safeFutureBalance - 1.96 * horizonVolatility;
+  const upper = safeFutureBalance + 1.96 * horizonVolatility;
+  const downsideProbability = clampProbability(
+    normalCdf((safeCurrentBalance - safeFutureBalance) / Math.max(1, horizonVolatility)),
+  );
+  const cashShortageProbability = clampProbability(
+    normalCdf((0 - safeFutureBalance) / Math.max(1, horizonVolatility)),
+  );
+  const debtPressureProbability = clampProbability(
+    sigmoid(
+      (safeFixedDailyObligation * safePeriodDays - safeCurrentBalance) /
+        Math.max(1, Math.abs(safeCurrentBalance) + 1),
+    ),
+  );
+  const valueAtRisk = Math.max(0, safeCurrentBalance - lower);
   const cvar = Math.max(valueAtRisk, valueAtRisk + horizonVolatility * 0.42);
   const emergencyFundSurvivalDays =
-    fixedDailyObligation > 0 ? Math.floor(currentBalance / fixedDailyObligation) : null;
+    safeFixedDailyObligation > 0
+      ? Math.max(0, Math.floor(safeCurrentBalance / safeFixedDailyObligation))
+      : null;
   const businessLiquidityRisk =
-    cashShortageProbability > 0.35 || futureBalance < 0
+    cashShortageProbability > 0.35 || safeFutureBalance < 0
       ? "high"
       : cashShortageProbability > 0.18 || debtPressureProbability > 0.55
         ? "medium"
@@ -311,13 +348,15 @@ export function buildScenarioSet({
   dailyNetCashFlow: number;
   periodDays: number;
 }): ScenarioSet {
-  const movement = dailyNetCashFlow * periodDays;
-  const shock = Math.max(Math.abs(movement) * 0.18, Math.abs(currentBalance) * 0.03, 100);
+  const safeBase = safeNumber(base);
+  const safeCurrentBalance = safeNumber(currentBalance);
+  const movement = safeNumber(dailyNetCashFlow) * Math.max(1, safeNumber(periodDays));
+  const shock = Math.max(Math.abs(movement) * 0.18, Math.abs(safeCurrentBalance) * 0.03, 100);
 
   return {
-    base,
-    best: base + shock,
-    worst: base - shock,
+    base: safeBase,
+    best: safeBase + shock,
+    worst: safeBase - shock,
   };
 }
 

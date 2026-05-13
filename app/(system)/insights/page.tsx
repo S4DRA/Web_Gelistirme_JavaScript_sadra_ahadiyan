@@ -29,6 +29,17 @@ type Insights = {
   overdueInvoices: number;
   overdueAmount: number;
   budgetWarnings: { category: string; spent: number; limit: number; percent: number }[];
+  currency: string;
+  personalSummary: {
+    billSubscriptionSpend: number;
+    dailyBurnRate: number;
+    healthScore: number;
+    monthlyIncome: number;
+    monthlySpending: number;
+    monthlySurvivalCost: number;
+    monthlySurvivalMonths: number | null;
+    savingsProgress: number;
+  };
   prediction: {
     sevenDayBalance: number;
     futureBalance: number;
@@ -83,7 +94,14 @@ export default function InsightsPage() {
   }, []);
 
   function formatCurrency(amount: number) {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+    return new Intl.NumberFormat("en-US", {
+      currency: insights?.currency ?? "USD",
+      style: "currency",
+    }).format(amount);
+  }
+
+  function formatMonths(value: number | null) {
+    return value === null ? "Not set" : `${value.toFixed(value >= 10 ? 0 : 1)} mo`;
   }
 
   return (
@@ -129,7 +147,11 @@ export default function InsightsPage() {
                 {isPersonalMode ? "Monthly survival view" : "Runway from fixed costs"}
               </p>
               <p className="mt-3 text-3xl font-semibold text-slate-900">
-                {insights.runwayMonths === null ? "Not set" : `${insights.runwayMonths} mo`}
+                {isPersonalMode
+                  ? formatMonths(insights.personalSummary.monthlySurvivalMonths)
+                  : insights.runwayMonths === null
+                    ? "Not set"
+                    : `${insights.runwayMonths} mo`}
               </p>
             </article>
           </section>
@@ -154,11 +176,11 @@ export default function InsightsPage() {
           ) : null}
 
           <section className="grid gap-4">
-            <MonthlyTrendChart data={insights.monthlyTrend} />
+            <MonthlyTrendChart currency={insights.currency} data={insights.monthlyTrend} />
           </section>
 
           <section className="grid gap-4 xl:grid-cols-2">
-            <CategoryBreakdownChart data={insights.categoryBreakdown} />
+            <CategoryBreakdownChart currency={insights.currency} data={insights.categoryBreakdown} />
             {isPersonalMode ? (
               <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
@@ -170,21 +192,11 @@ export default function InsightsPage() {
                   pressure.
                 </p>
                 <p className="mt-5 text-4xl font-semibold text-emerald-700">
-                  {Math.round(
-                    Math.min(
-                      100,
-                      Math.max(
-                        0,
-                        (insights.currentIncome > insights.currentExpenses ? 50 : 25) +
-                          (insights.budgetWarnings.length === 0 ? 25 : 8) +
-                          (insights.prediction.daysUntilNegative === null ? 25 : 5),
-                      ),
-                    ),
-                  )}
+                  {insights.personalSummary.healthScore}
                 </p>
               </article>
             ) : (
-              <InvoiceAgingChart data={insights.invoiceAging} />
+              <InvoiceAgingChart currency={insights.currency} data={insights.invoiceAging} />
             )}
           </section>
 
@@ -192,7 +204,7 @@ export default function InsightsPage() {
             <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="flex items-center gap-2 text-lg font-medium text-slate-900">
                 <AppIcon name="arrow-trend-up" />
-                {isPersonalMode ? "Money In" : "Income movement"}
+                {isPersonalMode ? "This Month Income" : "Income movement"}
               </h2>
               <p className="mt-3 text-sm leading-6 text-slate-600">
                 {insights.incomeChangePercent === null
@@ -202,7 +214,9 @@ export default function InsightsPage() {
                     : `Income changed ${insights.incomeChangePercent}% compared with last month.`}
               </p>
               <p className="mt-4 text-2xl font-semibold text-emerald-700">
-                {formatCurrency(insights.currentIncome)}
+                {formatCurrency(
+                  isPersonalMode ? insights.personalSummary.monthlyIncome : insights.currentIncome,
+                )}
               </p>
             </article>
 
@@ -244,7 +258,7 @@ export default function InsightsPage() {
                     : "No expense category stands out yet."}
               </p>
               <p className="mt-4 text-2xl font-semibold text-slate-900">
-                {insights.topCategory ? formatCurrency(insights.topCategory.amount) : "$0.00"}
+                {insights.topCategory ? formatCurrency(insights.topCategory.amount) : formatCurrency(0)}
               </p>
             </article>
 

@@ -169,8 +169,8 @@ function normalizeImportRow(
     ]),
   );
   const amount = Math.abs(signedAmount);
-  const rawDate = readField(row, ["date", "transaction date", "tarih"]);
-  const parsedDate = parseImportDate(rawDate);
+  const rawDate = readRawField(row, ["date", "transaction date", "tarih"]);
+  const parsedDate = normalizeImportDateValue(rawDate);
   const balance = parseLocalizedAmount(readField(row, [RAW_BALANCE, "bakiye"]));
   const errors: string[] = [];
   const type =
@@ -245,10 +245,10 @@ function rowsFromWorksheet(worksheet: XLSX.WorkSheet) {
       break;
     }
 
-    const rawDate = String(row[columns.date] ?? "").trim();
+    const rawDate = row[columns.date] ?? "";
     const rawAmount = String(row[columns.amount] ?? "").trim();
 
-    if (!parseImportDate(rawDate) || !Number.isFinite(parseLocalizedAmount(rawAmount))) {
+    if (!normalizeImportDateValue(rawDate) || !Number.isFinite(parseLocalizedAmount(rawAmount))) {
       if (isFooterRow(row)) {
         break;
       }
@@ -310,9 +310,7 @@ function findHeaderColumn(values: string[], aliases: string[]) {
 }
 
 function readField(row: RawImportRow, aliases: string[]) {
-  const normalizedAliases = aliases.map(normalizeText);
-  const key = Object.keys(row).find((item) => normalizedAliases.includes(normalizeText(item)));
-  const value = key ? row[key] : "";
+  const value = readRawField(row, aliases);
 
   if (value === null || value === undefined) {
     return "";
@@ -321,28 +319,110 @@ function readField(row: RawImportRow, aliases: string[]) {
   return String(value).trim();
 }
 
-function parseImportDate(value: string) {
-  if (!value) {
+function readRawField(row: RawImportRow, aliases: string[]) {
+  const normalizedAliases = aliases.map(normalizeText);
+  const key = Object.keys(row).find((item) => normalizedAliases.includes(normalizeText(item)));
+  return key ? row[key] : "";
+}
+
+export function normalizeImportDateValue(value: unknown) {
+  if (value === null || value === undefined || value === "") {
     return null;
   }
 
-  const localDate = value.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
-
-  if (localDate) {
-    return [
-      localDate[3],
-      localDate[2].padStart(2, "0"),
-      localDate[1].padStart(2, "0"),
-    ].join("-");
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value.toISOString().slice(0, 10);
   }
 
-  const parsed = new Date(value);
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return parseExcelSerialDate(value);
+  }
+
+  const text = String(value).trim();
+
+  if (!text) {
+    return null;
+  }
+
+  if (/^\d+(\.\d+)?$/.test(text)) {
+    const serialDate = parseExcelSerialDate(Number(text));
+
+    if (serialDate) {
+      return serialDate;
+    }
+  }
+
+  const isoDate = text.match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})$/);
+
+  if (isoDate) {
+    return formatValidDateParts(Number(isoDate[1]), Number(isoDate[2]), Number(isoDate[3]));
+  }
+
+  const localDate = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+
+  if (localDate) {
+    const first = Number(localDate[1]);
+    const second = Number(localDate[2]);
+    const year = Number(localDate[3]);
+    const month = first > 12 ? second : second > 12 ? first : second;
+    const day = first > 12 ? first : second > 12 ? second : first;
+
+    return formatValidDateParts(year, month, day);
+  }
+
+  const parsed = new Date(text);
 
   if (Number.isNaN(parsed.getTime())) {
     return null;
   }
 
   return parsed.toISOString().slice(0, 10);
+}
+
+function parseExcelSerialDate(value: number) {
+  if (!Number.isFinite(value) || value < 1 || value > 100000) {
+    return null;
+  }
+
+  const parsed = XLSX.SSF.parse_date_code(value);
+
+  if (!parsed) {
+    return null;
+  }
+
+  return formatValidDateParts(parsed.y, parsed.m, parsed.d);
+}
+
+function formatValidDateParts(year: number, month: number, day: number) {
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day) ||
+    year < 1900 ||
+    year > 2200 ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31
+  ) {
+    return null;
+  }
+
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    parsed.getUTCFullYear() !== year ||
+    parsed.getUTCMonth() !== month - 1 ||
+    parsed.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return [
+    String(year).padStart(4, "0"),
+    String(month).padStart(2, "0"),
+    String(day).padStart(2, "0"),
+  ].join("-");
 }
 
 function normalizeText(value: string) {

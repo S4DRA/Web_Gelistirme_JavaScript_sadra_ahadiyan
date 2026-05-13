@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 
 const cinematicEase = [0.16, 1, 0.3, 1] as const;
@@ -12,6 +12,53 @@ const smoothScrollSpring = {
   stiffness: 190,
 };
 const cinematicStops = [0, 0.22, 0.5, 0.78, 1];
+const compactLandingQuery = "(max-width: 640px)";
+
+let compactMedia: MediaQueryList | null = null;
+const compactSubscribers = new Set<() => void>();
+
+function getCompactMedia() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  compactMedia ??= window.matchMedia(compactLandingQuery);
+  return compactMedia;
+}
+
+function getCompactLandingSnapshot() {
+  return getCompactMedia()?.matches ?? false;
+}
+
+function subscribeCompactLanding(callback: () => void) {
+  const media = getCompactMedia();
+
+  if (!media) {
+    return () => {};
+  }
+
+  compactSubscribers.add(callback);
+
+  if (compactSubscribers.size === 1) {
+    media.addEventListener("change", notifyCompactLandingSubscribers);
+  }
+
+  return () => {
+    compactSubscribers.delete(callback);
+
+    if (compactSubscribers.size === 0) {
+      media.removeEventListener("change", notifyCompactLandingSubscribers);
+    }
+  };
+}
+
+function notifyCompactLandingSubscribers() {
+  compactSubscribers.forEach((callback) => callback());
+}
+
+function useCompactLandingMotion() {
+  return useSyncExternalStore(subscribeCompactLanding, getCompactLandingSnapshot, () => false);
+}
 
 type RevealSectionProps = {
   labelledBy?: string;
@@ -73,8 +120,36 @@ export function RevealSection({
   className = "",
   id,
 }: RevealSectionProps) {
-  const sectionRef = useRef<HTMLElement | null>(null);
   const prefersReducedMotion = useReducedMotion();
+  const isCompact = useCompactLandingMotion();
+
+  if (prefersReducedMotion || isCompact) {
+    return (
+      <section
+        id={id}
+        aria-labelledby={labelledBy}
+        className={`studio-reveal ${className}`.trim()}
+        data-motion-state="visible"
+      >
+        {children}
+      </section>
+    );
+  }
+
+  return (
+    <RevealSectionMotion labelledBy={labelledBy} className={className} id={id}>
+      {children}
+    </RevealSectionMotion>
+  );
+}
+
+function RevealSectionMotion({
+  labelledBy,
+  children,
+  className = "",
+  id,
+}: RevealSectionProps) {
+  const sectionRef = useRef<HTMLElement | null>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start 104%", "end 18%"],
@@ -92,17 +167,12 @@ export function RevealSection({
       className={`studio-reveal ${className}`.trim()}
       data-motion-state="visible"
       initial={false}
-      animate={prefersReducedMotion ? "visible" : undefined}
-      variants={prefersReducedMotion ? sectionVariants : undefined}
-      style={
-        prefersReducedMotion
-          ? undefined
-          : {
-              opacity: sectionOpacity,
-              scale: sectionScale,
-              y: sectionY,
-            }
-      }
+      variants={sectionVariants}
+      style={{
+        opacity: sectionOpacity,
+        scale: sectionScale,
+        y: sectionY,
+      }}
     >
       {children}
     </motion.section>
@@ -111,16 +181,22 @@ export function RevealSection({
 
 export function ScrollProgress() {
   const prefersReducedMotion = useReducedMotion();
+  const isCompact = useCompactLandingMotion();
+
+  if (prefersReducedMotion || isCompact) {
+    return null;
+  }
+
+  return <ScrollProgressMotion />;
+}
+
+function ScrollProgressMotion() {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     damping: 28,
     mass: 0.18,
     stiffness: 120,
   });
-
-  if (prefersReducedMotion) {
-    return null;
-  }
 
   return (
     <div className="studio-scroll-progress" aria-hidden="true">
@@ -131,6 +207,16 @@ export function ScrollProgress() {
 
 export function ScrollAtmosphere() {
   const prefersReducedMotion = useReducedMotion();
+  const isCompact = useCompactLandingMotion();
+
+  if (prefersReducedMotion || isCompact) {
+    return null;
+  }
+
+  return <ScrollAtmosphereMotion />;
+}
+
+function ScrollAtmosphereMotion() {
   const { scrollYProgress } = useScroll();
   const smoothProgress = useSpring(scrollYProgress, smoothScrollSpring);
   const y = useTransform(smoothProgress, [0, 0.5, 1], ["0%", "-10%", "-22%"]);
@@ -141,10 +227,6 @@ export function ScrollAtmosphere() {
   const logoRotate = useTransform(smoothProgress, [0, 1], [-10, 16]);
   const logoScale = useTransform(smoothProgress, [0, 0.5, 1], [1.08, 0.92, 1.14]);
   const logoOpacity = useTransform(smoothProgress, [0, 0.22, 0.62, 1], [0.035, 0.02, 0.032, 0.018]);
-
-  if (prefersReducedMotion) {
-    return null;
-  }
 
   return (
     <div className="studio-scroll-atmosphere" aria-hidden="true">
@@ -164,6 +246,16 @@ export function ScrollAtmosphere() {
 
 export function ConnectedJourney() {
   const prefersReducedMotion = useReducedMotion();
+  const isCompact = useCompactLandingMotion();
+
+  if (prefersReducedMotion || isCompact) {
+    return null;
+  }
+
+  return <ConnectedJourneyMotion />;
+}
+
+function ConnectedJourneyMotion() {
   const { scrollYProgress } = useScroll();
   const smoothProgress = useSpring(scrollYProgress, {
     damping: 64,
@@ -174,10 +266,6 @@ export function ConnectedJourney() {
   const pathOpacity = useTransform(smoothProgress, [0, 0.08, 0.9, 1], [0.28, 0.96, 0.86, 0.42]);
   const fieldY = useTransform(smoothProgress, [0, 1], ["4%", "-18%"]);
   const fieldScale = useTransform(smoothProgress, [0, 0.5, 1], [1.08, 0.94, 1.12]);
-
-  if (prefersReducedMotion) {
-    return null;
-  }
 
   return (
     <div className="studio-journey-canvas" aria-hidden="true">
@@ -211,19 +299,10 @@ export function CinematicIntro() {
 }
 
 export function LogoOpeningScene() {
-  const sceneRef = useRef<HTMLElement | null>(null);
   const prefersReducedMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: sceneRef,
-    offset: ["start start", "end 34%"],
-  });
-  const smoothProgress = useSpring(scrollYProgress, smoothScrollSpring);
-  const logoScale = useTransform(smoothProgress, [0, 0.38, 1], [1, 1.22, 0.68]);
-  const logoY = useTransform(smoothProgress, [0, 1], [0, -128]);
-  const logoOpacity = useTransform(smoothProgress, [0, 0.66, 1], [1, 1, 0]);
-  const cueOpacity = useTransform(smoothProgress, [0, 0.26, 0.5], [1, 1, 0]);
+  const isCompact = useCompactLandingMotion();
 
-  if (prefersReducedMotion) {
+  if (prefersReducedMotion || isCompact) {
     return (
       <section className="studio-logo-opening" aria-label="Dampener opening scene">
         <div className="studio-logo-opening-inner">
@@ -235,6 +314,21 @@ export function LogoOpeningScene() {
       </section>
     );
   }
+
+  return <LogoOpeningSceneMotion />;
+}
+
+function LogoOpeningSceneMotion() {
+  const sceneRef = useRef<HTMLElement | null>(null);
+  const { scrollYProgress } = useScroll({
+    target: sceneRef,
+    offset: ["start start", "end 34%"],
+  });
+  const smoothProgress = useSpring(scrollYProgress, smoothScrollSpring);
+  const logoScale = useTransform(smoothProgress, [0, 0.38, 1], [1, 1.22, 0.68]);
+  const logoY = useTransform(smoothProgress, [0, 1], [0, -128]);
+  const logoOpacity = useTransform(smoothProgress, [0, 0.66, 1], [1, 1, 0]);
+  const cueOpacity = useTransform(smoothProgress, [0, 0.26, 0.5], [1, 1, 0]);
 
   return (
     <motion.section ref={sceneRef} className="studio-logo-opening" aria-label="Dampener opening scene">
@@ -262,8 +356,34 @@ export function HeroCinematicScene({
   children: ReactNode;
   className?: string;
 }) {
-  const sceneRef = useRef<HTMLElement | null>(null);
   const prefersReducedMotion = useReducedMotion();
+  const isCompact = useCompactLandingMotion();
+
+  if (prefersReducedMotion || isCompact) {
+    return (
+      <section className={className} aria-labelledby={labelledBy}>
+        {children}
+      </section>
+    );
+  }
+
+  return (
+    <HeroCinematicSceneMotion labelledBy={labelledBy} className={className}>
+      {children}
+    </HeroCinematicSceneMotion>
+  );
+}
+
+function HeroCinematicSceneMotion({
+  labelledBy,
+  children,
+  className = "",
+}: {
+  labelledBy: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  const sceneRef = useRef<HTMLElement | null>(null);
   const { scrollYProgress } = useScroll({
     target: sceneRef,
     offset: ["start 82%", "end 10%"],
@@ -272,14 +392,6 @@ export function HeroCinematicScene({
   const planeY = useTransform(smoothProgress, cinematicStops, [48, 10, 0, -56, -124]);
   const planeScale = useTransform(smoothProgress, cinematicStops, [1.06, 1.02, 1, 0.94, 0.84]);
   const shadeOpacity = useTransform(smoothProgress, cinematicStops, [0, 0.05, 0.18, 0.46, 0.72]);
-
-  if (prefersReducedMotion) {
-    return (
-      <section ref={sceneRef} className={className} aria-labelledby={labelledBy}>
-        {children}
-      </section>
-    );
-  }
 
   return (
     <motion.section ref={sceneRef} className={className} aria-labelledby={labelledBy}>
@@ -293,16 +405,18 @@ export function HeroCinematicScene({
 
 export function HeroTitle({ id, text }: { id: string; text: string }) {
   const prefersReducedMotion = useReducedMotion();
+  const isCompact = useCompactLandingMotion();
   const words = text.split(" ");
+  const shouldReduce = prefersReducedMotion || isCompact;
 
   return (
     <h1 id={id} className="studio-hero-title" aria-label={text}>
       {words.map((word, index) => (
         <span className="studio-word-mask" aria-hidden="true" key={`${word}-${index}`}>
           <motion.span
-            initial={prefersReducedMotion ? false : { y: "38%", opacity: 0.01 }}
+            initial={shouldReduce ? false : { y: "38%", opacity: 0.01 }}
             animate={{ y: "0%", opacity: 1 }}
-            transition={{ delay: 0.52 + index * 0.044, duration: 0.56, ease: cinematicEase }}
+            transition={shouldReduce ? { duration: 0 } : { delay: 0.52 + index * 0.044, duration: 0.56, ease: cinematicEase }}
           >
             {word}
           </motion.span>
@@ -314,13 +428,15 @@ export function HeroTitle({ id, text }: { id: string; text: string }) {
 
 export function HeroProductStage({ children }: { children: ReactNode }) {
   const prefersReducedMotion = useReducedMotion();
+  const isCompact = useCompactLandingMotion();
+  const shouldReduce = prefersReducedMotion || isCompact;
 
   return (
     <motion.div
       className="studio-hero-product-stage"
-      initial={prefersReducedMotion ? false : { opacity: 0.01, rotateX: 5, scale: 0.96, y: 42 }}
+      initial={shouldReduce ? false : { opacity: 0.01, rotateX: 5, scale: 0.96, y: 42 }}
       animate={{ opacity: 1, rotateX: 0, scale: 1, y: 0 }}
-      transition={{ delay: 0.72, duration: 0.74, ease: cinematicEase }}
+      transition={shouldReduce ? { duration: 0 } : { delay: 0.72, duration: 0.74, ease: cinematicEase }}
     >
       {children}
     </motion.div>
@@ -328,8 +444,18 @@ export function HeroProductStage({ children }: { children: ReactNode }) {
 }
 
 export function SectionWipe({ label, number }: { label: string; number: string }) {
-  const sceneRef = useRef<HTMLElement | null>(null);
   const prefersReducedMotion = useReducedMotion();
+  const isCompact = useCompactLandingMotion();
+
+  if (prefersReducedMotion || isCompact) {
+    return null;
+  }
+
+  return <SectionWipeMotion label={label} number={number} />;
+}
+
+function SectionWipeMotion({ label, number }: { label: string; number: string }) {
+  const sceneRef = useRef<HTMLElement | null>(null);
   const { scrollYProgress } = useScroll({
     target: sceneRef,
     offset: ["start 104%", "end 18%"],
@@ -343,10 +469,6 @@ export function SectionWipe({ label, number }: { label: string; number: string }
   const railScale = useTransform(smoothProgress, cinematicStops, [0, 0.62, 1, 0.62, 0]);
   const apertureScale = useTransform(smoothProgress, cinematicStops, [1.82, 1.18, 0.42, 1.18, 1.82]);
   const apertureRotate = useTransform(smoothProgress, cinematicStops, [-24, -10, 0, 10, 24]);
-
-  if (prefersReducedMotion) {
-    return null;
-  }
 
   return (
     <section ref={sceneRef} className="studio-transition-scene" aria-hidden="true">
@@ -372,25 +494,10 @@ export function SectionWipe({ label, number }: { label: string; number: string }
 }
 
 export function StickyProductStory() {
-  const sceneRef = useRef<HTMLElement | null>(null);
   const prefersReducedMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: sceneRef,
-    offset: ["start 88%", "end 12%"],
-  });
-  const smoothProgress = useSpring(scrollYProgress, smoothScrollSpring);
-  const sceneScale = useTransform(smoothProgress, cinematicStops, [0.86, 1.02, 1.14, 1.02, 0.9]);
-  const sceneY = useTransform(smoothProgress, cinematicStops, [62, 14, 0, -14, -54]);
-  const glowX = useTransform(smoothProgress, [0, 0.5, 1], ["-12%", "0%", "12%"]);
-  const chartY = useTransform(smoothProgress, cinematicStops, [58, 14, 0, -14, -58]);
-  const importX = useTransform(smoothProgress, cinematicStops, [-94, -18, 0, 34, 82]);
-  const insightX = useTransform(smoothProgress, cinematicStops, [94, 26, 0, -34, -82]);
-  const invoiceY = useTransform(smoothProgress, cinematicStops, [78, 24, 8, -24, -70]);
-  const firstCopyOpacity = useTransform(smoothProgress, [0, 0.1, 0.3, 0.42], [1, 1, 1, 0]);
-  const secondCopyOpacity = useTransform(smoothProgress, [0.34, 0.44, 0.6, 0.72], [0, 1, 1, 0]);
-  const thirdCopyOpacity = useTransform(smoothProgress, [0.64, 0.74, 1], [0, 1, 1]);
+  const isCompact = useCompactLandingMotion();
 
-  if (prefersReducedMotion) {
+  if (prefersReducedMotion || isCompact) {
     return (
       <section className="studio-sticky-story studio-sticky-story-reduced" aria-labelledby="guided-story-heading">
         <div className="studio-container studio-sticky-grid">
@@ -408,6 +515,27 @@ export function StickyProductStory() {
       </section>
     );
   }
+
+  return <StickyProductStoryMotion />;
+}
+
+function StickyProductStoryMotion() {
+  const sceneRef = useRef<HTMLElement | null>(null);
+  const { scrollYProgress } = useScroll({
+    target: sceneRef,
+    offset: ["start 88%", "end 12%"],
+  });
+  const smoothProgress = useSpring(scrollYProgress, smoothScrollSpring);
+  const sceneScale = useTransform(smoothProgress, cinematicStops, [0.86, 1.02, 1.14, 1.02, 0.9]);
+  const sceneY = useTransform(smoothProgress, cinematicStops, [62, 14, 0, -14, -54]);
+  const glowX = useTransform(smoothProgress, [0, 0.5, 1], ["-12%", "0%", "12%"]);
+  const chartY = useTransform(smoothProgress, cinematicStops, [58, 14, 0, -14, -58]);
+  const importX = useTransform(smoothProgress, cinematicStops, [-94, -18, 0, 34, 82]);
+  const insightX = useTransform(smoothProgress, cinematicStops, [94, 26, 0, -34, -82]);
+  const invoiceY = useTransform(smoothProgress, cinematicStops, [78, 24, 8, -24, -70]);
+  const firstCopyOpacity = useTransform(smoothProgress, [0, 0.1, 0.3, 0.42], [1, 1, 1, 0]);
+  const secondCopyOpacity = useTransform(smoothProgress, [0.34, 0.44, 0.6, 0.72], [0, 1, 1, 0]);
+  const thirdCopyOpacity = useTransform(smoothProgress, [0.64, 0.74, 1], [0, 1, 1]);
 
   return (
     <section ref={sceneRef} className="studio-sticky-story" aria-labelledby="guided-story-heading">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { MonthlyTrendChart } from "@/components/analytics-charts";
 import { AppIcon } from "@/components/app-icon";
+import { useFinanceMode } from "@/components/finance-mode-switcher";
 import { PageShell } from "@/components/page-shell";
 
 type ReportSummary = {
@@ -15,13 +16,23 @@ type ReportSummary = {
     totalExpenses: number;
     totalIncome: number;
   };
+  personalSummary?: {
+    billSubscriptionSpend: number;
+    healthScore: number;
+    monthlyIncome: number;
+    monthlySpending: number;
+    monthlySurvivalCost: number;
+  };
   workspace: {
     currency: string;
+    financeType: string;
     name: string;
   };
 };
 
 export default function ReportsPage() {
+  const financeMode = useFinanceMode();
+  const isPersonalMode = financeMode === "personal";
   const [summary, setSummary] = useState<ReportSummary | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -65,7 +76,7 @@ export default function ReportsPage() {
 
   function formatCurrency(amount: number) {
     return new Intl.NumberFormat("en-US", {
-      currency: "USD",
+      currency: summary?.workspace.currency ?? "USD",
       style: "currency",
     }).format(amount);
   }
@@ -73,7 +84,11 @@ export default function ReportsPage() {
   return (
     <PageShell
       title="Reports"
-      description="Export workspace data for accounting, reviews, and monthly reporting."
+      description={
+        isPersonalMode
+          ? "Review personal income, spending, balance, and six-month movement."
+          : "Export workspace data for accounting, reviews, and monthly reporting."
+      }
     >
       {error ? (
         <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
@@ -107,7 +122,10 @@ export default function ReportsPage() {
               </p>
             </article>
           </section>
-          <MonthlyTrendChart data={summary.analytics.monthlyTrend} />
+          <MonthlyTrendChart
+            currency={summary.workspace.currency}
+            data={summary.analytics.monthlyTrend}
+          />
         </>
       ) : null}
 

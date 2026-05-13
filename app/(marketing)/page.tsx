@@ -1,443 +1,509 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AppIcon } from "@/components/app-icon";
-import { LeadFormTrigger } from "@/components/lead-form-trigger";
+import {
+  HeaderScrollState,
+  HeroCinematicScene,
+  HeroProductStage,
+  HeroTitle,
+  LogoOpeningScene,
+  RevealSection,
+  ScrollAtmosphere,
+  ScrollProgress,
+  SectionWipe,
+  StickyProductStory,
+} from "./landing-motion";
 
-const platformPillars = [
+const stressSignals = [
   {
-    title: "Cash command",
-    description: "Live totals, invoice pressure, runway, and cash movement in one operating view.",
-    icon: "dashboard-monitor",
+    icon: "cloud-question",
+    title: "The balance changes, but the story is unclear.",
+    text: "Transactions, invoices, and planned spend live apart, so confidence turns into guessing.",
   },
   {
-    title: "Imports that clean up",
-    description: "Bring bank activity from CSV or Excel, preview rows, catch duplicates, and confirm safely.",
+    icon: "calendar-clock",
+    title: "Pressure appears after it is already expensive.",
+    text: "Due dates, recurring costs, and cash dips are noticed too late to act calmly.",
+  },
+  {
+    icon: "file-exclamation",
+    title: "Imports create more work than answers.",
+    text: "Bank files bring useful data, but messy headers and duplicate rows slow the decision.",
+  },
+];
+
+const intelligenceFlow = [
+  ["Collect", "Bank activity, manual records, invoices, budgets, recurring spend."],
+  ["Normalize", "Dates, currencies, descriptions, categories, balances, duplicates."],
+  ["Forecast", "Runway, upcoming pressure, invoice timing, planned expenses."],
+  ["Explain", "Plain-language insight that shows why the numbers changed."],
+];
+
+const productMoments = [
+  {
+    label: "Import flow",
+    title: "Review before save",
+    text: "Every file becomes a preview first, with invalid rows and duplicates separated.",
     icon: "file-upload",
   },
   {
-    title: "Forecast controls",
-    description: "Tune periods, scenarios, recurring records, planned spend, and invoice assumptions.",
+    label: "Forecast card",
+    title: "Pressure before panic",
+    text: "Future balance is framed as a decision signal, not a mysterious score.",
     icon: "chart-line-up",
   },
   {
-    title: "Currency aware",
-    description: "Track original amounts and convert them into the workspace currency with live rates.",
-    icon: "coins",
+    label: "Invoice workflow",
+    title: "Open payments stay visible",
+    text: "Unpaid invoices keep their effect on cash flow until they are resolved.",
+    icon: "receipt",
   },
 ];
 
-const proofItems = [
-  "Freelancer-ready",
-  "Multi-currency",
-  "Excel import",
-  "Invoice pipeline",
-  "Team workspaces",
-  "Scenario forecasts",
+const trustItems = [
+  ["Safe imports", "Nothing touches your records until the preview is confirmed."],
+  ["Prediction transparency", "Forecasts show which assumptions influence the result."],
+  ["Duplicate detection", "Repeated rows are identified before they create false activity."],
+  ["Clear logic", "Financial signals are explained in readable operational language."],
 ];
 
-const flowSteps = [
-  ["01", "Collect", "Transactions, invoices, recurring costs, and imported bank rows."],
-  ["02", "Resolve", "Duplicates, currencies, categories, dates, and missing context before saving."],
-  ["03", "Decide", "See the cash story, risk signals, and next actions without rebuilding a spreadsheet."],
-];
-
-const importSafeguards = [
-  {
-    title: "Preview first",
-    text: "Imported rows are shown before they become transactions, including detected dates, categories, notes, and currencies.",
-    icon: "table-layout",
-  },
-  {
-    title: "Catch bad rows",
-    text: "Missing amounts, unknown transaction types, invalid dates, and unclear headers are separated for review.",
-    icon: "shield-check",
-  },
-  {
-    title: "Skip duplicates",
-    text: "Dampener compares amount, date, type, category, notes, and source fingerprints before saving new records.",
-    icon: "copy-alt",
-  },
-];
-
-const predictionControls = [
-  "Pick a 7 day, 30 day, 3 month, 6 month, or 1 year window.",
-  "Switch between conservative, balanced, and optimistic assumptions.",
-  "Include or remove recurring records, planned expenses, and unpaid invoices.",
-  "Read the explanation behind the number so the result is not a black box.",
-];
-
-const signalCards = [
-  { label: "Expected balance", value: "$18.4K", delta: "+12%", icon: "wallet" },
-  { label: "Invoice exposure", value: "$6.2K", delta: "4 open", icon: "receipt" },
-  { label: "Runway", value: "5.8 mo", delta: "balanced", icon: "calendar-clock" },
-];
-
-const workspaceViews = [
-  {
-    title: "Dashboard",
-    text: "A calm first screen with the cards, charts, and sections your team actually wants visible.",
-  },
-  {
-    title: "Transactions",
-    text: "Add records manually or import a bank file with validation before anything touches the database.",
-  },
-  {
-    title: "Insights",
-    text: "Translate movement into plain-language guidance, not just another table of numbers.",
-  },
-  {
-    title: "Settings",
-    text: "Keep currency, prediction behavior, appearance, and data controls where operators expect them.",
-  },
+const proofSignals = [
+  "Cash-flow visibility",
+  "Invoice pressure",
+  "Safe imports",
+  "Forecast control",
+  "Duplicate detection",
+  "Decision confidence",
 ];
 
 const outcomes = [
-  { value: "7-365", label: "day forecast windows" },
-  { value: "500", label: "rows per safe import" },
-  { value: "13+", label: "supported currencies" },
+  "Know what changed.",
+  "Understand what is coming.",
+  "Act before pressure builds.",
+  "Make financial decisions with calm confidence.",
 ];
 
-const contactChannels = [
-  {
-    label: "LinkedIn",
-    href: "https://www.linkedin.com/company/dampener/?viewAsMember=true",
-    icon: "linkedin",
-  },
-  {
-    label: "Instagram",
-    href: "https://www.instagram.com/d4mpener/",
-    icon: "instagram",
-  },
+const chartBars = ["34%", "48%", "42%", "62%", "56%", "78%", "68%", "86%", "74%", "92%", "82%", "88%"];
+
+const transactions = [
+  ["Stripe payout", "+$4,820", "Income"],
+  ["Cloud renewal", "-$640", "Expense"],
+  ["Invoice AC-104", "+$2,400", "Paid"],
+];
+
+const invoices = [
+  ["Northline", "$4,200", "Due in 4 days"],
+  ["Studio Retainer", "$2,800", "Open"],
+  ["Atlas Supply", "$1,150", "Review"],
 ];
 
 export default function Home() {
   return (
-    <main className="landing-page flex flex-1 flex-col overflow-x-hidden bg-[#06110f] text-white">
-      <section className="landing-hero relative isolate overflow-hidden">
-        <div className="mx-auto grid min-h-[calc(100vh-4.25rem)] w-full max-w-7xl items-center gap-10 px-5 py-10 sm:px-6 lg:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] lg:gap-10 lg:py-20">
-          <div className="relative z-30 max-w-4xl">
-            <div className="mb-6 inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-300/30 bg-white/8 px-3 py-2 text-xs font-semibold text-cyan-100 shadow-2xl shadow-cyan-950/30 backdrop-blur sm:text-sm">
-              <span className="h-2 w-2 rounded-full bg-lime-300 shadow-[0_0_20px_rgba(190,242,100,0.75)]" />
-              Finance operations without spreadsheet drift
-            </div>
+    <main className="studio-landing-page">
+      <HeaderScrollState />
+      <ScrollProgress />
+      <ScrollAtmosphere />
+      <LogoOpeningScene />
+      <HeroSection />
+      <SignalStrip />
+      <SectionWipe label="The pressure comes into focus" number="02" />
+      <ProblemSection />
+      <SectionWipe label="The system starts connecting" number="03" />
+      <SystemIntelligenceSection />
+      <RealSystemShowcase />
+      <StickyProductStory />
+      <SectionWipe label="The product assembles around decisions" number="05" />
+      <ProductExperienceSection />
+      <TrustSection />
+      <OutcomeSection />
+      <FinalCtaSection />
+    </main>
+  );
+}
 
-            <h1 className="max-w-5xl text-[2.65rem] font-semibold leading-[0.96] tracking-tight text-white sm:text-7xl lg:text-8xl">
-              See cash clearly before it moves.
-            </h1>
-
-            <p className="mt-6 max-w-2xl text-base leading-7 text-cyan-50/78 sm:text-xl sm:leading-8">
-              Dampener turns bank activity, invoices, forecasts, currencies, and team
-              workspaces into one readable financial command center.
-            </p>
-
-            <div className="landing-cta-group mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/request-access"
-                className="landing-cta-button inline-flex items-center justify-center gap-2 rounded-full bg-lime-300 px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200"
-              >
-                <AppIcon name="sparkles" />
-                Request Access
-              </Link>
-              <Link
-                href="/demo"
-                className="landing-cta-button inline-flex items-center justify-center gap-2 rounded-full border border-lime-200/40 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
-              >
-                <AppIcon name="dashboard-monitor" />
-                Try Demo
-              </Link>
-              <a
-                href="/login"
-                className="landing-cta-button landing-login-cta inline-flex min-h-13 min-w-36 items-center justify-center gap-2 rounded-full border border-white/18 bg-white/8 px-8 py-4 text-sm font-bold text-white transition hover:border-cyan-200/70 hover:bg-white/14"
-              >
-                <AppIcon name="sign-in-alt" />
-                Login
-              </a>
-            </div>
-
-            <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3 sm:mt-10">
-              {outcomes.map((item) => (
-                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/7 p-4 backdrop-blur">
-                  <p className="text-2xl font-semibold text-lime-200">{item.value}</p>
-                  <p className="mt-1 text-xs leading-5 text-cyan-50/70">{item.label}</p>
-                </div>
-              ))}
-            </div>
+function HeroSection() {
+  return (
+    <HeroCinematicScene className="studio-hero" labelledBy="hero-heading">
+      <div className="studio-ambient" aria-hidden="true" />
+      <div className="studio-container studio-hero-grid">
+        <div className="studio-hero-copy">
+          <SectionMeta className="studio-hero-item studio-hero-delay-0" label="Premium financial clarity workspace" number="01" />
+          <HeroTitle id="hero-heading" text="Control your cash flow before it controls you." />
+          <p className="studio-hero-item studio-hero-delay-2">
+            Dampener turns income, expenses, invoices, forecasts, and financial behavior into a
+            calm operating system for decisions.
+          </p>
+          <div className="studio-actions studio-hero-item studio-hero-delay-3">
+            <Link href="/demo" className="studio-button studio-button-primary">
+              Try Demo
+              <AppIcon name="arrow-small-right" />
+            </Link>
+            <a href="#system" className="studio-button studio-button-secondary">
+              Explore the system
+            </a>
           </div>
-
-          <div className="landing-orbit-wrap relative z-10 mx-auto w-full max-w-[34rem] lg:mx-0 lg:justify-self-center">
-            <div className="landing-orbit">
-              <div className="landing-orbit-ring landing-ring-a" />
-              <div className="landing-orbit-ring landing-ring-b" />
-              <div className="landing-dashboard">
-                <div className="mb-5 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <Image src="/img/1.svg" alt="" width={34} height={34} className="landing-brand-logo h-8 w-8" />
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-100/60">
-                        Dampener
-                      </p>
-                      <p className="text-lg font-semibold text-white">Cash cockpit</p>
-                    </div>
-                  </div>
-                  <span className="rounded-full bg-lime-300 px-3 py-1 text-xs font-bold text-slate-950">
-                    Stable
-                  </span>
-                </div>
-
-                <div className="landing-signal-grid grid gap-3 sm:grid-cols-3">
-                  {signalCards.map((card) => (
-                    <div key={card.label} className="landing-signal-card">
-                      <AppIcon name={card.icon} className="text-lg text-cyan-200" />
-                      <p className="mt-3 text-xs text-cyan-50/60">{card.label}</p>
-                      <p className="mt-1 text-xl font-semibold text-white">{card.value}</p>
-                      <p className="mt-2 text-xs font-semibold text-lime-200">{card.delta}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/50 p-4">
-                  <div className="mb-4 flex items-center justify-between text-xs font-semibold text-cyan-50/62">
-                    <span>Cash path</span>
-                    <span>Next 90 days</span>
-                  </div>
-                  <div className="landing-flow-chart">
-                    {["42%", "58%", "46%", "70%", "64%", "86%", "78%", "92%"].map((height, index) => (
-                      <span key={`${height}-${index}`} style={{ height }} />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="landing-ticker mt-4" aria-label="Recent finance signals">
-                  <span>TRY import detected</span>
-                  <span>3 duplicates skipped</span>
-                  <span>Forecast balanced</span>
-                  <span>Invoice due soon</span>
-                  <span>TRY import detected</span>
-                  <span>3 duplicates skipped</span>
-                  <span>Forecast balanced</span>
-                  <span>Invoice due soon</span>
-                </div>
-              </div>
-            </div>
+          <div
+            className="studio-hero-trust studio-hero-item studio-hero-delay-4"
+            aria-label="Product trust highlights"
+          >
+            <span>Review-before-save imports</span>
+            <span>Transparent forecasts</span>
+            <span>Calm cash-flow intelligence</span>
           </div>
         </div>
+        <HeroProductStage>
+          <OperatingSystemPreview />
+        </HeroProductStage>
+      </div>
+    </HeroCinematicScene>
+  );
+}
 
-      </section>
+function SignalStrip() {
+  return (
+    <section className="studio-proof-strip" aria-label="Dampener product signals">
+      <div className="studio-proof-track">
+        {[...proofSignals, ...proofSignals].map((signal, index) => (
+          <span key={`${signal}-${index}`}>{signal}</span>
+        ))}
+      </div>
+    </section>
+  );
+}
 
-      <section className="border-y border-white/10 bg-[#091916] px-5 py-5 sm:px-6">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-3">
-          {proofItems.map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-cyan-200/15 bg-white/6 px-4 py-2 text-sm font-semibold text-cyan-50/76"
-            >
-              {item}
-            </span>
+function ProblemSection() {
+  return (
+    <RevealSection className="studio-section studio-section-soft" labelledBy="problem-heading">
+      <div className="studio-container">
+        <div className="studio-section-heading studio-narrow">
+          <SectionMeta label="The pressure underneath the numbers" number="02" />
+          <h2 id="problem-heading">Financial stress is usually a visibility problem.</h2>
+          <p>
+            People do not need louder dashboards. They need fewer blind spots, better pacing, and a
+            system that makes the next decision feel obvious.
+          </p>
+        </div>
+        <div className="studio-stress-grid">
+          {stressSignals.map((signal) => (
+            <article className="studio-card studio-stagger-child" key={signal.title}>
+              <span className="studio-icon">
+                <AppIcon name={signal.icon} />
+              </span>
+              <h3>{signal.title}</h3>
+              <p>{signal.text}</p>
+            </article>
           ))}
         </div>
-      </section>
+      </div>
+    </RevealSection>
+  );
+}
 
-      <section id="workspace" className="landing-reveal bg-[#f4fbf8] px-5 py-16 text-slate-950 sm:px-6 lg:py-24">
-        <div className="mx-auto max-w-7xl">
-          <div className="max-w-3xl">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-teal-700">
-              One workspace
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-              Every money signal, connected and explainable.
-            </h2>
-          </div>
-
-          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {platformPillars.map((item, index) => (
-              <article key={item.title} className="landing-feature-card">
-                <span className="landing-card-index">0{index + 1}</span>
-                <span className="mt-8 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-950 text-xl text-lime-200">
-                  <AppIcon name={item.icon} />
-                </span>
-                <h3 className="mt-6 text-xl font-semibold">{item.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{item.description}</p>
-              </article>
-            ))}
-          </div>
+function SystemIntelligenceSection() {
+  return (
+    <RevealSection id="system" className="studio-section studio-system" labelledBy="system-heading">
+      <div className="studio-container studio-split">
+        <div className="studio-section-heading">
+          <SectionMeta label="System intelligence" number="03" />
+          <h2 id="system-heading">A financial operating layer, not another spreadsheet.</h2>
+          <p>
+            Dampener connects the workflow from raw activity to decision-ready insight, keeping the
+            logic understandable at every step.
+          </p>
         </div>
-      </section>
+        <div className="studio-flow-panel studio-stagger-child">
+          {intelligenceFlow.map(([title, text], index) => (
+            <article key={title} className="studio-flow-step studio-stagger-child">
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </RevealSection>
+  );
+}
 
-      <section className="landing-reveal bg-white px-5 py-16 text-slate-950 sm:px-6 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.85fr_1fr] lg:items-center">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-teal-700">
-              Operating flow
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-              Import, validate, forecast, and act.
-            </h2>
-            <p className="mt-5 text-lg leading-8 text-slate-600">
-              The product is designed around the work operators repeat every week:
-              collecting records, cleaning the messy parts, and making a decision from the result.
+function RealSystemShowcase() {
+  return (
+    <RevealSection className="studio-section studio-real-system" labelledBy="real-system-heading">
+      <div className="studio-container">
+        <div className="studio-showcase-heading">
+          <div className="studio-section-heading studio-narrow">
+            <SectionMeta label="Real Dampener interface" number="04" />
+            <h2 id="real-system-heading">Actual product surfaces, composed like a financial command room.</h2>
+            <p>
+              These previews use the live public Dampener demo UI: dashboard metrics, forecast
+              cards, import actions, analytics, invoices, and workspace navigation.
             </p>
           </div>
+          <Link href="/demo" className="studio-button studio-button-secondary">
+            Open demo
+          </Link>
+        </div>
 
-          <div className="grid gap-4">
-            {flowSteps.map(([number, title, text]) => (
-              <div key={title} className="landing-flow-step">
-                <span>{number}</span>
+        <div className="studio-system-gallery">
+          <figure className="studio-system-frame studio-system-frame-primary studio-stagger-child">
+            <Image
+              src="/landing/dampener-demo-dashboard.png"
+              alt="Real Dampener demo dashboard with financial metrics, forecast, and workspace navigation"
+              width={1440}
+              height={1300}
+              priority
+            />
+            <figcaption>
+              <span>Dashboard</span>
+              Metrics, forecast, actions, and workspace context.
+            </figcaption>
+          </figure>
+
+          <figure className="studio-system-frame studio-system-frame-secondary studio-stagger-child">
+            <Image
+              src="/landing/dampener-demo-workflow.png"
+              alt="Real Dampener demo workspace showing extended forecast, metrics, and financial workflow"
+              width={1180}
+              height={1900}
+            />
+            <figcaption>
+              <span>Workflow</span>
+              Review flows, chart context, and financial state.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </RevealSection>
+  );
+}
+
+function ProductExperienceSection() {
+  return (
+    <RevealSection className="studio-section studio-product" labelledBy="experience-heading">
+      <div className="studio-container">
+        <div className="studio-section-heading studio-narrow">
+          <SectionMeta label="Product experience" number="05" />
+          <h2 id="experience-heading">Users should feel the product before signing in.</h2>
+          <p>
+            The preview behaves like a real workspace: activity, imports, invoices, forecasts, and
+            explanations all point to the same cash-flow story.
+          </p>
+        </div>
+        <div className="studio-product-grid">
+          <ProductConsole />
+          <div className="studio-moment-stack">
+            {productMoments.map((moment) => (
+              <article key={moment.title} className="studio-moment studio-stagger-child">
+                <span className="studio-icon">
+                  <AppIcon name={moment.icon} />
+                </span>
                 <div>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
+                  <p>{moment.label}</p>
+                  <h3>{moment.title}</h3>
+                  <span>{moment.text}</span>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-reveal bg-[#edf7f2] px-5 py-16 text-slate-950 sm:px-6 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-teal-700">
-              Data controls
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-              Imports stay reviewable until you approve them.
-            </h2>
-            <p className="mt-5 text-lg leading-8 text-slate-600">
-              Dampener is designed for real bank exports, messy descriptions, mixed currencies,
-              and repeated rows. The import flow explains what it found before anything is saved.
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {importSafeguards.map((item) => (
-              <article key={item.title} className="landing-detail-card">
-                <span>
-                  <AppIcon name={item.icon} />
-                </span>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
               </article>
             ))}
           </div>
         </div>
-      </section>
+      </div>
+    </RevealSection>
+  );
+}
 
-      <section className="landing-reveal bg-[#07130f] px-5 py-16 text-white sm:px-6 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-center">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-lime-200">
-              Forecast logic
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-              Predictions that show their assumptions.
-            </h2>
-            <p className="mt-5 text-lg leading-8 text-cyan-50/72">
-              Cash prediction is not treated like a magic number. Teams can decide how cautious
-              the forecast should be and exactly which records are allowed to influence it.
-            </p>
-          </div>
-
-          <div className="landing-assumption-panel">
-            {predictionControls.map((item, index) => (
-              <div key={item} className="landing-assumption-row">
-                <span>0{index + 1}</span>
-                <p>{item}</p>
-              </div>
-            ))}
-          </div>
+function TrustSection() {
+  return (
+    <RevealSection className="studio-section studio-trust" labelledBy="trust-heading">
+      <div className="studio-container studio-split">
+        <div className="studio-section-heading">
+          <SectionMeta label="Trust and stability" number="06" />
+          <h2 id="trust-heading">Built to reduce uncertainty before records are saved.</h2>
+          <p>
+            Financial software earns trust when it slows down at the right moments: previewing,
+            explaining, checking, and confirming.
+          </p>
         </div>
-      </section>
+        <div className="studio-trust-grid">
+          {trustItems.map(([title, text]) => (
+            <article key={title} className="studio-trust-item studio-stagger-child">
+              <span aria-hidden="true" />
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </RevealSection>
+  );
+}
 
-      <section className="landing-reveal bg-[#07130f] px-5 py-16 text-white sm:px-6 lg:py-24">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-lime-200">
-                Product views
+function OutcomeSection() {
+  return (
+    <RevealSection className="studio-section studio-outcome" labelledBy="outcome-heading">
+      <div className="studio-container">
+        <div className="studio-outcome-panel studio-stagger-child">
+          <div className="studio-section-heading">
+            <SectionMeta label="The transformation" number="07" />
+            <h2 id="outcome-heading">From financial noise to calm control.</h2>
+          </div>
+          <div className="studio-outcome-list">
+            {outcomes.map((outcome) => (
+              <p className="studio-stagger-child" key={outcome}>
+                {outcome}
               </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-                Familiar pages, sharper financial behavior.
-              </h2>
-            </div>
-            <p className="text-lg leading-8 text-cyan-50/72">
-              Dampener keeps the interface calm while the system handles richer data:
-              currency conversion, import validation, dashboard layout, and prediction preferences.
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
-            {workspaceViews.map((view) => (
-              <article key={view.title} className="landing-view-card">
-                <h3>{view.title}</h3>
-                <p>{view.text}</p>
-              </article>
             ))}
           </div>
         </div>
-      </section>
+      </div>
+    </RevealSection>
+  );
+}
 
-      <section id="contact" className="landing-reveal bg-[#eff8f3] px-5 py-16 text-slate-950 sm:px-6 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-8 rounded-[2rem] border border-teal-900/10 bg-white p-6 shadow-2xl shadow-teal-950/10 sm:p-10 lg:grid-cols-[1fr_0.9fr]">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-teal-700">
-              See Dampener
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-              Start with a demo workspace, then bring your own numbers.
-            </h2>
-            <p className="mt-5 text-lg leading-8 text-slate-600">
-              Try the product with sample data or contact the Dampener team to talk through
-              your workflow.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/request-access"
-                className="inline-flex items-center justify-center rounded-full bg-teal-950 px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-800"
-              >
-                Request Access
-              </Link>
-              <Link
-                href="/demo"
-                className="inline-flex items-center justify-center rounded-full border border-teal-900/15 bg-white px-6 py-3 text-sm font-bold text-teal-950 transition hover:border-teal-700 hover:text-teal-700"
-              >
-                Try Demo
-              </Link>
-              <LeadFormTrigger
-                source="contact"
-                className="inline-flex items-center justify-center rounded-full border border-teal-900/15 bg-white px-6 py-3 text-sm font-bold text-teal-950 transition hover:border-teal-700 hover:text-teal-700"
-              >
-                Contact us
-              </LeadFormTrigger>
-            </div>
+function FinalCtaSection() {
+  return (
+    <RevealSection className="studio-final" labelledBy="final-heading">
+      <div className="studio-container">
+        <div className="studio-final-card studio-stagger-child">
+          <SectionMeta label="Start with a calmer view" number="08" />
+          <h2 id="final-heading">Understand your money with premium financial clarity.</h2>
+          <p>
+            Try the demo workspace and experience how Dampener turns financial movement into
+            decisions you can trust.
+          </p>
+          <Link href="/demo" className="studio-button studio-button-primary">
+            Try Demo
+            <AppIcon name="arrow-small-right" />
+          </Link>
+        </div>
+      </div>
+    </RevealSection>
+  );
+}
+
+function SectionMeta({
+  className = "",
+  label,
+  number,
+}: {
+  className?: string;
+  label: string;
+  number: string;
+}) {
+  return (
+    <p className={`studio-kicker studio-section-meta ${className}`.trim()}>
+      <span>{label}</span>
+      <em>DMP - {number}</em>
+    </p>
+  );
+}
+
+function OperatingSystemPreview() {
+  return (
+    <section
+      className="studio-os-preview studio-hero-preview"
+      aria-label="Dampener financial operating system preview"
+    >
+      <div className="studio-preview-top">
+        <div>
+          <p>Dampener OS</p>
+          <h2>Cash-flow command</h2>
+        </div>
+        <span>Stable</span>
+      </div>
+      <div className="studio-metric-grid">
+        <Metric label="Cash balance" value="$18.4K" status="+12%" index={1} />
+        <Metric label="Invoice exposure" value="$6.2K" status="4 open" index={2} />
+        <Metric label="Runway" value="5.8 mo" status="balanced" index={3} />
+      </div>
+      <div className="studio-preview-body">
+        <div className="studio-chart-card studio-dashboard-layer studio-assemble-chart">
+          <div className="studio-card-header">
+            <span>Forecast path</span>
+            <strong>Next 90 days</strong>
           </div>
-
-          <div className="grid content-between gap-4 rounded-[1.5rem] bg-[#07130f] p-5 text-white">
-            <div>
-              <p className="text-sm font-semibold text-cyan-100/70">Follow the build</p>
-              <div className="mt-4 grid gap-3">
-                {contactChannels.map((channel) => (
-                  <Link
-                    key={channel.label}
-                    href={channel.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-between rounded-2xl border border-white/10 bg-white/7 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/12"
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <AppIcon name={channel.icon} />
-                      {channel.label}
-                    </span>
-                    <AppIcon name="arrow-small-right" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <p className="rounded-2xl border border-lime-200/20 bg-lime-200/10 p-4 text-sm leading-6 text-lime-50">
-              Built for people who need financial clarity before accounting software becomes
-              the center of the room.
-            </p>
+          <div className="studio-chart" aria-hidden="true">
+            {chartBars.map((height, index) => (
+              <span key={`${height}-${index}`} style={{ height }} />
+            ))}
           </div>
         </div>
-      </section>
-    </main>
+        <div className="studio-insight-card studio-dashboard-layer studio-assemble-insight">
+          <span className="studio-icon">
+            <AppIcon name="sparkles" />
+          </span>
+          <h3>Insight</h3>
+          <p>Invoice timing is improving, but renewals create pressure in 23 days.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProductConsole() {
+  return (
+    <section className="studio-console studio-stagger-child" aria-label="Product workflow preview">
+      <div className="studio-console-header">
+        <div>
+          <p>Workspace activity</p>
+          <h3>May cash movement</h3>
+        </div>
+        <span>Preview mode</span>
+      </div>
+      <div className="studio-console-grid">
+        <div className="studio-console-panel studio-dashboard-layer">
+          <div className="studio-card-header">
+            <span>Transactions</span>
+            <strong>3 latest</strong>
+          </div>
+          {transactions.map(([name, amount, type]) => (
+            <div className="studio-row" key={name}>
+              <span>{name}</span>
+              <strong className={amount.startsWith("+") ? "is-positive" : ""}>{amount}</strong>
+              <em>{type}</em>
+            </div>
+          ))}
+        </div>
+        <div className="studio-console-panel studio-dashboard-layer">
+          <div className="studio-card-header">
+            <span>Invoices</span>
+            <strong>$8.1K open</strong>
+          </div>
+          {invoices.map(([name, amount, status]) => (
+            <div className="studio-row" key={name}>
+              <span>{name}</span>
+              <strong>{amount}</strong>
+              <em>{status}</em>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="studio-import-strip studio-data-pulse">
+        <span>
+          <AppIcon name="shield-check" />
+        </span>
+        <p>Excel import preview found 42 valid rows, 3 duplicates, and 1 footer row skipped.</p>
+      </div>
+    </section>
+  );
+}
+
+function Metric({
+  index,
+  label,
+  status,
+  value,
+}: {
+  index: number;
+  label: string;
+  status: string;
+  value: string;
+}) {
+  return (
+    <article className={`studio-metric-card studio-dashboard-layer studio-assemble-card studio-assemble-card-${index}`}>
+      <p>{label}</p>
+      <strong>{value}</strong>
+      <span>{status}</span>
+    </article>
   );
 }

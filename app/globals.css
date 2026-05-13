@@ -4246,6 +4246,7 @@ html[data-landing-theme] .marketing-header * {
   padding-top: 0;
   position: relative;
   scroll-behavior: smooth;
+  scroll-padding-top: var(--studio-header-offset);
 }
 
 .studio-landing-page::before,
@@ -4334,9 +4335,16 @@ html[data-landing-scrolled="true"] .marketing-shell:has(.studio-landing-page) .m
   transform-origin: center;
 }
 
-.marketing-shell:has(.studio-landing-page) .marketing-theme-actions a[href="/login"] {
+.marketing-shell:has(.studio-landing-page) .marketing-theme-actions a {
   background: rgb(20 184 166 / 0.055) !important;
   border-color: rgb(34 197 94 / 0.16) !important;
+  color: #f8fafc !important;
+}
+
+.marketing-shell:has(.studio-landing-page) .marketing-theme-actions .marketing-access-link {
+  background: linear-gradient(135deg, rgb(34 197 94 / 0.9), rgb(20 184 166 / 0.74)) !important;
+  border-color: rgb(34 197 94 / 0.28) !important;
+  box-shadow: 0 0.85rem 2.2rem rgb(10 80 54 / 0.2);
   color: #f8fafc !important;
 }
 
@@ -4394,10 +4402,15 @@ html[data-landing-theme="light"] .studio-logo-kicker img {
     drop-shadow(0 0 0.72rem rgb(15 118 110 / 0.16));
 }
 
-html[data-landing-theme="light"] .marketing-shell:has(.studio-landing-page) .marketing-theme-actions a[href="/login"] {
+html[data-landing-theme="light"] .marketing-shell:has(.studio-landing-page) .marketing-theme-actions a {
   background: rgb(255 255 255 / 0.76) !important;
   border-color: rgb(15 118 110 / 0.18) !important;
   color: #0f172a !important;
+}
+
+html[data-landing-theme="light"] .marketing-shell:has(.studio-landing-page) .marketing-theme-actions .marketing-access-link {
+  background: linear-gradient(135deg, #047857, #0f766e) !important;
+  color: #ffffff !important;
 }
 
 html[data-landing-theme="light"] .studio-scroll-logo-mark {
@@ -4412,6 +4425,10 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
   position: relative;
   z-index: 3;
   width: min(100% - 2rem, 76rem);
+}
+
+.studio-landing-page section[id] {
+  scroll-margin-top: calc(var(--studio-header-offset) + 1rem);
 }
 
 .studio-intro-overlay {
@@ -4794,6 +4811,7 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 .studio-hero-scroll-plane {
   min-height: inherit;
   position: relative;
+  transform-origin: top center;
   z-index: 1;
 }
 
@@ -5042,8 +5060,8 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 
 .studio-proof-strip {
   background:
-    linear-gradient(90deg, rgb(5 12 10 / 0.98), rgb(7 26 20 / 0.98), rgb(5 12 10 / 0.98));
-  border-block: 1px solid var(--studio-border);
+    linear-gradient(90deg, rgb(5 12 10 / 0.76), rgb(7 26 20 / 0.7), rgb(5 12 10 / 0.76));
+  border-block: 1px solid rgb(34 197 94 / 0.06);
   min-height: 4.6rem;
   overflow: hidden;
   position: relative;
@@ -5105,9 +5123,10 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 
 .studio-transition-scene {
   background:
-    linear-gradient(180deg, #050816 0%, #071a14 38%, #050816 100%);
+    radial-gradient(circle at 50% 42%, rgb(20 184 166 / 0.08), transparent 32rem),
+    linear-gradient(180deg, rgb(5 8 22 / 0), rgb(7 26 20 / 0.5) 42%, rgb(5 8 22 / 0));
   height: clamp(30rem, 86vh, 54rem);
-  margin-block: clamp(-2rem, -2vw, -1px);
+  margin-block: clamp(-4rem, -4vw, -2rem);
   overflow: clip;
   pointer-events: none;
   position: relative;
@@ -5515,6 +5534,7 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 
 .studio-section {
   contain: paint;
+  margin-block: -1px;
   overflow: hidden;
   padding-block: clamp(4.25rem, 7vw, 7rem);
   position: relative;
@@ -5522,11 +5542,11 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 }
 
 .studio-section::before {
-  background: linear-gradient(90deg, transparent, rgb(34 197 94 / 0.18), transparent);
+  background: linear-gradient(90deg, transparent, rgb(34 197 94 / 0.09), transparent);
   content: "";
   height: 1px;
   left: 50%;
-  opacity: 0.7;
+  opacity: 0.42;
   position: absolute;
   top: 0;
   transform: translateX(-50%);
@@ -5535,27 +5555,27 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 
 .studio-section-soft {
   background:
-    radial-gradient(circle at 20% 8%, rgb(34 197 94 / 0.08), transparent 22rem),
-    linear-gradient(180deg, #050816, #071a14 42%, #050816);
-  border-top: 1px solid var(--studio-border);
+    radial-gradient(circle at 20% 8%, rgb(34 197 94 / 0.07), transparent 22rem),
+    linear-gradient(180deg, rgb(5 8 22 / 0.92), rgb(7 26 20 / 0.72) 42%, rgb(5 8 22 / 0.92));
+  border-top: 0;
 }
 
 .studio-system,
 .studio-product,
 .studio-outcome {
   background:
-    radial-gradient(circle at 86% 8%, rgb(20 184 166 / 0.07), transparent 22rem),
-    #050816;
+    radial-gradient(circle at 86% 8%, rgb(20 184 166 / 0.065), transparent 22rem),
+    linear-gradient(180deg, rgb(5 8 22 / 0.96), rgb(6 18 16 / 0.88));
 }
 
 .studio-trust {
-  background: linear-gradient(180deg, #050816, #071a14);
+  background: linear-gradient(180deg, rgb(5 8 22 / 0.96), rgb(7 26 20 / 0.86));
 }
 
 .studio-real-system {
   background:
-    radial-gradient(circle at 76% 22%, rgb(20 184 166 / 0.12), transparent 24rem),
-    linear-gradient(180deg, #050816, #071a14 42%, #050816);
+    radial-gradient(circle at 76% 22%, rgb(20 184 166 / 0.1), transparent 24rem),
+    linear-gradient(180deg, rgb(5 8 22 / 0.96), rgb(7 26 20 / 0.76) 42%, rgb(5 8 22 / 0.94));
 }
 
 .studio-sticky-story {
@@ -5564,6 +5584,7 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
     radial-gradient(circle at 78% 52%, rgb(20 184 166 / 0.1), transparent 30rem),
     #050816;
   min-height: 168vh;
+  margin-block: -1px;
   position: relative;
   transform: translateZ(0);
   z-index: 2;
@@ -6137,6 +6158,7 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 
 .studio-final {
   background: #050816;
+  margin-top: -1px;
   overflow: hidden;
   padding-block: clamp(5rem, 9vw, 9rem);
   position: relative;
@@ -6145,7 +6167,7 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 
 html[data-landing-theme="light"] .studio-proof-strip {
   background:
-    linear-gradient(90deg, rgb(241 248 244 / 0.98), rgb(255 255 255 / 0.96), rgb(241 248 244 / 0.98));
+    linear-gradient(90deg, rgb(241 248 244 / 0.78), rgb(255 255 255 / 0.68), rgb(241 248 244 / 0.78));
   border-color: rgb(15 118 110 / 0.14);
 }
 
@@ -6165,15 +6187,15 @@ html[data-landing-theme="light"] .studio-proof-track span {
 html[data-landing-theme="light"] .studio-section-soft,
 html[data-landing-theme="light"] .studio-real-system {
   background:
-    radial-gradient(circle at 76% 18%, rgb(20 184 166 / 0.12), transparent 24rem),
-    linear-gradient(180deg, #f6fbf8, #eef8f3 46%, #f6fbf8);
+    radial-gradient(circle at 76% 18%, rgb(20 184 166 / 0.1), transparent 24rem),
+    linear-gradient(180deg, rgb(246 251 248 / 0.96), rgb(238 248 243 / 0.72) 46%, rgb(246 251 248 / 0.96));
 }
 
 html[data-landing-theme="light"] .studio-system,
 html[data-landing-theme="light"] .studio-product,
 html[data-landing-theme="light"] .studio-outcome,
 html[data-landing-theme="light"] .studio-final {
-  background: #f6fbf8;
+  background: linear-gradient(180deg, #f6fbf8, #eef8f3);
 }
 
 html[data-landing-theme="light"] .studio-trust {
@@ -6188,7 +6210,9 @@ html[data-landing-theme="light"] .studio-sticky-story {
 }
 
 html[data-landing-theme="light"] .studio-transition-scene {
-  background: linear-gradient(180deg, #f6fbf8 0%, #eef8f3 38%, #f6fbf8 100%);
+  background:
+    radial-gradient(circle at 50% 42%, rgb(20 184 166 / 0.08), transparent 32rem),
+    linear-gradient(180deg, rgb(246 251 248 / 0), rgb(238 248 243 / 0.62) 42%, rgb(246 251 248 / 0));
 }
 
 html[data-landing-theme="light"] .studio-transition-panel,
@@ -6826,37 +6850,48 @@ html[data-landing-theme="light"] .studio-opening-logo {
 }
 
 @media (max-width: 640px) {
-  .marketing-shell:has(.studio-landing-page) .marketing-theme-actions a[href="/login"] {
-    display: none;
-  }
-
   .marketing-shell:has(.studio-landing-page) .marketing-header-inner {
-    gap: 0.75rem;
-    max-width: calc(100vw - 1.5rem);
-    padding-inline: 0.75rem;
-    width: calc(100vw - 1.5rem);
+    gap: 0.55rem;
+    max-width: 100vw;
+    padding-inline: 0.65rem !important;
+    padding-block: 0.48rem !important;
+    width: 100vw;
   }
 
   .marketing-shell:has(.studio-landing-page) .marketing-header-inner > a:first-child {
     flex: 1 1 auto;
-    font-size: 1rem;
+    font-size: 0;
     min-width: 0;
+  }
+
+  .marketing-shell:has(.studio-landing-page) .landing-brand-logo {
+    height: 1.55rem;
+    width: 1.55rem;
   }
 
   .marketing-shell:has(.studio-landing-page) .marketing-theme-actions {
     flex: 0 0 auto;
+    gap: 0.35rem;
   }
 
   .marketing-shell:has(.studio-landing-page) .landing-theme-toggle {
-    min-height: 2.25rem;
-    padding-right: 0.62rem;
+    min-height: 2rem;
+    padding-inline: 0.28rem;
+  }
+
+  .marketing-shell:has(.studio-landing-page) .marketing-theme-actions a {
+    font-size: 0.72rem !important;
+    min-height: 2rem !important;
+    min-width: 0 !important;
+    padding: 0.42rem 0.56rem !important;
+    white-space: nowrap;
   }
 
   .studio-container {
-    margin-left: 0.75rem;
-    margin-right: 0.75rem;
+    margin-left: 1.35rem;
+    margin-right: 1.35rem;
     max-width: none;
-    width: calc(100vw - 1.5rem);
+    width: calc(100vw - 2.7rem);
   }
 
   .studio-landing-page {
@@ -6866,7 +6901,7 @@ html[data-landing-theme="light"] .studio-opening-logo {
 
   .studio-hero {
     min-height: auto;
-    padding-block: 2.35rem 3.1rem;
+    padding-block: 4.2rem 2.6rem;
   }
 
   .studio-logo-opening {
@@ -6917,7 +6952,7 @@ html[data-landing-theme="light"] .studio-opening-logo {
   }
 
   .studio-hero h1 {
-    font-size: clamp(2rem, 9.6vw, 2.55rem);
+    font-size: clamp(1.72rem, 8vw, 2.16rem);
     line-height: 1.04;
     max-width: 100%;
   }
@@ -6939,26 +6974,46 @@ html[data-landing-theme="light"] .studio-opening-logo {
   .studio-proof-track span {
     font-size: 0.72rem;
     min-height: 3.75rem;
-    padding-inline: 1.15rem;
+    padding-inline: 1rem;
+  }
+
+  .studio-metric-card,
+  .studio-chart-card,
+  .studio-insight-card,
+  .studio-console-panel,
+  .studio-card,
+  .studio-moment,
+  .studio-trust-item {
+    padding: 0.9rem;
+  }
+
+  .studio-metric-card strong {
+    font-size: 1.45rem;
+  }
+
+  .studio-preview-top,
+  .studio-console-header {
+    padding-bottom: 0.95rem;
   }
 
   .studio-hero-copy > p:not(.studio-kicker),
   .studio-section-heading > p:not(.studio-kicker),
   .studio-final-card > p:not(.studio-kicker) {
-    font-size: 1rem;
-    line-height: 1.58;
+    font-size: 0.94rem;
+    line-height: 1.56;
     max-width: 100%;
   }
 
   .studio-actions {
     flex-direction: column;
-    max-width: 100%;
+    max-width: 20rem;
     width: 100%;
   }
 
   .studio-button {
     max-width: 100%;
-    min-height: 3.1rem;
+    min-height: 2.95rem;
+    padding: 0.76rem 1rem;
     width: 100%;
   }
 
@@ -6970,6 +7025,7 @@ html[data-landing-theme="light"] .studio-opening-logo {
   .studio-system-frame {
     min-width: 0;
     max-width: 100%;
+    padding: 0.82rem;
     width: 100%;
   }
 
@@ -6998,7 +7054,7 @@ html[data-landing-theme="light"] .studio-opening-logo {
 
   .studio-story-board {
     aspect-ratio: auto;
-    min-height: 30rem;
+    min-height: 27rem;
   }
 
   .studio-story-chart {
@@ -7038,7 +7094,7 @@ html[data-landing-theme="light"] .studio-opening-logo {
 
   .studio-system-frame-primary img,
   .studio-system-frame-secondary img {
-    max-height: 22rem;
+    max-height: 19rem;
   }
 
   .studio-hero-trust {
@@ -7050,11 +7106,11 @@ html[data-landing-theme="light"] .studio-opening-logo {
   }
 
   .studio-chart {
-    height: 10rem;
+    height: 8.5rem;
   }
 
   .studio-section {
-    padding-block: 3.25rem;
+    padding-block: 3.05rem;
   }
 
   .studio-section-heading h2 {

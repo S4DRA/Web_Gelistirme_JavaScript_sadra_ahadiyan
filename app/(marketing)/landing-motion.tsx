@@ -35,16 +35,31 @@ const sectionVariants = {
 export function HeaderScrollState() {
   useEffect(() => {
     const root = document.documentElement;
+    let animationFrame = 0;
 
     function syncHeaderState() {
       root.dataset.landingScrolled = window.scrollY > 140 ? "true" : "false";
     }
 
+    function scheduleHeaderState() {
+      if (animationFrame) {
+        return;
+      }
+
+      animationFrame = window.requestAnimationFrame(() => {
+        animationFrame = 0;
+        syncHeaderState();
+      });
+    }
+
     syncHeaderState();
-    window.addEventListener("scroll", syncHeaderState, { passive: true });
+    window.addEventListener("scroll", scheduleHeaderState, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", syncHeaderState);
+      window.removeEventListener("scroll", scheduleHeaderState);
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame);
+      }
       delete root.dataset.landingScrolled;
     };
   }, []);
@@ -229,8 +244,8 @@ export function HeroCinematicScene({
     offset: ["start 82%", "end 10%"],
   });
   const smoothProgress = useSpring(scrollYProgress, smoothScrollSpring);
-  const planeY = useTransform(smoothProgress, cinematicStops, [86, 18, 0, -72, -150]);
-  const planeScale = useTransform(smoothProgress, cinematicStops, [1.22, 1.08, 1, 0.92, 0.78]);
+  const planeY = useTransform(smoothProgress, cinematicStops, [48, 10, 0, -56, -124]);
+  const planeScale = useTransform(smoothProgress, cinematicStops, [1.06, 1.02, 1, 0.94, 0.84]);
   const shadeOpacity = useTransform(smoothProgress, cinematicStops, [0, 0.05, 0.18, 0.46, 0.72]);
 
   if (prefersReducedMotion) {

@@ -78,12 +78,18 @@ export default function MarketingLayout({
               </Link>
               <div className="marketing-theme-actions flex items-center gap-2">
                 <LandingThemeToggle />
-                <a
+                <Link
+                  href="/request-access"
+                  className="marketing-access-link inline-flex items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100 sm:px-5"
+                >
+                  Request Access
+                </Link>
+                <Link
                   href="/login"
-                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-black transition hover:border-emerald-300 hover:text-emerald-700 sm:px-5"
+                  className="marketing-login-link inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-black transition hover:border-emerald-300 hover:text-emerald-700 sm:px-5"
                 >
                   Login
-                </a>
+                </Link>
               </div>
             </div>
           </header>

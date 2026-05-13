@@ -4289,15 +4289,20 @@ html[data-landing-theme] .marketing-header * {
 
 html:has(.studio-landing-page),
 html:has(.studio-landing-page) body {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none !important;
+  scrollbar-gutter: auto !important;
+  scrollbar-width: none !important;
 }
 
 html:has(.studio-landing-page)::-webkit-scrollbar,
-html:has(.studio-landing-page) body::-webkit-scrollbar {
-  display: none;
-  height: 0;
-  width: 0;
+html:has(.studio-landing-page) body::-webkit-scrollbar,
+html:has(.studio-landing-page) .marketing-shell::-webkit-scrollbar,
+html:has(.studio-landing-page) .studio-landing-page::-webkit-scrollbar,
+html:has(.studio-landing-page) .studio-landing-page *::-webkit-scrollbar {
+  background: transparent !important;
+  display: none !important;
+  height: 0 !important;
+  width: 0 !important;
 }
 
 .marketing-shell:has(.studio-landing-page) .marketing-header {
@@ -4781,6 +4786,52 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
   width: min(26rem, 64vw);
 }
 
+.studio-journey-canvas {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  transform: translateZ(0);
+  z-index: 6;
+}
+
+.studio-journey-field {
+  background-image:
+    linear-gradient(rgb(34 197 94 / 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(20 184 166 / 0.045) 1px, transparent 1px);
+  background-position: center;
+  background-size: clamp(3.6rem, 7vw, 6rem) clamp(3.6rem, 7vw, 6rem);
+  inset: -18%;
+  mask-image:
+    radial-gradient(ellipse at 50% 50%, black 0 24%, rgb(0 0 0 / 0.42) 44%, transparent 72%);
+  opacity: 0.32;
+  position: absolute;
+  transform-origin: center;
+}
+
+.studio-journey-map {
+  height: 122vh;
+  left: 82%;
+  opacity: 0.84;
+  position: absolute;
+  top: -8vh;
+  translate: -50% 0;
+  width: min(36rem, 42vw);
+}
+
+.studio-journey-path {
+  fill: none;
+  stroke: url("#studioJourneyGradient");
+  stroke-linecap: round;
+  stroke-width: 0.24;
+  vector-effect: non-scaling-stroke;
+}
+
+.studio-journey-path-soft {
+  stroke: rgb(34 197 94 / 0.24);
+  stroke-width: 1.15;
+}
+
 .studio-hero {
   isolation: isolate;
   min-height: min(48rem, calc(100vh - 4.25rem));
@@ -5073,8 +5124,10 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 
 .studio-proof-strip {
   background:
-    linear-gradient(90deg, rgb(5 12 10 / 0.76), rgb(7 26 20 / 0.7), rgb(5 12 10 / 0.76));
+    linear-gradient(90deg, rgb(5 12 10 / 0.58), rgb(7 26 20 / 0.74), rgb(5 12 10 / 0.58)),
+    linear-gradient(180deg, transparent, rgb(34 197 94 / 0.045), transparent);
   border-block: 1px solid rgb(34 197 94 / 0.06);
+  margin-block: -1px -3rem;
   min-height: 4.6rem;
   overflow: hidden;
   position: relative;
@@ -5138,8 +5191,8 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
   background:
     radial-gradient(circle at 50% 42%, rgb(20 184 166 / 0.08), transparent 32rem),
     linear-gradient(180deg, rgb(5 8 22 / 0), rgb(7 26 20 / 0.5) 42%, rgb(5 8 22 / 0));
-  height: clamp(30rem, 86vh, 54rem);
-  margin-block: clamp(-4rem, -4vw, -2rem);
+  height: clamp(32rem, 88vh, 56rem);
+  margin-block: clamp(-5rem, -5vw, -3rem);
   overflow: clip;
   pointer-events: none;
   position: relative;
@@ -5158,7 +5211,7 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
   align-items: center;
   backface-visibility: hidden;
   background:
-    linear-gradient(135deg, rgb(3 18 13 / 0.98), rgb(7 26 20 / 0.94) 42%, rgb(20 184 166 / 0.2)),
+    linear-gradient(135deg, rgb(3 18 13 / 0.9), rgb(7 26 20 / 0.86) 42%, rgb(20 184 166 / 0.18)),
     radial-gradient(circle at 58% 50%, rgb(34 197 94 / 0.22), transparent 28rem);
   border-block: 1px solid rgb(34 197 94 / 0.12);
   border-radius: 0.8rem;
@@ -5360,6 +5413,31 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
   background: rgb(3 18 13 / 0.5);
   border: 1px solid var(--studio-border);
   border-radius: 0.5rem;
+  position: relative;
+}
+
+.studio-metric-card::after,
+.studio-card::after,
+.studio-flow-step::after,
+.studio-moment::after,
+.studio-trust-item::after {
+  background: linear-gradient(90deg, rgb(34 197 94 / 0.22), transparent);
+  content: "";
+  height: 1px;
+  left: calc(100% + 0.1rem);
+  opacity: 0.42;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  width: clamp(1rem, 2vw, 2rem);
+}
+
+.studio-metric-card:last-child::after,
+.studio-card:last-child::after,
+.studio-flow-step:last-child::after,
+.studio-moment:last-child::after,
+.studio-trust-item:nth-child(2n)::after {
+  display: none;
 }
 
 .studio-metric-card {
@@ -5547,9 +5625,9 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 
 .studio-section {
   contain: paint;
-  margin-block: -1px;
+  margin-block: -3.5rem -1px;
   overflow: hidden;
-  padding-block: clamp(4.25rem, 7vw, 7rem);
+  padding-block: clamp(7rem, 10vw, 10rem);
   position: relative;
   transform: translateZ(0);
 }
@@ -5562,21 +5640,44 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 }
 
 .studio-section::before {
-  background: linear-gradient(90deg, transparent, rgb(34 197 94 / 0.09), transparent);
+  background: linear-gradient(90deg, transparent, rgb(34 197 94 / 0.08), rgb(20 184 166 / 0.12), transparent);
   content: "";
-  height: 1px;
+  height: 11rem;
   left: 50%;
-  opacity: 0.42;
+  opacity: 0.56;
   position: absolute;
-  top: 0;
+  top: -5.5rem;
   transform: translateX(-50%);
-  width: min(76rem, calc(100% - 2rem));
+  width: min(86rem, calc(100% - 1rem));
+  z-index: 0;
+}
+
+.studio-section::after {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(20 184 166 / 0.13), transparent 54%),
+    linear-gradient(180deg, transparent, rgb(5 8 22 / 0.72));
+  bottom: -7rem;
+  content: "";
+  height: 12rem;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  z-index: 0;
+}
+
+.studio-reveal > .studio-container,
+.studio-section > .studio-container,
+.studio-final > .studio-container {
+  position: relative;
+  z-index: 2;
 }
 
 .studio-section-soft {
   background:
     radial-gradient(circle at 20% 8%, rgb(34 197 94 / 0.07), transparent 22rem),
-    linear-gradient(180deg, rgb(5 8 22 / 0.92), rgb(7 26 20 / 0.72) 42%, rgb(5 8 22 / 0.92));
+    radial-gradient(ellipse at 50% 100%, rgb(20 184 166 / 0.11), transparent 34rem),
+    linear-gradient(180deg, rgb(5 8 22 / 0.58), rgb(7 26 20 / 0.72) 42%, rgb(5 8 22 / 0.64));
   border-top: 0;
 }
 
@@ -5585,17 +5686,21 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
 .studio-outcome {
   background:
     radial-gradient(circle at 86% 8%, rgb(20 184 166 / 0.065), transparent 22rem),
-    linear-gradient(180deg, rgb(5 8 22 / 0.96), rgb(6 18 16 / 0.88));
+    radial-gradient(ellipse at 50% 0%, rgb(34 197 94 / 0.07), transparent 34rem),
+    linear-gradient(180deg, rgb(5 8 22 / 0.72), rgb(6 18 16 / 0.88));
 }
 
 .studio-trust {
-  background: linear-gradient(180deg, rgb(5 8 22 / 0.96), rgb(7 26 20 / 0.86));
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(20 184 166 / 0.08), transparent 34rem),
+    linear-gradient(180deg, rgb(5 8 22 / 0.72), rgb(7 26 20 / 0.86));
 }
 
 .studio-real-system {
   background:
     radial-gradient(circle at 76% 22%, rgb(20 184 166 / 0.1), transparent 24rem),
-    linear-gradient(180deg, rgb(5 8 22 / 0.96), rgb(7 26 20 / 0.76) 42%, rgb(5 8 22 / 0.94));
+    radial-gradient(ellipse at 50% 100%, rgb(34 197 94 / 0.1), transparent 36rem),
+    linear-gradient(180deg, rgb(5 8 22 / 0.72), rgb(7 26 20 / 0.76) 42%, rgb(5 8 22 / 0.74));
 }
 
 .studio-sticky-story {
@@ -6294,6 +6399,17 @@ html[data-landing-theme="light"] .studio-button-secondary {
     0 1rem 2.4rem rgb(15 23 42 / 0.08);
 }
 
+html[data-landing-theme="light"] .studio-journey-field {
+  background-image:
+    linear-gradient(rgb(15 118 110 / 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(2 132 199 / 0.04) 1px, transparent 1px);
+  opacity: 0.42;
+}
+
+html[data-landing-theme="light"] .studio-journey-path-soft {
+  stroke: rgb(15 118 110 / 0.13);
+}
+
 html[data-landing-theme="light"] .studio-hero-scroll-vignette {
   background: linear-gradient(180deg, transparent, #f6fbf8 64%);
 }
@@ -6799,6 +6915,11 @@ html[data-landing-theme="light"] .studio-opening-logo {
     opacity: 0.72;
   }
 
+  .studio-journey-map {
+    left: 84%;
+    width: min(28rem, 48vw);
+  }
+
   .studio-hero-grid,
   .studio-split,
   .studio-product-grid,
@@ -6949,7 +7070,30 @@ html[data-landing-theme="light"] .studio-opening-logo {
   }
 
   .studio-scroll-atmosphere {
-    opacity: 0.45;
+    opacity: 0.28;
+  }
+
+  .studio-journey-canvas {
+    opacity: 0.5;
+  }
+
+  .studio-journey-field,
+  .studio-scroll-orbit {
+    display: none;
+  }
+
+  .studio-journey-map {
+    left: 88%;
+    opacity: 0.58;
+    width: 18rem;
+  }
+
+  .studio-metric-card::after,
+  .studio-card::after,
+  .studio-flow-step::after,
+  .studio-moment::after,
+  .studio-trust-item::after {
+    display: none;
   }
 
   .studio-scroll-orbit-a {
@@ -6961,11 +7105,11 @@ html[data-landing-theme="light"] .studio-opening-logo {
   }
 
   .studio-scroll-logo-mark-a {
-    right: -13rem;
+    display: none;
   }
 
   .studio-scroll-logo-mark-b {
-    left: -12rem;
+    display: none;
   }
 
   .studio-hero h1 {
@@ -7127,7 +7271,8 @@ html[data-landing-theme="light"] .studio-opening-logo {
   }
 
   .studio-section {
-    padding-block: 3.05rem;
+    margin-block: -2.2rem -1px;
+    padding-block: 5.1rem;
   }
 
   .studio-section-heading h2 {
@@ -7223,6 +7368,7 @@ html[data-landing-theme="light"] .studio-opening-logo {
 
   .studio-intro-overlay,
   .studio-scroll-logo-mark,
+  .studio-journey-canvas,
   .studio-transition-scene {
     display: none;
   }

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AppIcon } from "@/components/app-icon";
 import {
+  ConnectedJourney,
   HeaderScrollState,
   HeroCinematicScene,
   HeroProductStage,
@@ -103,6 +104,7 @@ export default function Home() {
       <HeaderScrollState />
       <ScrollProgress />
       <ScrollAtmosphere />
+      <ConnectedJourney />
       <LogoOpeningScene />
       <HeroSection />
       <SignalStrip />

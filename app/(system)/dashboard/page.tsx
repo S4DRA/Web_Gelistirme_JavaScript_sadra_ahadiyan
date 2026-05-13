@@ -69,6 +69,22 @@ type PredictionData = {
   daysUntilNegative: number | null;
   explanation: string[];
   futureBalance: number;
+  intelligence?: {
+    riskProfile: {
+      cashShortageProbability: number;
+      confidenceLevel: number;
+      predictionInterval: {
+        lower: number;
+        upper: number;
+      };
+    };
+    scenarioSet: {
+      base: number;
+      best: number;
+      worst: number;
+    };
+    signals: string[];
+  };
   mode: PredictionMode;
   periodDays: PredictionPeriod;
   risk: boolean;
@@ -657,6 +673,13 @@ export default function DashboardPage() {
                     ? `, with a possible negative balance in ${prediction.daysUntilNegative} days.`
                     : "."}
                 </p>
+                {prediction.intelligence ? (
+                  <p className="mt-2 text-xs font-medium text-slate-500">
+                    95% range:{" "}
+                    {formatCurrency(prediction.intelligence.riskProfile.predictionInterval.lower)} to{" "}
+                    {formatCurrency(prediction.intelligence.riskProfile.predictionInterval.upper)}
+                  </p>
+                ) : null}
               </div>
             </div>
 
@@ -673,6 +696,29 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
+
+          {prediction.intelligence ? (
+            <div className="mt-5 grid gap-3 lg:grid-cols-3">
+              <div className="forecast-mini-card bg-white/75">
+                <p>Worst case</p>
+                <p>{loading ? "..." : formatCurrency(prediction.intelligence.scenarioSet.worst)}</p>
+              </div>
+              <div className="forecast-mini-card bg-white/75">
+                <p>Best case</p>
+                <p>{loading ? "..." : formatCurrency(prediction.intelligence.scenarioSet.best)}</p>
+              </div>
+              <div className="forecast-mini-card bg-white/75">
+                <p>Cash shortage risk</p>
+                <p>
+                  {loading
+                    ? "..."
+                    : `${Math.round(
+                        prediction.intelligence.riskProfile.cashShortageProbability * 100,
+                      )}%`}
+                </p>
+              </div>
+            </div>
+          ) : null}
         </article>
       </section>
     ),

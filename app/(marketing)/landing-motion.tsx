@@ -162,6 +162,50 @@ export function ScrollAtmosphere() {
   );
 }
 
+export function ConnectedJourney() {
+  const prefersReducedMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll();
+  const smoothProgress = useSpring(scrollYProgress, {
+    damping: 64,
+    mass: 0.16,
+    stiffness: 155,
+  });
+  const pathLength = useTransform(smoothProgress, [0.04, 0.94], [0, 1]);
+  const pathOpacity = useTransform(smoothProgress, [0, 0.08, 0.88, 1], [0, 0.62, 0.56, 0.08]);
+  const fieldY = useTransform(smoothProgress, [0, 1], ["4%", "-18%"]);
+  const fieldScale = useTransform(smoothProgress, [0, 0.5, 1], [1.08, 0.94, 1.12]);
+
+  if (prefersReducedMotion) {
+    return null;
+  }
+
+  return (
+    <div className="studio-journey-canvas" aria-hidden="true">
+      <motion.div className="studio-journey-field" style={{ scale: fieldScale, y: fieldY }} />
+      <svg className="studio-journey-map" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="studioJourneyGradient" x1="50" y1="0" x2="50" y2="100" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#22c55e" stopOpacity="0.08" />
+            <stop offset="32%" stopColor="#14b8a6" stopOpacity="0.58" />
+            <stop offset="68%" stopColor="#38bdf8" stopOpacity="0.42" />
+            <stop offset="100%" stopColor="#22c55e" stopOpacity="0.08" />
+          </linearGradient>
+        </defs>
+        <motion.path
+          className="studio-journey-path studio-journey-path-soft"
+          d="M50 0 C54 12 42 18 48 29 C57 45 68 45 56 61 C44 77 57 82 50 100"
+          style={{ opacity: pathOpacity, pathLength }}
+        />
+        <motion.path
+          className="studio-journey-path"
+          d="M50 0 C54 12 42 18 48 29 C57 45 68 45 56 61 C44 77 57 82 50 100"
+          style={{ opacity: pathOpacity, pathLength }}
+        />
+      </svg>
+    </div>
+  );
+}
+
 export function CinematicIntro() {
   return null;
 }

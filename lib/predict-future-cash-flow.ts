@@ -1,4 +1,8 @@
 import { getPrisma } from "@/lib/prisma";
+import {
+  buildForecastIntelligence,
+  type ForecastIntelligence,
+} from "@/lib/forecasting-intelligence";
 import type { FinanceType } from "@/lib/workspace";
 
 export type PredictionMode = "conservative" | "balanced" | "optimistic";
@@ -17,6 +21,7 @@ export type PredictionResult = {
   dailyNetCashFlow: number;
   daysUntilNegative: number | null;
   explanation: string[];
+  intelligence: ForecastIntelligence;
   futureBalance: number;
   mode: PredictionMode;
   periodDays: PredictionPeriod;
@@ -35,6 +40,7 @@ type TransactionTotals = {
 type TransactionForPrediction = {
   type: "income" | "expense";
   amount: { toString(): string };
+  category: string;
   date: Date;
 };
 
@@ -87,6 +93,7 @@ export async function predictFutureCashFlow(
         where: { financeType, workspaceId },
         select: {
           amount: true,
+          category: true,
           date: true,
           type: true,
         },
@@ -187,11 +194,19 @@ export async function predictFutureCashFlow(
   return buildPrediction({
     currentBalance,
     dailyNetCashFlow,
+    financeType,
+    fixedDailyObligation: monthlyFixedDailyExpense + plannedDailyExpense,
     invoiceIncome,
     options,
     plannedDailyExpense,
     recurringDailyNet,
     scenarioAdjustment,
+    transactions: transactions.map((transaction) => ({
+      amount: Number(transaction.amount.toString()),
+      category: transaction.category,
+      date: transaction.date,
+      type: transaction.type,
+    })),
   });
 }
 
@@ -282,19 +297,30 @@ function getScenarioAdjustment(mode: PredictionMode) {
 function buildPrediction({
   currentBalance,
   dailyNetCashFlow,
+  financeType,
+  fixedDailyObligation,
   invoiceIncome,
   options,
   plannedDailyExpense,
   recurringDailyNet,
   scenarioAdjustment,
+  transactions,
 }: {
   currentBalance: number;
   dailyNetCashFlow: number;
+  financeType: FinanceType;
+  fixedDailyObligation: number;
   invoiceIncome: ReturnType<typeof getInvoiceIncomeWindows>;
   options: PredictionOptions;
   plannedDailyExpense: number;
   recurringDailyNet: number;
   scenarioAdjustment: number;
+  transactions: {
+    amount: number;
+    category: string;
+    date: Date;
+    type: "income" | "expense";
+  }[];
 }): PredictionResult {
   const sevenDayBalance =
     currentBalance + dailyNetCashFlow * 7 + invoiceIncome.upcomingSevenDayInvoiceIncome;
@@ -312,6 +338,15 @@ function buildPrediction({
           : invoiceIncome.upcomingSelectedPeriodInvoiceIncome;
   const futureBalance =
     currentBalance + dailyNetCashFlow * options.periodDays + selectedInvoiceIncome;
+  const intelligence = buildForecastIntelligence({
+    currentBalance,
+    dailyNetCashFlow,
+    financeType,
+    fixedDailyObligation,
+    futureBalance,
+    periodDays: options.periodDays,
+    transactions,
+  });
   const risk = futureBalance < 0;
   const explanation = [
     `${options.mode[0].toUpperCase()}${options.mode.slice(1)} mode adjusts recent daily cash flow by ${Math.round(
@@ -326,6 +361,8 @@ function buildPrediction({
     options.includePlannedExpenses
       ? `Planned expenses subtract ${plannedDailyExpense.toFixed(2)} per day.`
       : "Planned expenses are excluded.",
+    `The current production model is ${intelligence.governance.activeModel}; advanced challengers are gated behind rolling-origin backtesting and sufficient history.`,
+    `The 95% prediction interval is ${intelligence.riskProfile.predictionInterval.lower.toFixed(2)} to ${intelligence.riskProfile.predictionInterval.upper.toFixed(2)}.`,
   ];
 
   let daysUntilNegative: number | null = null;
@@ -343,6 +380,7 @@ function buildPrediction({
     dailyNetCashFlow,
     daysUntilNegative,
     explanation,
+    intelligence,
     futureBalance,
     mode: options.mode,
     periodDays: options.periodDays,

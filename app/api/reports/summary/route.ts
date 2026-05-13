@@ -62,10 +62,11 @@ export async function GET(request: Request) {
     const totalExpenses = safeTransactions
       .filter((item) => item.type === "expense")
       .reduce((total, item) => total + safeDecimalNumber(item.amount), 0);
+    const transactionBalance = totalIncome - totalExpenses;
     const netBalance =
-      safeDecimalNumber(context.workspace.startingBalance) +
-      totalIncome -
-      totalExpenses;
+      context.financeType === "personal"
+        ? transactionBalance
+        : safeDecimalNumber(context.workspace.startingBalance) + transactionBalance;
     const analytics = buildAnalytics({
       budgets,
       invoices,

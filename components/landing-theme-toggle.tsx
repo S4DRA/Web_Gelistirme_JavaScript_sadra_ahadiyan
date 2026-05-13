@@ -14,7 +14,7 @@ function getPreferredTheme(): LandingTheme {
     return savedTheme;
   }
 
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  return "light";
 }
 
 function applyLandingTheme(theme: LandingTheme) {
@@ -22,7 +22,7 @@ function applyLandingTheme(theme: LandingTheme) {
 }
 
 export function LandingThemeToggle() {
-  const [theme, setTheme] = useState<LandingTheme>("dark");
+  const [theme, setTheme] = useState<LandingTheme>("light");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {

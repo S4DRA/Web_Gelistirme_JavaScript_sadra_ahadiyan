@@ -121,10 +121,11 @@ export async function GET(request: Request) {
       },
     );
 
+    const transactionBalance = totals.totalIncome - totals.totalExpenses;
     const netBalance =
-      safeDecimalNumber(context.workspace.startingBalance) +
-      totals.totalIncome -
-      totals.totalExpenses;
+      context.financeType === "personal"
+        ? transactionBalance
+        : safeDecimalNumber(context.workspace.startingBalance) + transactionBalance;
     const analytics = buildAnalytics({
       budgets,
       invoices,

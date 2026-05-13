@@ -68,11 +68,14 @@ type PersonalSummary = {
   billSubscriptionSpend: number;
   dailyBurnRate: number;
   healthScore: number;
+  personalBalance: number;
   monthlyIncome: number;
   monthlySpending: number;
   monthlySurvivalCost: number;
   monthlySurvivalMonths: number | null;
   savingsProgress: number;
+  totalExpenses: number;
+  totalIncome: number;
 };
 
 type PredictionData = {
@@ -156,11 +159,14 @@ const defaultPersonalSummary: PersonalSummary = {
   billSubscriptionSpend: 0,
   dailyBurnRate: 0,
   healthScore: 0,
+  personalBalance: 0,
   monthlyIncome: 0,
   monthlySpending: 0,
   monthlySurvivalCost: 0,
   monthlySurvivalMonths: null,
   savingsProgress: 0,
+  totalExpenses: 0,
+  totalIncome: 0,
 };
 
 const metricLabels: Record<MetricId, string> = {
@@ -434,15 +440,15 @@ export default function DashboardPage() {
   const unpaidInvoices = invoices.filter((invoice) =>
     ["unpaid", "sent", "overdue"].includes(invoice.status),
   ).length;
+  const projectedPersonalShortage =
+    isPersonalMode &&
+    [prediction.sevenDayBalance, prediction.thirtyDayBalance, prediction.ninetyDayBalance]
+      .some((balance) => Number.isFinite(balance) && balance < 0);
   const alerts: AlertItem[] = [
-    (isPersonalMode
-      ? personalSummary.monthlySpending > personalSummary.monthlyIncome
-      : dashboard.totalExpenses > dashboard.totalIncome)
+    (!isPersonalMode && dashboard.totalExpenses > dashboard.totalIncome)
       ? {
           classes: "border-amber-200 bg-amber-50 text-amber-800",
-          message: isPersonalMode
-            ? "Your spending is higher than your money in this month"
-            : "Your expenses are higher than your income",
+          message: "Your expenses are higher than your income",
         }
       : null,
     !isPersonalMode && unpaidInvoices > 3
@@ -451,7 +457,7 @@ export default function DashboardPage() {
           message: "You have multiple unpaid invoices",
         }
       : null,
-    prediction.risk
+    (isPersonalMode ? projectedPersonalShortage : prediction.risk)
       ? {
           classes: "border-rose-200 bg-rose-50 text-rose-800",
           message: isPersonalMode ? "Your money may get tight soon" : "Cash may run out soon",

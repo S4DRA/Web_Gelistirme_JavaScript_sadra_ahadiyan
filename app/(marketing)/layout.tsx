@@ -36,10 +36,9 @@ const landingThemeInitScript = `
 (() => {
   try {
     const savedTheme = localStorage.getItem("dampener-landing-theme");
-    const prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
     const theme = savedTheme === "dark" || savedTheme === "light"
       ? savedTheme
-      : prefersLight ? "light" : "dark";
+      : "light";
     document.documentElement.dataset.landingTheme = theme;
   } catch {}
 })();
@@ -56,7 +55,7 @@ export default function MarketingLayout({
       data-theme="default"
       data-mode="light"
       data-contrast="modern"
-      data-landing-theme="dark"
+      data-landing-theme="light"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >

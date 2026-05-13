@@ -4287,6 +4287,19 @@ html[data-landing-theme] .marketing-header * {
   background: #050816 !important;
 }
 
+html:has(.studio-landing-page),
+html:has(.studio-landing-page) body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+html:has(.studio-landing-page)::-webkit-scrollbar,
+html:has(.studio-landing-page) body::-webkit-scrollbar {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
 .marketing-shell:has(.studio-landing-page) .marketing-header {
   -webkit-backdrop-filter: blur(18px) saturate(1.18);
   backdrop-filter: blur(18px) saturate(1.18);
@@ -4944,7 +4957,7 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
   min-width: 0;
   perspective: 1200px;
   transform-origin: center;
-  will-change: filter, opacity, transform;
+  will-change: opacity, transform;
 }
 
 .studio-hero-copy > p:not(.studio-kicker),
@@ -5541,6 +5554,13 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
   transform: translateZ(0);
 }
 
+.studio-section,
+.studio-sticky-story,
+.studio-final {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 48rem;
+}
+
 .studio-section::before {
   background: linear-gradient(90deg, transparent, rgb(34 197 94 / 0.09), transparent);
   content: "";
@@ -5818,7 +5838,6 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
     border-color 150ms ease,
     box-shadow 150ms ease,
     transform 150ms ease;
-  will-change: transform;
 }
 
 .studio-card:hover,
@@ -6081,7 +6100,6 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
     border-color 150ms ease,
     box-shadow 150ms ease,
     transform 150ms ease;
-  will-change: transform;
 }
 
 .studio-moment p {
@@ -6117,7 +6135,6 @@ html[data-landing-theme="light"] .studio-scroll-logo-mark {
     border-color 150ms ease,
     box-shadow 150ms ease,
     transform 150ms ease;
-  will-change: transform;
 }
 
 .studio-trust-item > span {

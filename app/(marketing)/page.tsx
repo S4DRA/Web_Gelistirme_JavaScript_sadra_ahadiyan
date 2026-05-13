@@ -252,7 +252,7 @@ function RealSystemShowcase() {
               alt="Real Dampener demo dashboard with financial metrics, forecast, and workspace navigation"
               width={1440}
               height={1300}
-              priority
+              sizes="(max-width: 980px) calc(100vw - 2rem), 58vw"
             />
             <figcaption>
               <span>Dashboard</span>
@@ -266,6 +266,7 @@ function RealSystemShowcase() {
               alt="Real Dampener demo workspace showing extended forecast, metrics, and financial workflow"
               width={1180}
               height={1900}
+              sizes="(max-width: 980px) calc(100vw - 2rem), 34vw"
             />
             <figcaption>
               <span>Workflow</span>

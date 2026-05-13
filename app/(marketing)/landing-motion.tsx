@@ -163,26 +163,7 @@ export function ScrollAtmosphere() {
 }
 
 export function CinematicIntro() {
-  const prefersReducedMotion = useReducedMotion();
-
-  if (prefersReducedMotion) {
-    return null;
-  }
-
-  return (
-    <div className="studio-intro-overlay" aria-hidden="true">
-      <div className="studio-intro-panel" />
-      <div className="studio-intro-grid" />
-      <div className="studio-intro-aperture" />
-      <div className="studio-intro-light" />
-      <div className="studio-intro-frame studio-intro-frame-top" />
-      <div className="studio-intro-frame studio-intro-frame-bottom" />
-      <div className="studio-intro-brand">
-        <Image src="/img/1.svg" alt="" width={44} height={44} priority />
-        <p className="studio-intro-mark">Dampener / Financial clarity system</p>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 export function LogoOpeningScene() {
@@ -293,8 +274,8 @@ export function HeroProductStage({ children }: { children: ReactNode }) {
   return (
     <motion.div
       className="studio-hero-product-stage"
-      initial={prefersReducedMotion ? false : { filter: "blur(12px)", opacity: 0.01, rotateX: 5, scale: 0.96, y: 42 }}
-      animate={{ filter: "blur(0px)", opacity: 1, rotateX: 0, scale: 1, y: 0 }}
+      initial={prefersReducedMotion ? false : { opacity: 0.01, rotateX: 5, scale: 0.96, y: 42 }}
+      animate={{ opacity: 1, rotateX: 0, scale: 1, y: 0 }}
       transition={{ delay: 0.72, duration: 0.74, ease: cinematicEase }}
     >
       {children}

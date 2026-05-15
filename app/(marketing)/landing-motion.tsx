@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useSyncExternalStore } from "react";
+import { animate, createDrawable, createDraggable, createScope, createTimeline, stagger } from "animejs";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 
 const cinematicEase = [0.16, 1, 0.3, 1] as const;
@@ -114,6 +115,175 @@ export function HeaderScrollState() {
   return null;
 }
 
+export function LandingMotionEngine() {
+  const prefersReducedMotion = useReducedMotion();
+  const isCompact = useCompactLandingMotion();
+
+  useEffect(() => {
+    if (prefersReducedMotion || isCompact) {
+      return;
+    }
+
+    const root = document.querySelector(".studio-landing-page");
+
+    if (!(root instanceof HTMLElement)) {
+      return;
+    }
+
+    const scope = createScope({ root }).add(() => {
+      const signalGrid = {
+        grid: [9, 7],
+        from: "center" as const,
+      };
+
+      animate(".studio-signal-dot", {
+        opacity: stagger([0.28, 1], signalGrid),
+        scale: stagger([0.62, 1.34], signalGrid),
+        delay: stagger(22, signalGrid),
+        duration: 1280,
+        ease: "inOutSine",
+        loop: true,
+        alternate: true,
+      });
+
+      animate(createDrawable(".studio-engine-path"), {
+        draw: ["0 0", "0 1", "1 1"],
+        delay: stagger(180),
+        duration: 2600,
+        ease: "inOutQuad",
+        loop: true,
+      });
+
+      createTimeline({
+        defaults: {
+          duration: 1200,
+          ease: "inOutQuad",
+        },
+        loop: true,
+        alternate: true,
+      })
+        .add(".studio-engine-console", {
+          "--engine-glow": [0.16, 0.44],
+        })
+        .add(
+          ".studio-pressure-rail",
+          {
+            "--rail-scan": ["0%", "100%"],
+          },
+          "<"
+        )
+        .add(
+          ".studio-motion-value",
+          {
+            y: [0, -8],
+            delay: stagger(70, { from: "center" }),
+          },
+          "<"
+        );
+
+      animate(".studio-motion-value strong", {
+        textContent: (target: unknown) => {
+          const value = Number((target as HTMLElement).dataset.targetValue ?? 0);
+
+          return [0, value];
+        },
+        round: 0,
+        duration: 1600,
+        delay: stagger(120),
+        ease: "outExpo",
+      });
+
+      createDraggable(".studio-pressure-orb", {
+        container: ".studio-pressure-rail",
+        x: true,
+        y: false,
+        snap: 12,
+        releaseMass: 0.8,
+        releaseStiffness: 140,
+        releaseDamping: 12,
+        cursor: {
+          onGrab: "grabbing",
+          onHover: "grab",
+        },
+        onGrab: () => {
+          root.dataset.engineGrabbed = "true";
+        },
+        onSettle: () => {
+          delete root.dataset.engineGrabbed;
+        },
+      });
+    });
+
+    return () => {
+      scope.revert();
+      delete root.dataset.engineGrabbed;
+    };
+  }, [isCompact, prefersReducedMotion]);
+
+  return null;
+}
+
+export function Landing3DDepthController() {
+  const prefersReducedMotion = useReducedMotion();
+  const isCompact = useCompactLandingMotion();
+
+  useEffect(() => {
+    if (prefersReducedMotion || isCompact) {
+      return;
+    }
+
+    const root = document.documentElement;
+    let animationFrame = 0;
+    let pointerX = 0;
+    let pointerY = 0;
+
+    function syncDepthVars() {
+      animationFrame = 0;
+      root.style.setProperty("--studio-depth-x", pointerX.toFixed(3));
+      root.style.setProperty("--studio-depth-y", pointerY.toFixed(3));
+      root.style.setProperty("--studio-depth-tilt-x", `${(-pointerY * 3.2).toFixed(3)}deg`);
+      root.style.setProperty("--studio-depth-tilt-y", `${(pointerX * 4.2).toFixed(3)}deg`);
+    }
+
+    function scheduleDepthVars(event: PointerEvent) {
+      pointerX = (event.clientX / window.innerWidth - 0.5) * 2;
+      pointerY = (event.clientY / window.innerHeight - 0.5) * 2;
+
+      if (!animationFrame) {
+        animationFrame = window.requestAnimationFrame(syncDepthVars);
+      }
+    }
+
+    function resetDepthVars() {
+      pointerX = 0;
+      pointerY = 0;
+
+      if (!animationFrame) {
+        animationFrame = window.requestAnimationFrame(syncDepthVars);
+      }
+    }
+
+    root.dataset.landingDepth = "true";
+    window.addEventListener("pointermove", scheduleDepthVars, { passive: true });
+    window.addEventListener("pointerleave", resetDepthVars, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointermove", scheduleDepthVars);
+      window.removeEventListener("pointerleave", resetDepthVars);
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame);
+      }
+      delete root.dataset.landingDepth;
+      root.style.removeProperty("--studio-depth-x");
+      root.style.removeProperty("--studio-depth-y");
+      root.style.removeProperty("--studio-depth-tilt-x");
+      root.style.removeProperty("--studio-depth-tilt-y");
+    };
+  }, [isCompact, prefersReducedMotion]);
+
+  return null;
+}
+
 export function RevealSection({
   labelledBy,
   children,
@@ -157,6 +327,7 @@ function RevealSectionMotion({
   const smoothProgress = useSpring(scrollYProgress, smoothScrollSpring);
   const sectionY = useTransform(smoothProgress, cinematicStops, [88, 22, 0, -14, -44]);
   const sectionScale = useTransform(smoothProgress, cinematicStops, [0.955, 0.988, 1, 0.996, 0.984]);
+  const sectionRotateX = useTransform(smoothProgress, cinematicStops, [1.4, 0.5, 0, -0.4, -1]);
   const sectionOpacity = useTransform(smoothProgress, [0, 0.14, 0.84, 1], [0.02, 1, 1, 0.78]);
 
   return (
@@ -170,6 +341,7 @@ function RevealSectionMotion({
       variants={sectionVariants}
       style={{
         opacity: sectionOpacity,
+        rotateX: sectionRotateX,
         scale: sectionScale,
         y: sectionY,
       }}
@@ -390,12 +562,13 @@ function HeroCinematicSceneMotion({
   });
   const smoothProgress = useSpring(scrollYProgress, smoothScrollSpring);
   const planeY = useTransform(smoothProgress, cinematicStops, [48, 10, 0, -56, -124]);
-  const planeScale = useTransform(smoothProgress, cinematicStops, [1.06, 1.02, 1, 0.94, 0.84]);
+  const planeScale = useTransform(smoothProgress, cinematicStops, [1, 1, 1, 0.95, 0.86]);
+  const planeRotateX = useTransform(smoothProgress, cinematicStops, [1.6, 0.7, 0, -1.1, -2.6]);
   const shadeOpacity = useTransform(smoothProgress, cinematicStops, [0, 0.05, 0.18, 0.46, 0.72]);
 
   return (
     <motion.section ref={sceneRef} className={className} aria-labelledby={labelledBy}>
-      <motion.div className="studio-hero-scroll-plane" style={{ y: planeY, scale: planeScale }}>
+      <motion.div className="studio-hero-scroll-plane" style={{ rotateX: planeRotateX, y: planeY, scale: planeScale }}>
         {children}
       </motion.div>
       <motion.div className="studio-hero-scroll-vignette" style={{ opacity: shadeOpacity }} aria-hidden="true" />
@@ -434,8 +607,8 @@ export function HeroProductStage({ children }: { children: ReactNode }) {
   return (
     <motion.div
       className="studio-hero-product-stage"
-      initial={shouldReduce ? false : { opacity: 0.01, rotateX: 5, scale: 0.96, y: 42 }}
-      animate={{ opacity: 1, rotateX: 0, scale: 1, y: 0 }}
+      initial={shouldReduce ? false : { opacity: 0.01, rotateX: 11, rotateY: -14, scale: 0.94, y: 42, z: -24 }}
+      animate={shouldReduce ? { opacity: 1, rotateX: 0, rotateY: 0, scale: 1, y: 0, z: 0 } : { opacity: 1, rotateX: 7, rotateY: -10, scale: 1, y: 0, z: 0 }}
       transition={shouldReduce ? { duration: 0 } : { delay: 0.72, duration: 0.74, ease: cinematicEase }}
     >
       {children}

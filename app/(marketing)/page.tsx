@@ -7,6 +7,8 @@ import {
   HeroCinematicScene,
   HeroProductStage,
   HeroTitle,
+  Landing3DDepthController,
+  LandingMotionEngine,
   LogoOpeningScene,
   RevealSection,
   ScrollAtmosphere,
@@ -102,6 +104,8 @@ export default function Home() {
   return (
     <main className="studio-landing-page">
       <HeaderScrollState />
+      <LandingMotionEngine />
+      <Landing3DDepthController />
       <ScrollProgress />
       <ScrollAtmosphere />
       <ConnectedJourney />
@@ -112,14 +116,95 @@ export default function Home() {
       <ProblemSection />
       <SectionWipe label="The system starts connecting" number="03" />
       <SystemIntelligenceSection />
+      <SignalEngineSection />
       <RealSystemShowcase />
       <StickyProductStory />
-      <SectionWipe label="The product assembles around decisions" number="05" />
+      <SectionWipe label="The product assembles around decisions" number="06" />
       <ProductExperienceSection />
       <TrustSection />
       <OutcomeSection />
       <FinalCtaSection />
+      <LandingFooter />
     </main>
+  );
+}
+
+function SignalEngineSection() {
+  return (
+    <RevealSection className="studio-section studio-engine" labelledBy="engine-heading">
+      <div className="studio-container studio-engine-grid">
+        <div className="studio-section-heading">
+          <SectionMeta label="Animated signal engine" number="04" />
+          <h2 id="engine-heading">Every financial signal moves with purpose.</h2>
+          <p>
+            Dampener shows the rhythm underneath the workspace: staggered data fields, drawn
+            forecast routes, and a spring control that makes pressure tangible.
+          </p>
+        </div>
+
+        <div className="studio-engine-console studio-stagger-child" aria-label="Animated financial signal engine">
+          <div className="studio-engine-header">
+            <div>
+              <p>Signal composer</p>
+              <h3>Live cash-flow choreography</h3>
+            </div>
+            <span>Live motion layer</span>
+          </div>
+
+          <div className="studio-engine-stage">
+            <div className="studio-signal-field" aria-hidden="true">
+              {Array.from({ length: 63 }, (_, index) => (
+                <span className="studio-signal-dot" key={index} />
+              ))}
+            </div>
+
+            <svg className="studio-engine-map" viewBox="0 0 420 220" aria-hidden="true">
+              <defs>
+                <linearGradient id="studioEngineGradient" x1="24" y1="168" x2="396" y2="62" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#22c55e" />
+                  <stop offset="48%" stopColor="#14b8a6" />
+                  <stop offset="100%" stopColor="#38bdf8" />
+                </linearGradient>
+              </defs>
+              <path
+                className="studio-engine-path studio-engine-path-shadow"
+                d="M24 168 C78 86 134 190 188 108 C238 30 284 126 328 74 C356 42 382 46 396 62"
+              />
+              <path
+                className="studio-engine-path"
+                d="M24 168 C78 86 134 190 188 108 C238 30 284 126 328 74 C356 42 382 46 396 62"
+              />
+            </svg>
+
+            <div className="studio-pressure-rail" aria-label="Drag to test financial pressure">
+              <button className="studio-pressure-orb" type="button" aria-label="Drag pressure control">
+                <AppIcon name="bolt" />
+              </button>
+              <span>low pressure</span>
+              <span>action window</span>
+            </div>
+          </div>
+
+          <div className="studio-engine-metrics">
+            <article className="studio-motion-value">
+              <span>Forecast sync</span>
+              <strong data-target-value="98">98</strong>
+              <em>%</em>
+            </article>
+            <article className="studio-motion-value">
+              <span>Rows checked</span>
+              <strong data-target-value="724">724</strong>
+              <em></em>
+            </article>
+            <article className="studio-motion-value">
+              <span>Decision lag</span>
+              <strong data-target-value="12">12</strong>
+              <em>min</em>
+            </article>
+          </div>
+        </div>
+      </div>
+    </RevealSection>
   );
 }
 
@@ -235,7 +320,7 @@ function RealSystemShowcase() {
       <div className="studio-container">
         <div className="studio-showcase-heading">
           <div className="studio-section-heading studio-narrow">
-            <SectionMeta label="Real Dampener interface" number="04" />
+            <SectionMeta label="Real Dampener interface" number="05" />
             <h2 id="real-system-heading">Actual product surfaces, composed like a financial command room.</h2>
             <p>
               These previews use the live public Dampener demo UI: dashboard metrics, forecast
@@ -286,7 +371,7 @@ function ProductExperienceSection() {
     <RevealSection className="studio-section studio-product" labelledBy="experience-heading">
       <div className="studio-container">
         <div className="studio-section-heading studio-narrow">
-          <SectionMeta label="Product experience" number="05" />
+          <SectionMeta label="Product experience" number="06" />
           <h2 id="experience-heading">Users should feel the product before signing in.</h2>
           <p>
             The preview behaves like a real workspace: activity, imports, invoices, forecasts, and
@@ -320,7 +405,7 @@ function TrustSection() {
     <RevealSection className="studio-section studio-trust" labelledBy="trust-heading">
       <div className="studio-container studio-split">
         <div className="studio-section-heading">
-          <SectionMeta label="Trust and stability" number="06" />
+          <SectionMeta label="Trust and stability" number="07" />
           <h2 id="trust-heading">Built to reduce uncertainty before records are saved.</h2>
           <p>
             Financial software earns trust when it slows down at the right moments: previewing,
@@ -347,7 +432,7 @@ function OutcomeSection() {
       <div className="studio-container">
         <div className="studio-outcome-panel studio-stagger-child">
           <div className="studio-section-heading">
-            <SectionMeta label="The transformation" number="07" />
+            <SectionMeta label="The transformation" number="08" />
             <h2 id="outcome-heading">From financial noise to calm control.</h2>
           </div>
           <div className="studio-outcome-list">
@@ -368,7 +453,7 @@ function FinalCtaSection() {
     <RevealSection className="studio-final" labelledBy="final-heading">
       <div className="studio-container">
         <div className="studio-final-card studio-stagger-child">
-          <SectionMeta label="Start with a calmer view" number="08" />
+          <SectionMeta label="Start with a calmer view" number="09" />
           <h2 id="final-heading">Understand your money with premium financial clarity.</h2>
           <p>
             Try the demo workspace and experience how Dampener turns financial movement into
@@ -381,6 +466,58 @@ function FinalCtaSection() {
         </div>
       </div>
     </RevealSection>
+  );
+}
+
+function LandingFooter() {
+  const year = new Date().getFullYear();
+
+  return (
+    <footer className="studio-footer" aria-labelledby="footer-heading">
+      <div className="studio-container">
+        <div className="studio-footer-panel">
+          <div className="studio-footer-brand">
+            <Link href="/" className="studio-footer-logo" aria-label="Dampener home">
+              <Image src="/img/1.svg" alt="" width={36} height={36} />
+              <span>Dampener</span>
+            </Link>
+            <h2 id="footer-heading">Calm financial decisions, from import to forecast.</h2>
+            <p>
+              A premium cash-flow workspace for seeing what changed, what is coming, and what to do next.
+            </p>
+          </div>
+
+          <nav className="studio-footer-nav" aria-label="Footer navigation">
+            <div>
+              <h3>Explore</h3>
+              <a href="#system">System</a>
+              <a href="#engine-heading">Signals</a>
+              <a href="#real-system-heading">Product</a>
+            </div>
+            <div>
+              <h3>Workspace</h3>
+              <Link href="/demo">Demo</Link>
+              <Link href="/request-access">Request Access</Link>
+              <Link href="/login">Login</Link>
+            </div>
+            <div>
+              <h3>Principles</h3>
+              <span>Review before save</span>
+              <span>Transparent forecasts</span>
+              <span>Clear financial logic</span>
+            </div>
+          </nav>
+        </div>
+
+        <div className="studio-footer-bottom">
+          <p>&copy; {year} Dampener. Built for calmer financial control.</p>
+          <div>
+            <Link href="/demo">Try Demo</Link>
+            <Link href="/request-access">Request Access</Link>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 }
 

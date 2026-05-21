@@ -59,6 +59,12 @@ const cameraSpring = {
   restDelta: 0.0012,
   stiffness: 92,
 };
+const compactCameraSpring = {
+  damping: 98,
+  mass: 0.42,
+  restDelta: 0.0015,
+  stiffness: 58,
+};
 
 const logoJourneyScenes = [
   {
@@ -359,11 +365,11 @@ export function LogoJourneyHero() {
     target: sectionRef,
     offset: ["start start", "end end"],
   });
-  const progress = useSpring(scrollYProgress, cameraSpring);
-  const shouldReduce = prefersReducedMotion;
+  const progress = useSpring(scrollYProgress, isCompact ? compactCameraSpring : cameraSpring);
+  const shouldReduce = prefersReducedMotion || isCompact;
 
   const activeLogoJourneyZoomIntensity = isCompact
-    ? [0.72, 0.8, 3.7, 3.9, 0.95, 3.6, 3.85, 0.96, 3.65, 3.9, 0.82, 0.72]
+    ? [0.72, 0.78, 3.25, 3.42, 0.9, 3.12, 3.32, 0.9, 3.18, 3.38, 0.78, 0.72]
     : logoJourneyZoomIntensity;
   const cameraScale = useTransform(progress, logoJourneyTimelineStops, activeLogoJourneyZoomIntensity);
   const cameraOrigin = useTransform(progress, logoJourneyTimelineStops, [

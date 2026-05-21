@@ -360,52 +360,59 @@ export function LogoJourneyHero() {
     offset: ["start start", "end end"],
   });
   const progress = useSpring(scrollYProgress, cameraSpring);
-  const shouldReduce = prefersReducedMotion || isCompact;
+  const shouldReduce = prefersReducedMotion;
 
-  const cameraScale = useTransform(progress, logoJourneyTimelineStops, logoJourneyZoomIntensity);
+  const activeLogoJourneyZoomIntensity = isCompact
+    ? [0.72, 0.8, 3.7, 3.9, 0.95, 3.6, 3.85, 0.96, 3.65, 3.9, 0.82, 0.72]
+    : logoJourneyZoomIntensity;
+  const cameraScale = useTransform(progress, logoJourneyTimelineStops, activeLogoJourneyZoomIntensity);
   const cameraOrigin = useTransform(progress, logoJourneyTimelineStops, [
     "50% 50%",
     "50% 50%",
-    "44% 34%",
-    "44% 34%",
+    isCompact ? "50% 36%" : "44% 34%",
+    isCompact ? "50% 36%" : "44% 34%",
     "50% 50%",
-    "60% 52%",
-    "60% 52%",
+    isCompact ? "50% 54%" : "60% 52%",
+    isCompact ? "50% 54%" : "60% 52%",
     "50% 50%",
-    "45% 70%",
-    "45% 70%",
+    isCompact ? "50% 68%" : "45% 70%",
+    isCompact ? "50% 68%" : "45% 70%",
     "50% 50%",
     "50% 50%",
   ]);
   const cameraX = useTransform(progress, logoJourneyTimelineStops, [
     "0vw",
     "0vw",
-    "2vw",
-    "2vw",
+    isCompact ? "0vw" : "2vw",
+    isCompact ? "0vw" : "2vw",
     "0vw",
-    "-3.2vw",
-    "-3.2vw",
+    isCompact ? "0vw" : "-3.2vw",
+    isCompact ? "0vw" : "-3.2vw",
     "0vw",
-    "3vw",
-    "3vw",
+    isCompact ? "0vw" : "3vw",
+    isCompact ? "0vw" : "3vw",
     "0vw",
     "0vw",
   ]);
   const cameraY = useTransform(progress, logoJourneyTimelineStops, [
     "0vh",
     "0vh",
-    "25vh",
-    "25vh",
+    isCompact ? "18vh" : "25vh",
+    isCompact ? "18vh" : "25vh",
     "0vh",
     "1vh",
     "1vh",
     "0vh",
-    "-25vh",
-    "-25vh",
+    isCompact ? "-18vh" : "-25vh",
+    isCompact ? "-18vh" : "-25vh",
     "0vh",
     "0vh",
   ]);
-  const rotateZ = useTransform(progress, logoJourneyTimelineStops, [0, -0.02, -0.045, -0.045, 0, 0.035, 0.035, 0, -0.035, -0.035, 0, 0]);
+  const rotateZ = useTransform(
+    progress,
+    logoJourneyTimelineStops,
+    isCompact ? [0, -0.01, -0.018, -0.018, 0, 0.014, 0.014, 0, -0.014, -0.014, 0, 0] : [0, -0.02, -0.045, -0.045, 0, 0.035, 0.035, 0, -0.035, -0.035, 0, 0]
+  );
   const sceneFade = useTransform(progress, [0, 0.035, 0.98, 1], [1, 1, 1, 0.96]);
   const guideOpacity = useTransform(progress, [0, 0.06, 0.15, 1], [0.72, 0.72, 0, 0]);
   const baseLogoOpacity = useTransform(progress, logoJourneyTimelineStops, [1, 1, 1, 0.96, 1, 1, 0.96, 1, 1, 0.97, 1, 1]);

@@ -9541,30 +9541,30 @@ html[data-landing-theme="light"] .studio-opening-logo {
 
 @media (max-width: 780px) {
   .logo-journey-hero {
-    --logo-size: clamp(14rem, 72vw, 22rem);
-    min-height: 2400vh;
+    --logo-size: clamp(11.25rem, 68vw, 17.5rem);
+    min-height: 1650vh;
   }
 
   .logo-journey-sticky {
     min-height: 100svh;
   }
 
+  .logo-journey-scene {
+    overflow: hidden;
+  }
+
+  .logo-journey-scene .logo-journey-base-logo {
+    translate: 7% 0;
+  }
+
   .logo-journey-zone-map,
-  .logo-journey-system-visual {
+  .logo-journey-system-visual,
+  .logo-journey-solar-system {
     display: none;
   }
 
-  .logo-journey-solar-system {
-    opacity: 0.32 !important;
-  }
-
-  .logo-journey-solar-system svg {
-    width: 150vw;
-    height: 56vh;
-  }
-
   .logo-journey-world {
-    padding: 1.1rem;
+    padding: 0.85rem;
   }
 
   .logo-journey-world-content,
@@ -9572,11 +9572,13 @@ html[data-landing-theme="light"] .studio-opening-logo {
   .logo-journey-world-bottom .logo-journey-world-content,
   .logo-journey-world-middle .logo-journey-world-content {
     grid-template-columns: 1fr;
-    gap: 1rem;
-    align-content: end;
-    width: min(100%, 31rem);
-    min-height: 88svh;
-    padding-top: 34svh;
+    gap: 0.85rem;
+    align-content: center;
+    justify-items: center;
+    width: min(100%, 24.5rem);
+    min-height: 100svh;
+    padding-top: 10svh;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
     translate: 0;
   }
 
@@ -9587,20 +9589,23 @@ html[data-landing-theme="light"] .studio-opening-logo {
   }
 
   .logo-journey-world-copy {
+    border-left-color: rgb(92 102 74 / 0.32);
     max-width: 100%;
-    padding-left: 0.9rem;
+    padding-left: 0.82rem;
+    width: min(100%, 21.5rem);
   }
 
   .logo-journey-world-copy h2,
   .logo-journey-world-content > h2 {
     max-width: 11ch;
-    font-size: clamp(2.35rem, 12vw, 4.2rem);
+    font-size: clamp(2.05rem, 10.5vw, 3.35rem);
+    line-height: 0.94;
   }
 
   .logo-journey-world-copy p,
   .logo-journey-world-content > p {
-    font-size: 0.98rem;
-    line-height: 1.55;
+    font-size: 0.92rem;
+    line-height: 1.48;
   }
 
   .logo-journey-world-cards,
@@ -9624,37 +9629,42 @@ html[data-landing-theme="light"] .studio-opening-logo {
   }
 
   .logo-journey-chapter-stack {
-    width: 100%;
-    min-height: 18.5rem;
+    width: min(100%, 21.5rem);
+    min-height: 16.75rem;
     transform: translateZ(6rem);
   }
 
   .logo-journey-world-top .logo-journey-chapter-stack,
   .logo-journey-world-middle .logo-journey-chapter-stack,
   .logo-journey-world-bottom .logo-journey-chapter-stack {
-    width: 100%;
-    justify-self: stretch;
+    width: min(100%, 21.5rem);
+    justify-self: center;
     transform: translateZ(6rem);
   }
 
   .logo-journey-chapter {
     grid-template-columns: 1fr;
-    gap: 0.82rem;
-    padding: 0.95rem;
+    gap: 0.72rem;
+    border-color: rgb(92 102 74 / 0.18);
+    border-radius: 0.75rem;
+    padding: 0.88rem;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.62),
+      0 0.9rem 1.8rem rgb(17 17 17 / 0.07);
   }
 
   .logo-journey-chapter-main {
-    gap: 0.58rem;
+    gap: 0.52rem;
   }
 
   .logo-journey-chapter-main h3 {
     max-width: 13ch;
-    font-size: clamp(1.32rem, 7vw, 2rem);
+    font-size: clamp(1.22rem, 6.4vw, 1.82rem);
   }
 
   .logo-journey-chapter-main p {
-    font-size: 0.88rem;
-    line-height: 1.42;
+    font-size: 0.84rem;
+    line-height: 1.38;
   }
 
   .logo-journey-chapter-main ul {
@@ -9670,11 +9680,12 @@ html[data-landing-theme="light"] .studio-opening-logo {
 
   .logo-journey-chapter-side strong {
     margin-top: 0;
-    font-size: 1.65rem;
+    font-size: 1.48rem;
   }
 
   .logo-journey-chapter-side p {
     margin-top: 0.2rem;
+    max-width: 9rem;
   }
 
   .logo-journey-chapter-visual,
@@ -9686,7 +9697,8 @@ html[data-landing-theme="light"] .studio-opening-logo {
   .logo-journey-finale {
     grid-template-columns: 1fr;
     align-content: center;
-    gap: 1rem;
+    gap: 1.05rem;
+    padding-inline: 1rem;
     text-align: left;
   }
 
@@ -9702,11 +9714,15 @@ html[data-landing-theme="light"] .studio-opening-logo {
 
   .logo-journey-finale-copy h2 {
     max-width: 12ch;
-    font-size: clamp(2.15rem, 11vw, 3.6rem);
+    font-size: clamp(2rem, 10vw, 3rem);
   }
 
   .logo-journey-finale-panel {
-    max-width: 24rem;
+    max-width: 100%;
+  }
+
+  .logo-journey-finale-panel article {
+    border-radius: 0.75rem;
   }
 
   .logo-journey-world.is-reduced .logo-journey-world-content {
